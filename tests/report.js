@@ -7,7 +7,7 @@ const fx = n => fs.readFileSync(path.join(DIR, n), 'utf8');
 const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? '  ok   ' : '  FAIL ') + msg); };
 (async () => {
   const {p, errs, close} = await openApp();
-  await p.evaluate(() => { closeOverlay('tour'); S.coach = {tour: 1, pad: 1, praten: 1, plan: 1}; render(); });
+  await p.evaluate(() => { closeOverlay('welcome'); closeOverlay('tour'); S.coach = {tour: 1, pad: 1, praten: 1, plan: 1}; render(); });
   const parse = t => p.evaluate(t => { const r = parseReport(t); return r.error ? {error: r.error, hint: r.hint} : {hash: r.hash, d: r.data}; }, t);
 
   // ---- parser on the fixtures ----
@@ -93,7 +93,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   await p.evaluate(() => closeSheet()); await p.waitForTimeout(900); await p.reload(); await p.waitForTimeout(500);
   ok(await p.evaluate(() => S.settings.praten.mode === 'dagboek' && S.settings.praten.vertaling === false && S.settings.praten.beurten === '12–15' && S.settings.projectUrl.endsWith('/abc')), 'settings remembered after a reload');
   // Gebruik house opens the sheet in opdracht for that square
-  await p.evaluate(() => { closeFeed && FEED && closeFeed(); closeOverlay('tour'); startStep('u7q1', 'gebruik'); }); await p.waitForTimeout(150);
+  await p.evaluate(() => { closeFeed && FEED && closeFeed(); closeOverlay('welcome'); closeOverlay('tour'); startStep('u7q1', 'gebruik'); }); await p.waitForTimeout(150);
   ok((await p.inputValue('#pr-block')).includes('modus: opdracht') && (await p.inputValue('#pr-block')).includes('(u7q1)'), 'Gebruik house opens the start block in opdracht for its square');
 
   await close();

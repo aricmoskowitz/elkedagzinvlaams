@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "b26cf02da7";</script>
+<script>const APP_VERSION = "3153089915";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -3736,7 +3736,7 @@ async function saveFile(name, text, type) {
   setTimeout(() => URL.revokeObjectURL(url), 4000); return 'downloaded';
 }
 function openDocs() {
-  const rows = Object.keys(DOCS).map(n => { const t = DOCS[n](); return `<div class="tapline" style="cursor:default"><div class="t"><div style="font-weight:600">${n}</div><div class="small">${Math.max(1, Math.round(t.length / 1024))} KB${n === 'Woorden.md' ? ' · met ' + Object.keys(S.custom || {}).length + ' eigen woorden' : ''}</div></div><button class="btn line" style="min-height:40px;padding:8px 14px" data-act="doc-save" data-id="${n}">Bewaar</button></div>`; }).join('');
+  const rows = Object.keys(DOCS).map(n => { const t = DOCS[n](); return `<div class="tapline" style="cursor:default"><div class="t"><div style="font-weight:600">${n}</div><div class="small">${Math.max(1, Math.round(t.length / 1024))} KB${n === 'Woorden.md' ? ((k => ' · met ' + k + (k === 1 ? ' eigen woord' : ' eigen woorden'))(Object.keys(S.custom || {}).length)) : ''}</div></div><button class="btn line" style="min-height:40px;padding:8px 14px" data-act="doc-save" data-id="${n}">Bewaar</button></div>`; }).join('');
   openOverlay('docs', `<button class="iconbtn" data-act="overlay-close" data-id="docs" aria-label="Sluiten">✕</button><span class="small">Documenten voor Claude</span>`, `<div class="stack">
     <h1 data-en="Documents for Claude">Documenten voor Claude</h1>
     <div class="small">Je Claude Project <i>Elke Dag Zin · Praten</i> leest deze bestanden om je fouten en woorden op de juiste plek te zetten. Ze komen uit de app, met je eigen woorden erbij.</div>
@@ -3745,6 +3745,49 @@ function openDocs() {
   </div>`);
 }
 async function saveDoc(n) { if (!DOCS[n]) return; const r = await saveFile(n, DOCS[n](), 'text/markdown'); if (r === 'downloaded') toast(n + ' gedownload'); else if (r === 'shared') toast(n + ' bewaard'); }
+
+/* ===== VERSION 2.0: first run · bring the progress from the old app (MIGRATION.md §C) ===== */
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const isIOS = () => /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function openWelcome() {
+  const ov = openOverlay('welcome', `<span style="flex:1"></span>`, `<div class="stack">
+    <h1>Welkom bij Elke Dag Zin</h1>
+    <p class="why" style="margin:0">Elke dag een beetje Vlaams. Oefenen doe je hier; praten, je dagboek en foto's van je les doe je in je Claude Project.</p>
+    ${isIOS() && !isStandalone() ? `<div class="card soft stack" style="gap:6px"><b>Zet de app eerst op je beginscherm</b><div class="small">Tik in Safari op <b>Deel</b> en kies <b>Zet op beginscherm</b>. Open de app daar en zet dan je back-up terug: Safari en de app op je beginscherm bewaren hun gegevens apart.</div></div>` : ''}
+    <button class="btn block" type="button" id="mig-go">Zet je back-up uit de oude app terug</button>
+    <input type="file" id="mig-file" accept="application/json,.json" hidden>
+    <div class="small">In de oude app: Ik → Back-up → <b>Exporteer</b>. Bewaar het .json-bestand in Bestanden en kies het hier.</div>
+    <div id="mig-out" role="status"></div>
+    <button class="btn line block" type="button" id="mig-new">Ik begin nieuw</button>
+  </div>`);
+  $('#mig-go', ov).onclick = () => $('#mig-file', ov).click();
+  $('#mig-new', ov).onclick = () => { closeOverlay('welcome'); openTour(0); };
+  $('#mig-file', ov).onchange = e => {
+    const f = e.target.files[0]; if (!f) return; const r = new FileReader();
+    r.onload = () => {
+      const res = parseBackup(r.result);
+      if (res.error) { $('#mig-out', ov).innerHTML = `<div class="fb no"><b>${esc(res.error)}</b><div class="small">Kies het .json-bestand dat de oude app bewaarde (elkedagzin-backup-….json).</div></div>`; return; }
+      restoreBackup(res.data); S.coach.tour = 1; S.settings.lastBackup = Date.now(); Store.flush(); render(); migrated();
+    };
+    r.onerror = () => toast('Het bestand kon niet gelezen worden'); r.readAsText(f);
+  };
+}
+function migrationSummary() {
+  const n = (x, one, many) => [x, x === 1 ? one : many];
+  return [n(SQ_ORDER.filter(sqComplete).length, 'plein klaar', 'pleinen klaar'), n(wordsKnown(), 'woord gekend', 'woorden gekend'), n(Object.keys(S.items).length, 'herhaalkaart', 'herhaalkaarten'), n(Object.keys(S.custom || {}).length, 'eigen woord', 'eigen woorden'),
+    n((S.sets || []).length, 'set', 'sets'), n(Object.keys(S.fix || {}).length, 'correctie', 'correcties'), n(Object.keys(S.markt || {}).length, 'Grote Markt', 'Grote Markten'), n((S.talks || []).length + (S.log || []).length, 'gesprek of tekst', 'gesprekken en teksten')];
+}
+function migrated() {
+  closeOverlay('welcome');
+  openOverlay('welcome', `<span style="flex:1"></span><button class="iconbtn" data-act="overlay-close" data-id="welcome" aria-label="Sluiten">✕</button>`, `<div class="stack">
+    <div class="eyebrow">Back-up teruggezet</div><h1>Je voortgang is hier</h1>
+    <div class="grid2">${migrationSummary().map(([n, l]) => `<div><div class="big-num">${n}</div><div class="small">${l}</div></div>`).join('')}</div>
+    <div class="card soft stack" style="gap:4px"><b>Kijk even na</b><div class="small">· Pad toont je steden en pleinen<br>· Woorden → Sets → Mijn woorden toont je eigen woorden<br>· Naslag toont je correcties op hun plein</div></div>
+    <div class="small">Upload daarna de nieuwe <b>Woorden.md</b> naar je Claude Project: daar staan nu ook je eigen woorden in.</div>
+    <button class="btn block" data-act="docs">Documenten voor Claude</button>
+    <button class="btn line block" data-act="overlay-close" data-id="welcome">Naar het pad</button>
+  </div>`);
+}
 
 /* ===== LONG-PRESS ENGLISH ===== */
 (function () {
@@ -3845,7 +3888,7 @@ document.addEventListener('click', e => {
     case 'export': exportData(); break;
     case 'praten': if (el.getAttribute('aria-disabled') === 'true') { toast('Doe eerst alle pleinen van deze stad.'); break; } closeSheet(); openPraten({mode: d.mode, q: d.q, u: d.u}); break;
     case 'verslag': openReport(); break;
-    case 'docs': openDocs(); break;
+    case 'docs': closeOverlay('welcome'); openDocs(); break;
     case 'doc-save': saveDoc(d.id); break;
     case 'export-text': copyBackup(); break;
     case 'import': $('#imp-file').click(); break;
@@ -3890,7 +3933,7 @@ document.addEventListener('change', e => {
   render();
   setTimeout(() => { if (TAB === 'ik') render(); }, 800);
   if (location.hash === '#feed') { openFeed(); return; }
-  if (S.settings.tourOnStart || (!S.coach.tour && !S.savedAt)) openTour(0); else if (S.settings.startView !== 'pad' && !$('.overlay')) openFeed();
+  if (!S.coach.tour && !S.savedAt) openWelcome(); else if (S.settings.tourOnStart) openTour(0); else if (S.settings.startView !== 'pad' && !$('.overlay')) openFeed();
 })();
 
 

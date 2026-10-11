@@ -97,7 +97,7 @@ document.addEventListener('click', e => {
     case 'export': exportData(); break;
     case 'praten': if (el.getAttribute('aria-disabled') === 'true') { toast('Doe eerst alle pleinen van deze stad.'); break; } closeSheet(); openPraten({mode: d.mode, q: d.q, u: d.u}); break;
     case 'verslag': openReport(); break;
-    case 'docs': openDocs(); break;
+    case 'docs': closeOverlay('welcome'); openDocs(); break;
     case 'doc-save': saveDoc(d.id); break;
     case 'export-text': copyBackup(); break;
     case 'import': $('#imp-file').click(); break;
@@ -142,5 +142,5 @@ document.addEventListener('change', e => {
   render();
   setTimeout(() => { if (TAB === 'ik') render(); }, 800);
   if (location.hash === '#feed') { openFeed(); return; }
-  if (S.settings.tourOnStart || (!S.coach.tour && !S.savedAt)) openTour(0); else if (S.settings.startView !== 'pad' && !$('.overlay')) openFeed();
+  if (!S.coach.tour && !S.savedAt) openWelcome(); else if (S.settings.tourOnStart) openTour(0); else if (S.settings.startView !== 'pad' && !$('.overlay')) openFeed();
 })();

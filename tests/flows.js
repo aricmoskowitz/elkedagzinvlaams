@@ -10,8 +10,10 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   const shot = async (n, pg = p) => { if (SHOTS) await pg.screenshot({path: path.join(SHOTS, n + '.png')}); };
   ok(await p.evaluate(() => typeof window.claude === 'undefined' && !document.documentElement.outerHTML.includes('window.claude')), 'no window.claude in the page');
 
-  // first run: the tour, then Pad
-  ok(!!(await p.$('#tour')), 'tour opens on first run'); await shot('01_tour');
+  // first run: the welcome screen (restore or start new), then the tour, then Pad
+  ok(!!(await p.$('#welcome #mig-go')) && !(await p.$('#tour')), 'first run offers "Zet je back-up uit de oude app terug"'); await shot('00_welcome');
+  await p.click('#mig-new'); await p.waitForTimeout(150);
+  ok(!!(await p.$('#tour')), '"Ik begin nieuw" starts the tour'); await shot('01_tour');
   await p.click('[data-act=tour-end]'); await p.waitForTimeout(200);
   ok(await p.evaluate(() => TAB === 'pad' && !!document.querySelector('#world')), 'Pad with the world map'); await shot('02_pad');
 
@@ -125,6 +127,22 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   await shot('15_after_reload');
 
   await close();
+
+  // ---- first run with a 1.5 backup (MIGRATION.md §C) ----
+  const f2 = path.join(require('os').tmpdir(), 'edz-old-backup-2.json'); fs.writeFileSync(f2, JSON.stringify(old));
+  const M = await openApp({wait: 400});
+  await M.p.setInputFiles('#mig-file', f2); await M.p.waitForTimeout(300); await shot('17_migrated', M.p);
+  const mig = await M.p.evaluate(() => ({h: (document.querySelector('#welcome h1') || {}).textContent, n: $$('#welcome .big-num').map(x => +x.textContent), oefen: S.sq.u1q1 && S.sq.u1q1.steps.oefen, own: S.custom['u-1'] && S.custom['u-1'].w, tour: !!document.querySelector('#tour'), saved: !!localStorage.getItem('edz.v2')}));
+  ok(mig.h === 'Je voortgang is hier' && mig.oefen === 90 && mig.own === 'ambetant' && !mig.tour && mig.saved, 'first run: restoring the old backup brings the progress, no tour');
+  ok(mig.n.length === 8 && mig.n[0] === 1 && mig.n[3] === 1 && mig.n[5] === 1, 'summary counts: 1 plein klaar, 1 eigen woord, 1 correctie');
+  await M.p.click('#welcome [data-act=docs]'); await M.p.waitForTimeout(150);
+  ok(!!(await M.p.$('#docs')), 'summary leads to Documenten voor Claude');
+  await M.p.reload(); await M.p.waitForTimeout(500);
+  ok(await M.p.evaluate(() => !document.querySelector('#welcome') && S.custom['u-1']), 'after the restore the next start goes straight to the app');
+  fs.writeFileSync(f, '{"hallo":1}'); const M2 = await openApp({wait: 400});
+  await M2.p.setInputFiles('#mig-file', f); await M2.p.waitForTimeout(200);
+  ok(/geen back-up/.test(await M2.p.textContent('#mig-out')), 'a wrong file on the welcome screen gets a clear message');
+  errs.push(...M.errs, ...M2.errs); await M.close(); await M2.close();
 
   // ---- Home Screen app: manifest, icons, service worker, offline, update toast ----
   const A = await openApp({sw: true, wait: 300});
