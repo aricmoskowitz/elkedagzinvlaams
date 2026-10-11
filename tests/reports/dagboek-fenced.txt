@@ -1,0 +1,12 @@
+Goed gedaan vandaag!
+
+```
+EDZ-VERSLAG v1
+{"v":1,"modus":"dagboek","datum":"2026-10-14","onderwerp":"Mijn les van dinsdag","beurten":5,
+"samenvatting":"Je vertelde over je les. Mooi dat je ‘omdat’ juist gebruikte.",
+"tekst":"Vandaag had ik les. We hebben over het weer gepraat, omdat het regende.",
+"goed":[{"topic":"Omdat + werkwoord achteraan","plan":"u7q1","mastered":true}],
+"corrections":[{"wrong":"Vandaag ik had les.","right":"Vandaag had ik les.","why":"Verb second after a time word.","type":"word order","plan":"u1q2"}],
+"words":[]}
+EDZ-EINDE
+```

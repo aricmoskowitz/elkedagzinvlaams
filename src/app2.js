@@ -150,7 +150,7 @@ function makeEx(key, ctx = 'drill') {
   const it = S.items[key];
   if (t === 'c') {
     const f = S.fix[id];
-    return {type: 'type', key, label: 'fix', prompt: `<span class="nl" style="font-size:20px">${esc(f.wrong)}</span>`, sub: 'Verbeter deze zin. Hij komt uit je ' + ({log: 'logboek', talk: 'gesprek', write: 'schrijfopdracht'}[f.src] || 'oefening') + '.', answer: f.right, accept: [norm(f.right)], whole: true, why: esc(f.why || ''), say: f.right};
+    return {type: 'type', key, label: 'fix', prompt: `<span class="nl" style="font-size:20px">${esc(f.wrong)}</span>`, sub: 'Verbeter deze zin. Hij komt uit je ' + ({log: 'logboek', talk: 'gesprek', write: 'schrijfopdracht', onderwerp: 'gesprek met Claude', opdracht: 'opdracht met Claude', dagboek: 'dagboek', foto: 'foto'}[f.src] || 'oefening') + '.', answer: f.right, accept: [norm(f.right)], whole: true, why: esc(f.why || ''), say: f.right};
   }
   if (t === 'e') {
     const ex = extraSentence(id);

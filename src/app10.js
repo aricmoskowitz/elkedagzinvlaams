@@ -77,7 +77,7 @@ function openProc(o) {
     const ob = b === 'general' ? 1e5 : b.startsWith('new:') ? planOrder(PLAN_SQ.find(q => q.u === b.split(':')[1]) ? PLAN_SQ.find(q => q.u === b.split(':')[1]).id : '') + 2.5 : planOrder(b);
     return oa - ob;
   });
-  const setName = 'Uit de les – week ' + weekNo();
+  const setName = o.setName || 'Uit de les – week ' + weekNo();
   const card = key => {
     const g = groups[key]; let head;
     if (key === 'general') head = `<div class="loc">Algemeen</div><div class="nl" style="font-size:17px">Spelling en losse woorden</div>`;
@@ -94,7 +94,7 @@ function openProc(o) {
   const body = `<div class="stack">
     <h1>${esc(o.title || 'Verwerkt')}</h1>
     ${o.note ? `<div class="card soft nl" style="font-size:17px">${esc(o.note)}</div>` : ''}
-    ${o.corrected ? `<details class="card"><summary class="small" style="cursor:pointer">Je tekst, verbeterd</summary><div class="nl" style="font-size:17px;line-height:1.5;margin-top:8px">${esc(o.corrected)}</div></details>` : ''}
+    ${o.corrected ? `<details class="card"><summary class="small" style="cursor:pointer">${esc(o.correctedLabel || 'Je tekst, verbeterd')}</summary><div class="nl" style="font-size:17px;line-height:1.5;margin-top:8px">${esc(o.corrected)}</div></details>` : ''}
     <div class="procsum"><b>${nC}</b> ${nC === 1 ? 'fout' : 'fouten'} · <b>${words.length}</b> ${words.length === 1 ? 'nieuw woord' : 'nieuwe woorden'}${nNew ? ` · <b>${nNew}</b> nieuw in je plan` : ''}</div>
     <div class="small">Elke fout en elk nieuw woord staat bij het plein waar het hoort. Vink uit wat je niet wilt bewaren.</div>
     ${keys.map(card).join('') || '<div class="card soft">Geen fouten en geen nieuwe woorden. Knap!</div>'}

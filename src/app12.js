@@ -69,6 +69,7 @@ function viewMarkt(u) {
     ${open ? '' : '<div class="card soft">De Grote Markt gaat open als je alle pleinen van deze stad klaar hebt.</div>'}
     <div>
       ${line('markt-review', `data-u="${u}"`, `Herhaal de hele stad${sc ? ` <span class="small">· ${sc}%</span>` : ''}`, '16 vragen door elkaar · checkpoint bij 80%', open)}
+      ${line('praten', `data-mode="opdracht" data-u="${u}"`, `Praten in Claude: ${esc(sceneFor(u).title)}${stepDone(marktId(u), 'gebruik') ? ' <span class="small">· gedaan</span>' : ''}`, esc(sceneFor(u).goal), open)}
       ${line('mission', `data-u="${u}"`, `Opdracht in de stad${mDone ? ' <span class="small">· gedaan deze week</span>' : ''}`, esc(unit.mission || ''), true)}
     </div>
   </div>`;

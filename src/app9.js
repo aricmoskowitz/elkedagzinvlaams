@@ -9,17 +9,11 @@ const uid = p => p + Date.now().toString(36) + Math.floor(Math.random() * 1e4).t
 /* ---------- old talks (history) ---------- */
 function viewTalkHistory(id) {
   const t = S.talks.find(x => x.id === id); if (!t) return;
-  openSheet(`<div class="stack"><div class="small">${esc(t.date)}</div>${t.msgs.map(m => `<div class="bubble ${m.who === 'me' ? 'me' : 'tutor'}"><div class="nl">${esc(m.text)}</div></div>`).join('')}${t.good ? `<div class="card soft nl">${esc(t.good)}</div>` : ''}${t.tip ? `<div class="small"><b>Tip:</b> ${esc(t.tip)}</div>` : ''}</div>`);
+  openSheet(`<div class="stack"><div class="small">${esc(t.date)}${t.modus ? ' · ' + esc(t.modus) + ' in Claude' : ''}${t.beurten ? ' · ' + t.beurten + ' beurten' : ''}</div>${t.title ? `<h2>${esc(t.title)}</h2>` : ''}${t.q && PSQ[t.q] ? `<div class="loc">${esc(placeLine(t.q))}${t.goal ? ' · doel bereikt' : ''}</div>` : ''}${(t.msgs || []).map(m => `<div class="bubble ${m.who === 'me' ? 'me' : 'tutor'}"><div class="nl">${esc(m.text)}</div></div>`).join('')}${t.good ? `<div class="card soft nl">${esc(t.good)}</div>` : ''}${t.tip ? `<div class="small"><b>Tip:</b> ${esc(t.tip)}</div>` : ''}</div>`);
 }
 
 /* ---------- GEBRUIK: speaking and writing happen in the Claude Project ---------- */
-function openUse(q) {
-  const sq = SQ[q]; const sc = SCENARIOS.find(s => s.u === sq.u) || SCENARIOS.find(s => s.id === 'sc-free');
-  openSheet(`<div class="stack"><h2>Gebruik · ${esc(sq.name)}</h2>
-    <div class="small">Spreken en schrijven doe je in je Claude Project <i>Elke Dag Zin · Praten</i>. Een geslaagde opdracht daar maakt dit gildehuis klaar.</div>
-    ${sc ? `<div class="card soft"><div class="eyebrow">Opdracht</div><div class="nl" style="font-size:17px">${esc(sc.goal)}</div><div class="small" style="margin-top:2px">Je praat met ${esc(sc.role)}.</div></div>` : ''}
-  </div>`);
-}
+function openUse(q) { openPraten({mode: 'opdracht', q}); }
 
 /* ---------- Extra squares (from the log) ---------- */
 function openExtra(id) {
@@ -31,7 +25,8 @@ function openExtra(id) {
     <button class="link" data-act="extra-del" data-id="${x.id}" style="color:var(--warn)">Verwijder dit extra plein</button></div>`);
 }
 function thenAndNow() {
-  const firstT = S.talks[S.talks.length - 1], lastT = S.talks[0];
+  const withMsgs = S.talks.filter(t => (t.msgs || []).some(m => m.who === 'me'));
+  const firstT = withMsgs[withMsgs.length - 1], lastT = withMsgs[0];
   const logs = S.log.filter(x => x.mode !== 'quick');
   const firstL = logs[logs.length - 1], lastL = logs[0];
   const col = (title, a, b, f) => a && b && a !== b ? `<div class="stack" style="gap:6px"><div class="eyebrow">${title}</div><div class="grid2"><div class="card soft"><div class="small">${esc(a.date)}</div>${f(a)}</div><div class="card"><div class="small">${esc(b.date)}</div>${f(b)}</div></div></div>` : '';

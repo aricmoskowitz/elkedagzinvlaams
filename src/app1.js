@@ -106,7 +106,7 @@ function migrate() {
   S.settings = Object.assign({}, def, S.settings || {});
   S.settings.praten = Object.assign({}, def.praten, S.settings.praten || {});
   if (S.settings.talkAudio === undefined) S.settings.talkAudio = true;
-  if (S.v < 3) S.v = 3;
+  if (S.v < 3) { Object.keys(S.seen).forEach(id => { if (S.seenAt[id] === undefined) S.seenAt[id] = 0; }); S.v = 3; }
 }
 let S = blankState();
 const Store = {

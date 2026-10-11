@@ -18,6 +18,8 @@ function padLinks() {
     ${backupReminder()}
     <button class="tapline" data-act="review"><div class="t"><div style="font-weight:600" data-en="Review">Herhalen</div><div class="small">${rev ? `${rev} kaart${rev === 1 ? '' : 'en'} · ~${Math.max(1, Math.ceil(rev * 10 / 60))} min` : due ? 'Daglimiet bereikt' : 'Niets te herhalen'}</div></div><span class="chev">›</span></button>
     <button class="tapline" data-act="feed"><div class="t"><div style="font-weight:600">Scroll</div><div class="small">Eén tik per kaart, voor als je moe bent</div></div><span class="chev">›</span></button>
+    <button class="tapline" data-act="praten"><div class="t"><div style="font-weight:600" data-en="Talk in Claude">Praten in Claude</div><div class="small">Startblok voor een gesprek, opdracht, dagboek of foto</div></div><span class="chev">›</span></button>
+    <button class="tapline" data-act="verslag"><div class="t"><div style="font-weight:600" data-en="Paste report">Verslag plakken</div><div class="small">Het verslag van Claude in je plan zetten</div></div><span class="chev">›</span></button>
   </div>`;
 }
 function weekBlock() {
