@@ -26,8 +26,9 @@ h1{font-size:28px} h2{font-size:22px} h3{font-size:18px}
 .label{font-size:13px;color:var(--ink2);font-weight:500}
 
 #app{height:100%;display:flex;flex-direction:column;max-width:560px;margin:0 auto}
-#main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px 32px}
-#tabs{display:flex;border-top:1px solid var(--line);background:var(--bg)}
+@supports (height:100dvh){#app{height:100dvh}}
+#main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(20px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) 32px calc(16px + env(safe-area-inset-left,0px))}
+#tabs{display:flex;border-top:1px solid var(--line);background:var(--bg);padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
 #tabs button{flex:1;border:0;background:transparent;padding:12px 2px 14px;font-size:13px;font-weight:500;color:var(--ink2);min-height:52px;-webkit-touch-callout:none;user-select:none;position:relative}
 #tabs button.on{color:var(--ink)}
 #tabs button.on::after{content:'';position:absolute;left:30%;right:30%;bottom:8px;height:2px;background:var(--ink);border-radius:1px}
@@ -282,3 +283,7 @@ details.nsq>.nbody{padding:4px 4px 14px 34px}
 details.nsq.focus>summary{background:var(--go-tint);border-radius:10px}
 details.narc{display:flex;flex-direction:column}
 [hidden]{display:none!important}
+
+/* 2.0: update toast */
+#update{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;padding:6px 8px 6px 16px;border-radius:12px;font-size:14px;box-shadow:0 6px 18px rgba(30,27,22,.2)}
+#update .link{color:#fff;text-decoration:underline;min-height:40px;padding:0 10px}

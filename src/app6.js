@@ -131,10 +131,10 @@ document.addEventListener('change', e => {
 
 /* ===== INIT ===== */
 (function init() {
-  try { const l = document.createElement('link'); l.rel = 'apple-touch-icon'; l.href = ICON_PNG; document.head.appendChild(l); } catch (e) {}
   let first = false; try { first = !localStorage.getItem(LS_KEY) && !localStorage.getItem(LS_OLD); } catch (e) {}
   Store.loadLocal(); Audio.load();
   if (first) Store.persist();
+  registerSW();
   render();
   setTimeout(() => { if (TAB === 'ik') render(); }, 800);
   if (location.hash === '#feed') { openFeed(); return; }

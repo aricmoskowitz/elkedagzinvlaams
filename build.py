@@ -1,5 +1,4 @@
-import base64, os, sys
-from playwright.sync_api import sync_playwright
+import hashlib, json, os, sys
 
 D = os.path.dirname(os.path.abspath(__file__))
 ICON_SVG = '''<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" width="180" height="180" shape-rendering="crispEdges">
@@ -14,31 +13,39 @@ ICON_SVG = '''<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" width=
 <rect x="16" y="23" width="4" height="8" fill="#2A2620"/><rect x="8" y="14" width="20" height="1" fill="#A8432F"/>
 </svg>'''
 
-png_path = os.path.join(D, 'icon180.png')
-if not os.path.exists(png_path):
+# Icons: the red pixel guild house. Rendered once with Playwright (python) and committed,
+# so a normal build needs no browser. Delete a PNG to render it again.
+ICONS = [('icon180.png', 180, False), ('icon192.png', 192, False), ('icon512.png', 512, False), ('icon512-maskable.png', 512, True)]
+def render_icons():
+    missing = [i for i in ICONS if not os.path.exists(os.path.join(D, i[0]))]
+    if not missing: return
+    from playwright.sync_api import sync_playwright
+    exe = '/opt/pw-browsers/chromium' if os.path.exists('/opt/pw-browsers/chromium') else None
     with sync_playwright() as p:
-        b = p.chromium.launch()
-        pg = b.new_page(viewport={'width': 180, 'height': 180})
-        pg.set_content('<html><body style="margin:0">' + ICON_SVG + '</body></html>')
-        pg.screenshot(path=png_path, clip={'x': 0, 'y': 0, 'width': 180, 'height': 180})
+        b = p.chromium.launch(executable_path=exe) if exe else p.chromium.launch()
+        for name, size, mask in missing:
+            pg = b.new_page(viewport={'width': size, 'height': size})
+            svg = ICON_SVG.replace('width="180" height="180"', 'width="100%" height="100%"')
+            # maskable: the house inside the 80% safe zone, on the sky colour
+            inner = f'<div style="position:absolute;left:10%;top:10%;width:80%;height:80%">{svg}</div>' if mask else svg
+            pg.set_content(f'<html><body style="margin:0;width:{size}px;height:{size}px;position:relative;background:{"linear-gradient(#A7CFF2 0 74.45%,#A9D38C 74.45% 78.9%,#DDD4C3 78.9%)" if mask else "#A7CFF2"};overflow:hidden">{inner}</body></html>')
+            pg.screenshot(path=os.path.join(D, name), clip={'x': 0, 'y': 0, 'width': size, 'height': size})
+            pg.close()
         b.close()
-icon_b64 = 'data:image/png;base64,' + base64.b64encode(open(png_path, 'rb').read()).decode()
+render_icons()
 
 css = open(os.path.join(D, 'src', 'style.css')).read()
-js = open(os.path.join(D, 'src', 'content.js')).read() + '\n' + open(os.path.join(D, 'src', 'content2.js')).read() + '\n' + open(os.path.join(D, 'src', 'content4.js')).read() + '\n' + open(os.path.join(D, 'src', 'content5.js')).read() + '\n' + open(os.path.join(D, 'src', 'content3.js')).read() + '\n'
-for n in ['app1', 'app2', 'app3', 'app4', 'app8', 'app5', 'app7', 'app9', 'app10', 'app12', 'app13', 'app6']:
+js = ''
+for n in ['content', 'content2', 'content4', 'content5', 'content3']:
+    js += open(os.path.join(D, 'src', n + '.js')).read() + '\n'
+for n in ['app1', 'app2', 'app3', 'app4', 'app8', 'app5', 'app7', 'app9', 'app10', 'app12', 'app13', 'app14', 'app6']:
     js += open(os.path.join(D, 'src', n + '.js')).read() + '\n'
 
-html = f'''<title>Elke Dag Zin</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Dagzin">
-<meta name="theme-color" content="#FFFFFF">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<style>
+body = f'''<style>
 {css}
 </style>
+</head>
+<body>
 <div id="app">
   <main id="main" aria-live="polite"></main>
   <nav id="tabs" role="tablist" aria-label="Hoofdmenu">
@@ -49,10 +56,47 @@ html = f'''<title>Elke Dag Zin</title>
   </nav>
 </div>
 <script>
-const ICON_PNG = "{icon_b64}";
 {js}
 </script>
+</body>
+</html>
 '''
-out = os.path.join(D, 'index.html')
-open(out, 'w').write(html)
-print('built', out, round(len(html) / 1024), 'KB')
+VERSION = hashlib.sha256(body.encode()).hexdigest()[:10]
+html = f'''<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Elke Dag Zin</title>
+<meta name="description" content="Elke dag een beetje Vlaams: zinnen, woorden en herhalingen.">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dagzin">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon192.png">
+<link rel="apple-touch-icon" href="icon180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
+<script>const APP_VERSION = "{VERSION}";</script>
+''' + body
+
+manifest = {
+    'name': 'Elke Dag Zin', 'short_name': 'Dagzin', 'description': 'Elke dag een beetje Vlaams.',
+    'lang': 'nl-BE', 'start_url': './', 'scope': './', 'id': './', 'display': 'standalone', 'orientation': 'portrait',
+    'background_color': '#FFFFFF', 'theme_color': '#FFFFFF',
+    'icons': [
+        {'src': 'icon180.png', 'sizes': '180x180', 'type': 'image/png'},
+        {'src': 'icon192.png', 'sizes': '192x192', 'type': 'image/png', 'purpose': 'any'},
+        {'src': 'icon512.png', 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any'},
+        {'src': 'icon512-maskable.png', 'sizes': '512x512', 'type': 'image/png', 'purpose': 'maskable'},
+    ],
+}
+sw = open(os.path.join(D, 'src', 'sw.js')).read().replace('__VERSION__', VERSION)
+
+open(os.path.join(D, 'index.html'), 'w').write(html)
+open(os.path.join(D, 'manifest.webmanifest'), 'w').write(json.dumps(manifest, indent=1, ensure_ascii=False) + '\n')
+open(os.path.join(D, 'sw.js'), 'w').write(sw)
+print('built index.html', round(len(html.encode()) / 1024), 'KB · version', VERSION)

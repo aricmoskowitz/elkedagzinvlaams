@@ -6,8 +6,8 @@ const fs = require('fs'); const path = require('path');
 const SHOTS = process.env.SHOTS; if (SHOTS) fs.mkdirSync(SHOTS, {recursive: true});
 const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? '  ok   ' : '  FAIL ') + msg); };
 (async () => {
-  const {b, p, errs} = await openApp();
-  const shot = async n => { if (SHOTS) await p.screenshot({path: path.join(SHOTS, n + '.png')}); };
+  const {p, errs, close} = await openApp();
+  const shot = async (n, pg = p) => { if (SHOTS) await pg.screenshot({path: path.join(SHOTS, n + '.png')}); };
   ok(await p.evaluate(() => typeof window.claude === 'undefined' && !document.documentElement.outerHTML.includes('window.claude')), 'no window.claude in the page');
 
   // first run: the tour, then Pad
@@ -112,7 +112,31 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(await p.evaluate(() => S.sq.u1q1.steps.oefen === 90 && S.custom['u-1'] && TAB === 'pad' && !document.querySelector('#feed')), 'restored state survives a reload (start view Pad)');
   await shot('15_after_reload');
 
-  await b.close();
+  await close();
+
+  // ---- Home Screen app: manifest, icons, service worker, offline, update toast ----
+  const A = await openApp({sw: true, wait: 300});
+  const P = A.p;
+  const man = await P.evaluate(async () => { const r = await fetch(document.querySelector('link[rel=manifest]').href); return r.json(); });
+  ok(man.name === 'Elke Dag Zin' && man.short_name === 'Dagzin' && man.display === 'standalone' && man.background_color === '#FFFFFF' && man.theme_color === '#FFFFFF', 'manifest: names, standalone, white');
+  const sizes = await P.evaluate(async icons => Promise.all(icons.map(i => new Promise(res => { const im = new Image(); im.onload = () => res(i.sizes === im.width + 'x' + im.height); im.onerror = () => res(false); im.src = i.src; }))), man.icons);
+  ok(sizes.every(Boolean) && man.icons.some(i => i.purpose === 'maskable') && ['180x180', '192x192', '512x512'].every(z => man.icons.some(i => i.sizes === z)), 'manifest icons 180/192/512 + maskable load at their sizes');
+  ok(await P.evaluate(() => { const v = document.querySelector('meta[name=viewport]').content; return v.includes('viewport-fit=cover') && document.querySelector('meta[name=apple-mobile-web-app-capable]').content === 'yes' && !!document.querySelector('link[rel=apple-touch-icon]'); }), 'iOS meta tags and viewport-fit=cover');
+  ok(await P.evaluate(() => { const css = document.querySelector('style').textContent; return /#tabs\{[^}]*safe-area-inset-bottom/.test(css) && /#main\{[^}]*safe-area-inset-top/.test(css); }), 'safe areas: top padding on #main, bottom padding on the tab bar');
+  await P.evaluate(() => navigator.serviceWorker.ready); await P.reload(); await P.waitForTimeout(500);
+  ok(await P.evaluate(() => !!navigator.serviceWorker.controller), 'service worker controls the page');
+  await A.ctx.setOffline(true); await P.reload(); await P.waitForTimeout(600);
+  ok(await P.evaluate(() => typeof S === 'object' && !!document.querySelector('#tabs')), 'works offline after the first visit');
+  await A.ctx.setOffline(false);
+  ok(!(await P.$('#update')), 'no update toast without a new version');
+  A.server.overrides['/sw.js'] = require('fs').readFileSync(require('path').join(require('./page').ROOT, 'sw.js'), 'utf8').replace(/edz-[0-9a-f]+/, 'edz-test-next');
+  await P.evaluate(() => navigator.serviceWorker.getRegistration().then(r => r.update())); await P.waitForTimeout(1200);
+  ok(!!(await P.$('#update')), 'update toast "Nieuwe versie · Herlaad" when a new version waits'); await shot('16_update', P);
+  await Promise.all([P.waitForEvent('load', {timeout: 5000}).catch(() => null), P.click('#update button')]); await P.waitForTimeout(600);
+  ok(await P.evaluate(async () => (await caches.keys()).includes('edz-test-next') && !document.querySelector('#update')), 'Herlaad activates the new version and reloads');
+  const weight = require('fs').statSync(require('path').join(require('./page').ROOT, 'index.html')).size;
+  ok(weight < 1024 * 1024, `page weight ${Math.round(weight / 1024)} KB < 1 MB`);
+  errs.push(...A.errs); await A.close();
   if (errs.length) { console.log('PAGE ERRORS', errs); fails.push('page errors'); }
   console.log(fails.length ? `FAIL: ${fails.length}` : 'OK: flows passed, no page errors');
   process.exit(fails.length ? 1 : 0);

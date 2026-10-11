@@ -1,10 +1,22 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Elke Dag Zin</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Dagzin">
+<meta name="description" content="Elke dag een beetje Vlaams: zinnen, woorden en herhalingen.">
 <meta name="theme-color" content="#FFFFFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dagzin">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon192.png">
+<link rel="apple-touch-icon" href="icon180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
+<script>const APP_VERSION = "da53abbc1e";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -34,8 +46,9 @@ h1{font-size:28px} h2{font-size:22px} h3{font-size:18px}
 .label{font-size:13px;color:var(--ink2);font-weight:500}
 
 #app{height:100%;display:flex;flex-direction:column;max-width:560px;margin:0 auto}
-#main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px 32px}
-#tabs{display:flex;border-top:1px solid var(--line);background:var(--bg)}
+@supports (height:100dvh){#app{height:100dvh}}
+#main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(20px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) 32px calc(16px + env(safe-area-inset-left,0px))}
+#tabs{display:flex;border-top:1px solid var(--line);background:var(--bg);padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
 #tabs button{flex:1;border:0;background:transparent;padding:12px 2px 14px;font-size:13px;font-weight:500;color:var(--ink2);min-height:52px;-webkit-touch-callout:none;user-select:none;position:relative}
 #tabs button.on{color:var(--ink)}
 #tabs button.on::after{content:'';position:absolute;left:30%;right:30%;bottom:8px;height:2px;background:var(--ink);border-radius:1px}
@@ -291,7 +304,13 @@ details.nsq.focus>summary{background:var(--go-tint);border-radius:10px}
 details.narc{display:flex;flex-direction:column}
 [hidden]{display:none!important}
 
+/* 2.0: update toast */
+#update{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;padding:6px 8px 6px 16px;border-radius:12px;font-size:14px;box-shadow:0 6px 18px rgba(30,27,22,.2)}
+#update .link{color:#fff;text-decoration:underline;min-height:40px;padding:0 10px}
+
 </style>
+</head>
+<body>
 <div id="app">
   <main id="main" aria-live="polite"></main>
   <nav id="tabs" role="tablist" aria-label="Hoofdmenu">
@@ -302,7 +321,6 @@ details.narc{display:flex;flex-direction:column}
   </nav>
 </div>
 <script>
-const ICON_PNG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAADDElEQVR4nOzdvapcVRiA4RWZVgURCyGglYWi3ofY2KiFjYXgRWihFyGksLGINjbiFXgB/hALC0kgkCKEQJI2Rfoh7z6ZMz9nz97P0+7D+X35WHPWnrU3N/98POB5NgOCOEjiIImDJA6SOEjiIImDJA7S2uP4aPP1xNXfn/4wVszkIImDJA6SOEjiIImDJA6SOEjiIF1b/D2k33/6/jiOb375ZyyayUESB0kcJHGQVhfHjx9cH5f15d93x5qYHCRxkMRBEgdptzg++/DlcSA///VkMG8mB0kcJHGQxEG6II4DrkB3+szTy9Xj7cLvZKdv4xz3900OkjhI4iCJg7SEOPbZhT/eF1rA/r7JQRIHSRwkcZAuiGN5G+vv3bg5LuvWV5+PNTE5SOIgiYMkDtJc4pjJLvzx7PQD/vvf7XEcO73CMDlI4iCJgyQO0kzjONku/PHMc39/69bd6fWpyUESB0kcJHGQVhfH2rbd92FykMRBEgdJHKTTxbH4TfkDevedtyeunuwN+yYHSRwkcZDEQbqyOL69/urE1TsPF/78qC3Tv43v7j4aV8HkIImDJA6SOEhXFsdbr70yeEEWpMyNOEjiIImDdB5xzPOspsWfIGVykMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgfpPOKY5x2Xiz/S1OQgiYMkDpI4SOIgiYMkDpI4SOIgiYMkDpI4SOIgiYO0umOf9nlq/Nbj6R37xHqJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkmOfLs+xT6yXOEjiIImDJA6SOEjiIImDJA7S5qXNjcFZOdmfzOQgiYMkDpI4SOIgiYMkDpI4SOIgXfv/1h/jJD7+5IvBIfz2608v/sEP7t+buPr6G29OXDU5SOIgiYMkDtIFceyznNmy0zKKOTA5SOIgiYMkDpI4zsA+Lwt2etGwRRwkcZDEQRIH6YI49lnOTDvg/145EpODJA6SOEjiIInjDFzV8lwcJHGQxEESB+kZAAAA//8qICUTAAAABklEQVQDAJwqatP05vYHAAAAAElFTkSuQmCC";
 /* ===== CONTENT (static, authored once; ids never change) ===== */
 const POS = {n:'znw', v:'ww', adj:'bn', adv:'bw', q:'vraagwoord'};
 const POS_EN = {n:'noun', v:'verb', adj:'adjective', adv:'adverb', q:'question word'};
@@ -3473,6 +3491,26 @@ function openPlan(focus) {
   if ($('#proc') && focus) { const L = planLoc(focus); const q = PSQ[focus]; openSheet(`<div class="stack"><div class="loc">${locLine(L)}</div><h2>${esc(L ? L.townName + ' · ' + L.sqName : '')}</h2>${q ? `<div class="small">${esc(q.title)} · ${esc(q.en)}</div><p class="why" style="margin:0">${q.rule || ''}</p>` : ''}<div class="small">Na het bewaren vind je dit terug in Naslag.</div><button class="btn block" data-act="sheet-close">Terug naar je verslag</button></div>`); return; }
   closeOverlay('proc'); closeSheet(); TAB = 'naslag'; NFOCUS = focus || null; render(); if (!focus) $('#main').scrollTop = 0; }
 
+/* ===== VERSION 2.0: Home Screen app (service worker + update toast) ===== */
+function registerSW() {
+  if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (reloading) return; reloading = true; location.reload(); });
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    const offer = w => { if (w && navigator.serviceWorker.controller) updateToast(w); };
+    if (reg.waiting) offer(reg.waiting);
+    reg.addEventListener('updatefound', () => { const w = reg.installing; if (w) w.addEventListener('statechange', () => { if (w.state === 'installed') offer(w); }); });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
+  }).catch(() => {});
+}
+function updateToast(worker) {
+  if ($('#update')) return;
+  const el = document.createElement('div'); el.id = 'update'; el.setAttribute('role', 'status');
+  el.innerHTML = `<span>Nieuwe versie</span><button class="link" type="button" data-en="New version: reload">Herlaad</button>`;
+  el.querySelector('button').onclick = () => { Store.flush(); worker.postMessage('skipWaiting'); };
+  document.body.appendChild(el);
+}
+
 /* ===== LONG-PRESS ENGLISH ===== */
 (function () {
   let timer = null, tip = null, fired = false;
@@ -3606,10 +3644,10 @@ document.addEventListener('change', e => {
 
 /* ===== INIT ===== */
 (function init() {
-  try { const l = document.createElement('link'); l.rel = 'apple-touch-icon'; l.href = ICON_PNG; document.head.appendChild(l); } catch (e) {}
   let first = false; try { first = !localStorage.getItem(LS_KEY) && !localStorage.getItem(LS_OLD); } catch (e) {}
   Store.loadLocal(); Audio.load();
   if (first) Store.persist();
+  registerSW();
   render();
   setTimeout(() => { if (TAB === 'ik') render(); }, 800);
   if (location.hash === '#feed') { openFeed(); return; }
@@ -3618,3 +3656,5 @@ document.addEventListener('change', e => {
 
 
 </script>
+</body>
+</html>
