@@ -15,6 +15,10 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   await p.click('[data-act=tour-end]'); await p.waitForTimeout(200);
   ok(await p.evaluate(() => TAB === 'pad' && !!document.querySelector('#world')), 'Pad with the world map'); await shot('02_pad');
 
+  // Documenten voor Claude: the generator writes exactly praten-project/*.md (no own words yet)
+  const docs = await p.evaluate(() => Object.fromEntries(Object.keys(DOCS).map(n => [n, DOCS[n]()])));
+  for (const n of Object.keys(docs)) ok(docs[n] === fs.readFileSync(path.join(require('./page').ROOT, 'praten-project', n), 'utf8'), `${n} generated from the app matches praten-project/${n}`);
+
   // reload: opens in Scroll by default, state saved in edz.v2 (800 ms debounce, flushed on pagehide)
   await p.waitForTimeout(900);
   ok(await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('edz.v2') || 'null'); return !!(s && s.v === 3 && s.coach.tour); }), 'state saved in localStorage edz.v2 with v 3');
@@ -80,6 +84,14 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(backup && backup.v === 3 && backup.items && /^elkedagzin-backup-\d{4}-\d\d-\d\d\.json$/.test(dl.suggestedFilename()), 'Bewaar back-up downloads a 2.0 backup');
   ok(await p.evaluate(() => S.settings.lastBackup > 0), 'last backup time stored');
   await p.click('[data-act=export-text]'); await p.waitForTimeout(100); ok(await p.evaluate(() => JSON.parse($('#exp-t').value).v === 3), 'Kopieer als tekst shows the backup'); await p.evaluate(() => closeSheet());
+
+  // Documenten voor Claude screen: Woorden.md now carries the own word
+  await p.click('[data-act=docs]'); await p.waitForTimeout(150); await shot('12b_docs');
+  const [dd] = await Promise.all([p.waitForEvent('download', {timeout: 3000}).catch(() => null), p.click('[data-act=doc-save][data-id="Woorden.md"]')]);
+  const wtxt = dd ? fs.readFileSync(await dd.path(), 'utf8') : '';
+  const ownW = await p.evaluate(() => Object.values(S.custom)[0].w);
+  ok(dd && dd.suggestedFilename() === 'Woorden.md' && wtxt.includes('## Eigen woorden') && wtxt.split('## Eigen woorden')[1].includes(ownW), 'Woorden.md downloads with the own words');
+  await p.evaluate(() => closeOverlay('docs'));
 
   // backup reminder on Pad after 14 days
   await p.evaluate(() => { S.settings.lastBackup = Date.now() - 15 * 864e5; TAB = 'pad'; PAD.lvl = 'arc'; render(); });

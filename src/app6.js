@@ -97,6 +97,8 @@ document.addEventListener('click', e => {
     case 'export': exportData(); break;
     case 'praten': if (el.getAttribute('aria-disabled') === 'true') { toast('Doe eerst alle pleinen van deze stad.'); break; } closeSheet(); openPraten({mode: d.mode, q: d.q, u: d.u}); break;
     case 'verslag': openReport(); break;
+    case 'docs': openDocs(); break;
+    case 'doc-save': saveDoc(d.id); break;
     case 'export-text': copyBackup(); break;
     case 'import': $('#imp-file').click(); break;
     case 'reset': confirmBox('Alle voortgang, sets en eigen woorden wissen?', 'Wis alles', () => { S = blankState(); Store.mark('state', 'items', 'words'); render(); toast('Alles gewist'); }); break;

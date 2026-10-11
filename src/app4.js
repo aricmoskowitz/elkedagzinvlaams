@@ -212,6 +212,7 @@ function viewIk() {
       ${bars.map(b => b[2] === null ? `<div class="bar soon"><span data-en="${b[1]}">${b[0]}</span><div class="track"></div><span class="num">later</span></div>` : `<div class="bar"><span data-en="${b[1]}">${b[0]}</span><div class="track"><div class="fill" style="width:${Math.round(b[2] * 100)}%"></div></div><span class="num">${Math.round(b[2] * 100)}%</span></div>`).join('')}
     </div>
     <button class="tapline" data-act="then"><div class="t"><div style="font-weight:600">Toen en nu</div><div class="small">Je eerste gesprek en tekst naast je laatste</div></div><span class="chev">›</span></button>
+    <button class="tapline" data-act="docs"><div class="t"><div style="font-weight:600" data-en="Documents for Claude">Documenten voor Claude</div><div class="small">Curriculum, woorden en scènes voor je Claude Project</div></div><span class="chev">›</span></button>
     <button class="tapline" data-act="help"><div class="t"><div style="font-weight:600">Hoe werkt Elke Dag Zin?</div><div class="small">Rondleiding, kleuren en begrippen</div></div><span class="chev">›</span></button>
     <div class="stack" style="gap:6px"><div class="eyebrow" data-en="Settings">Instellingen</div>
       <label class="f" for="set-start">Openen in<select id="set-start"><option value="scroll" ${S.settings.startView !== 'pad' ? 'selected' : ''}>Scroll: snelle kaarten</option><option value="pad" ${S.settings.startView === 'pad' ? 'selected' : ''}>Pad: de kaart en je volgende stap</option></select></label>

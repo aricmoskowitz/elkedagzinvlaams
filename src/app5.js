@@ -57,16 +57,9 @@ const backupName = () => 'elkedagzin-backup-' + dateKey() + '.json';
 function backupText() { Store.flush(); return JSON.stringify(S, null, 1); }
 function backupDone() { S.settings.lastBackup = Date.now(); Store.mark('state'); render(); }
 async function exportData() {
-  const data = backupText(); const name = backupName();
-  try {
-    const file = new File([data], name, {type: 'application/json'});
-    if (navigator.canShare && navigator.canShare({files: [file]})) { await navigator.share({files: [file], title: 'Elke Dag Zin back-up'}); backupDone(); toast('Back-up bewaard'); return; }
-  } catch (e) { if (e && e.name === 'AbortError') return; }
-  try {
-    const url = URL.createObjectURL(new Blob([data], {type: 'application/json'}));
-    const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000); backupDone(); toast('Back-up gedownload');
-  } catch (e) { copyBackup(); }
+  let r; try { r = await saveFile(backupName(), backupText(), 'application/json'); } catch (e) { return copyBackup(); }
+  if (r === 'cancelled') return;
+  backupDone(); toast(r === 'shared' ? 'Back-up bewaard' : 'Back-up gedownload');
 }
 function copyBackup() {
   const data = backupText();

@@ -185,3 +185,64 @@ function saveReport(r, hash) {
   if (r.tekst) S.log.unshift({id: uid('l'), date: r.datum, mode: r.modus, source: 'claude', bron: r.bron, text: r.tekst, status: 'done'});
   if (r.modus === 'opdracht' && r.doelBereikt && r.plein) sqstate(r.plein).steps.gebruik = 1;
 }
+
+/* ===== VERSION 2.0: Documents for the Claude Project (Ik → Documenten voor Claude) =====
+   The same text as praten-project/*.md, generated from the app's data. Woorden.md adds Ari's own words. */
+function mdText(h) { const t = document.createElement('textarea'); t.innerHTML = String(h || '').replace(/<[^>]+>/g, ''); return t.value.replace(/\s+/g, ' ').trim(); }
+const DOCS = {
+  'Curriculum.md': () => {
+    const out = ['# Curriculum — Elke Dag Zin', '', 'The full learning plan from A2 to C1. Use the **square ids** (`u7q2`) when placing mistakes, words and grammar. Every town = one grammar point × one Antwerp theme × one can-do statement. Every town ends on its **Grote Markt** (review + field mission; not a grammar topic, never place items there).', '', 'Status: towns marked **(gebouwd)** exist in the app with words, sentences and exercises; the others are planned.', ''];
+    DELEN.forEach(D => {
+      out.push(`## ${D.name} · ${D.en}`, '');
+      ARCS.filter(a => a.deel === D.id).forEach(a => {
+        out.push(`### Boog ${a.n} · ${a.name} (${a.en}) · ${a.level}${a.border ? ' · grens: ' + a.border : ''}`, '');
+        PLAN_TOWNS.filter(t => t.arc === a.id).forEach((t, i) => {
+          out.push(`#### Stad ${i + 1} · ${t.name} (${t.id})${t.built ? ' (gebouwd)' : ''}`, `- Grammatica: ${t.gram} — ${t.gramEn}`, `- Thema: ${t.theme} — ${t.themeEn}`, `- Ik kan: ${t.can} — ${t.canEn}`);
+          PLAN_SQ.filter(q => q.u === t.id && !q.review).forEach(q => out.push(`- **${q.id}** Plein ${q.n} · ${q.name}: ${q.title} (${q.en}). ${mdText(q.rule)}`));
+          out.push('');
+        });
+      });
+    });
+    return out.join('\n').replace(/\n+$/, '\n');
+  },
+  'Woorden.md': () => {
+    const out = ['# Woorden — Elke Dag Zin', '', 'Every word the app already teaches, by square. A word is **new** for a report only if it is not in this list (other forms of these words, like plurals or conjugations, are not new).', ''];
+    const wl = l => `${l.p === 'n' && l.g ? l.g + ' ' : ''}${l.w} (${l.en || l.d || ''})`;
+    SQUARES.forEach(q => out.push(`## ${q.id} · ${UNIT[q.u].name} · ${q.name}`, q.words.map(LX).filter(Boolean).map(wl).join('; '), ''));
+    const own = Object.values(S.custom || {});
+    if (own.length) out.push('## Eigen woorden', 'Words Ari added from reports or by hand. They are not new either.', own.map(l => wl(l) + (l.plan ? ' · ' + l.plan : '')).join('; '), '');
+    return out.join('\n').replace(/\n+$/, '\n');
+  },
+  'Scenes.md': () => {
+    const out = ['# Scènes — Elke Dag Zin', '', 'Per built town: the conversation scene, the writing prompt and the field mission. Use these for **opdracht** sessions. Stay in the role; the learner is always the one who wants something.', ''];
+    UNITS.filter(u => u.built).forEach(u => {
+      const sc = SCENARIOS.find(s => s.u === u.id); const w = WRITING[u.id];
+      out.push(`## ${u.id} · ${u.name} — ${u.gram} (${u.gramEn})`, `- Kan: ${u.can}`);
+      if (sc) out.push(`- Scène: **${sc.title}**. Jij bent ${sc.role} (${sc.roleEn}).`, `- Doel van de leerder: ${sc.goal} (${sc.goalEn})`, ...(sc.doel ? [`- Meetbaar doel: ${sc.doel}`] : []), `- Opener: “${sc.open}”`);
+      if (w) out.push(`- Schrijfopdracht: ${w.prompt}`);
+      if (u.mission) out.push(`- Opdracht in de stad: ${u.mission}`);
+      out.push('');
+    });
+    return out.join('\n').replace(/\n+$/, '\n');
+  },
+};
+// share sheet with a file when the phone can, else a download
+async function saveFile(name, text, type) {
+  try {
+    const file = new File([text], name, {type});
+    if (navigator.canShare && navigator.canShare({files: [file]})) { await navigator.share({files: [file], title: name}); return 'shared'; }
+  } catch (e) { if (e && e.name === 'AbortError') return 'cancelled'; }
+  const url = URL.createObjectURL(new Blob([text], {type}));
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000); return 'downloaded';
+}
+function openDocs() {
+  const rows = Object.keys(DOCS).map(n => { const t = DOCS[n](); return `<div class="tapline" style="cursor:default"><div class="t"><div style="font-weight:600">${n}</div><div class="small">${Math.max(1, Math.round(t.length / 1024))} KB${n === 'Woorden.md' ? ' · met ' + Object.keys(S.custom || {}).length + ' eigen woorden' : ''}</div></div><button class="btn line" style="min-height:40px;padding:8px 14px" data-act="doc-save" data-id="${n}">Bewaar</button></div>`; }).join('');
+  openOverlay('docs', `<button class="iconbtn" data-act="overlay-close" data-id="docs" aria-label="Sluiten">✕</button><span class="small">Documenten voor Claude</span>`, `<div class="stack">
+    <h1 data-en="Documents for Claude">Documenten voor Claude</h1>
+    <div class="small">Je Claude Project <i>Elke Dag Zin · Praten</i> leest deze bestanden om je fouten en woorden op de juiste plek te zetten. Ze komen uit de app, met je eigen woorden erbij.</div>
+    <div>${rows}</div>
+    <div class="card soft small">Upload ze opnieuw naar je Project (vervang de oude) als er nieuwe steden gebouwd zijn, of één keer per maand. <i>Instructions.md</i>, <i>Formats.md</i> en <i>Ik.md</i> veranderen niet.</div>
+  </div>`);
+}
+async function saveDoc(n) { if (!DOCS[n]) return; const r = await saveFile(n, DOCS[n](), 'text/markdown'); if (r === 'downloaded') toast(n + ' gedownload'); else if (r === 'shared') toast(n + ' bewaard'); }
