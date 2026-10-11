@@ -22,36 +22,7 @@ function flashRender() {
   if (!F.flipped) b.innerHTML = `<div class="card flash" data-act="flip" role="button" tabindex="0" aria-label="Draai de kaart om"><div class="eyebrow">${esc(POS[l.p] || '')}</div><div class="wc-word">${wordHTML(l)}</div>${sent}<div class="small">Tik om om te draaien</div></div>`;
   else b.innerHTML = `<div class="card">${wordCardHTML(l, {actions: false})}</div><div class="grid2"><button class="btn line" data-act="flash-grade" data-ok="0">Nog niet</button><button class="btn" data-act="flash-grade" data-ok="1">Wist ik</button></div>`;
 }
-function wordForm(setId) {
-  const s = openSheet(`<form id="wform" class="stack" autocomplete="off">
-    <h2>Nieuw woord</h2>
-    <label class="f">Woord<input id="nw-w" type="text" lang="nl" autocapitalize="off" autocorrect="off" spellcheck="false" required></label>
-    <button class="link" type="button" id="nw-draft">Laat Claude de kaart invullen ›</button><div id="nw-draft-st"></div>
-    <div id="nw-err" class="small" style="color:var(--warn)" hidden>Vul het woord en de Nederlandse uitleg in.</div>
-    <label class="f">Soort<select id="nw-p"><option value="n">zelfstandig naamwoord</option><option value="v">werkwoord</option><option value="adj">bijvoeglijk naamwoord</option><option value="adv">bijwoord / ander</option></select></label>
-    <div id="nw-noun" class="stack" style="gap:10px"><div class="row"><label class="chip"><input type="radio" name="nw-g" value="de" checked> <b class="de">de</b></label><label class="chip"><input type="radio" name="nw-g" value="het"> <b class="het">het</b></label></div>
-    <div class="grid2"><label class="f">Meervoud<input id="nw-pl" type="text" lang="nl" autocapitalize="off"></label><label class="f">Verkleinwoord<input id="nw-dim" type="text" lang="nl" autocapitalize="off"></label></div></div>
-    <label class="f">Uitleg in het Nederlands<textarea id="nw-d" rows="2" lang="nl"></textarea></label>
-    <label class="f">Voorbeeldzin<input id="nw-s" type="text" lang="nl"></label>
-    <label class="f">Engels (verborgen tot je tikt)<input id="nw-en" type="text"></label>
-    <button class="btn block" type="submit">Bewaar</button>
-  </form>`);
-  s.querySelector('#nw-draft').onclick = () => draftWord(s);
-  s.querySelector('#nw-p').onchange = e => { s.querySelector('#nw-noun').hidden = e.target.value !== 'n'; };
-  s.querySelector('#wform').onsubmit = e => {
-    e.preventDefault();
-    const w = s.querySelector('#nw-w').value.trim(), d = s.querySelector('#nw-d').value.trim();
-    if (!w || !d) { s.querySelector('#nw-err').hidden = false; return; }
-    const p = s.querySelector('#nw-p').value;
-    const id = 'u-' + Date.now().toString(36);
-    const l = {id, custom: true, w, p, d, s: s.querySelector('#nw-s').value.trim(), en: s.querySelector('#nw-en').value.trim(), u: 0};
-    if (p === 'n') { l.g = s.querySelector('input[name="nw-g"]:checked').value; l.pl = s.querySelector('#nw-pl').value.trim() || null; l.dim = s.querySelector('#nw-dim').value.trim() || null; }
-    S.custom[id] = l;
-    if (setId) { const set = S.sets.find(x => x.id === setId); if (set) set.ids.push(id); }
-    Store.mark('words'); closeSheet(); toast('Bewaard: ' + w); render();
-    if (setId) setEditor(setId);
-  };
-}
+/* wordForm: see app13 */
 function newSet(thenAdd) {
   const s = openSheet(`<form id="sform" class="stack"><h2>Nieuwe set</h2><label class="f">Naam<input id="ns-name" type="text" placeholder="Uit de les – week 40"></label><div id="ns-err" class="small" style="color:var(--warn)" hidden>Geef de set een naam.</div><button class="btn block" type="submit">Maak set</button></form>`);
   s.querySelector('#sform').onsubmit = e => {
@@ -79,24 +50,53 @@ function addToSetSheet(wordId) {
   openSheet(`<div class="stack"><h2>Aan welke set?</h2>${own.map(s => `<button class="btn line block" data-act="set-add" data-set="${s.id}" data-id="${esc(wordId)}" data-close="1">${esc(s.name)}</button>`).join('')}<button class="btn block" data-act="set-new-with" data-id="${esc(wordId)}">+ Nieuwe set</button></div>`);
 }
 
-/* ===== BACKUP ===== */
+/* ===== BACKUP =====
+   2.0: Bewaar back-up uses the share sheet (a .json file) when it can, else a
+   download. Zet back-up terug accepts 1.5 and 2.0 backups and confirms first. */
+const backupName = () => 'elkedagzin-backup-' + dateKey() + '.json';
+function backupText() { Store.flush(); return JSON.stringify(S, null, 1); }
+function backupDone() { S.settings.lastBackup = Date.now(); Store.mark('state'); render(); }
 async function exportData() {
-  const data = JSON.stringify(S, null, 1); const name = 'elkedagzin-backup-' + dateKey() + '.json';
+  const data = backupText(); const name = backupName();
   try {
-    const dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
-    if (dl) { await dl.save({filename: name, data}); toast('Back-up bewaard'); return; }
-  } catch (e) { if (e && e.code === 'declined') return; }
-  const s = openSheet(`<div class="stack"><h2>Back-up</h2><div class="small">Kopieer deze tekst en bewaar hem in een notitie.</div><textarea id="exp-t" rows="8" readonly>${esc(data)}</textarea><button class="btn block" id="exp-copy">Kopieer</button></div>`);
-  s.querySelector('#exp-copy').onclick = () => { const t = s.querySelector('#exp-t'); navigator.clipboard.writeText(t.value).then(() => toast('Gekopieerd'), () => { t.select(); toast('Selecteer en kopieer de tekst'); }); };
+    const file = new File([data], name, {type: 'application/json'});
+    if (navigator.canShare && navigator.canShare({files: [file]})) { await navigator.share({files: [file], title: 'Elke Dag Zin back-up'}); backupDone(); toast('Back-up bewaard'); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  try {
+    const url = URL.createObjectURL(new Blob([data], {type: 'application/json'}));
+    const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000); backupDone(); toast('Back-up gedownload');
+  } catch (e) { copyBackup(); }
+}
+function copyBackup() {
+  const data = backupText();
+  const s = openSheet(`<div class="stack"><h2>Back-up als tekst</h2><div class="small">Kopieer deze tekst en bewaar hem in een notitie. Terugzetten kan met <i>Zet back-up terug</i> als je hem als .json-bestand bewaart.</div><textarea id="exp-t" rows="8" readonly>${esc(data)}</textarea><button class="btn block" id="exp-copy">Kopieer</button></div>`);
+  s.querySelector('#exp-copy').onclick = () => { const t = s.querySelector('#exp-t'); navigator.clipboard.writeText(t.value).then(() => { backupDone(); toast('Gekopieerd'); }, () => { t.select(); toast('Selecteer en kopieer de tekst'); }); };
+}
+// a 1.5 backup is the same state shape (v 2); a 2.0 backup is v 3
+function parseBackup(text) {
+  let d; try { d = JSON.parse(String(text).replace(/^\uFEFF/, '')); } catch (e) { return {error: 'Dit bestand is geen geldige back-up.'}; }
+  if (!d || typeof d !== 'object' || Array.isArray(d) || !d.items || typeof d.items !== 'object') return {error: 'Dit bestand is geen back-up van Elke Dag Zin.'};
+  return {data: d};
+}
+function restoreBackup(d) {
+  S = Object.assign(blankState(), JSON.parse(JSON.stringify(d))); migrate();
+  S.savedAt = Date.now(); Store.flush();
 }
 function importData(file) {
   const r = new FileReader();
   r.onload = () => {
-    let d; try { d = JSON.parse(r.result); } catch (e) { toast('Dit bestand is geen geldige back-up'); return; }
-    if (!d || typeof d !== 'object' || !d.items) { toast('Dit bestand is geen back-up van Elke Dag Zin'); return; }
-    confirmBox('Je huidige voortgang vervangen door deze back-up?', 'Vervang', () => { S = Object.assign(blankState(), d); Store.mark('state', 'items', 'words'); render(); toast('Back-up geladen'); });
+    const res = parseBackup(r.result); if (res.error) { toast(res.error); return; }
+    confirmBox('Je huidige voortgang vervangen door deze back-up?', 'Vervang', () => { restoreBackup(res.data); closeOverlay('tour'); render(); toast('Back-up teruggezet'); });
   };
+  r.onerror = () => toast('Het bestand kon niet gelezen worden');
   r.readAsText(file);
+}
+// a quiet reminder on Pad after 14 days without a backup (not before there is progress)
+function backupReminder() {
+  const last = S.settings.lastBackup || 0; const hasProgress = Object.keys(S.items).length > 0;
+  if (!hasProgress || Date.now() - last < 14 * 864e5) return '';
+  return `<button class="tapline" data-act="export"><div class="t"><div style="font-weight:600">Maak een back-up</div><div class="small">${last ? 'Je laatste back-up is van ' + Math.floor((Date.now() - last) / 864e5) + ' dagen geleden' : 'Je hebt nog geen back-up gemaakt'}. Je voortgang staat alleen op deze telefoon.</div></div><span class="chev">›</span></button>`;
 }
 
 /* ===== FEED ===== */

@@ -58,7 +58,7 @@ function wordCardHTML(l, opts = {}) {
     ${!l.v && l.why ? `<div class="why small">${l.why}</div>` : ''}
     ${l.note ? `<div class="why small" style="border-left:3px solid var(--line);padding-left:10px">${l.note}</div>` : ''}
     <div><button class="en-hidden" data-act="reveal-en" data-en-text="${esc(l.en || '')}">Toon Engels</button></div>
-    ${opts.actions === false ? '' : `<div class="row wrap"><button class="btn line" data-act="add-to-set" data-id="${esc(l.id)}">+ Aan een set</button><button class="btn line" data-act="zeg" data-id="${esc(l.id)}">Zeg het anders</button></div>`}
+    ${opts.actions === false ? '' : `<div class="row wrap"><button class="btn line" data-act="add-to-set" data-id="${esc(l.id)}">+ Aan een set</button></div>`}
   </div>`;
 }
 function showWord(id) { const l = LX(id); if (l) openSheet(wordCardHTML(l)); }
@@ -144,7 +144,6 @@ function showFeedback(ex, res, val) {
     ${ex.sent && (ex.listen || ex.whole) ? `<div class="small">${esc(ex.sent.en)}</div>` : ''}
     ${ex.frame && (res.kind === 'order' || ex.label === 'ord' || ex.label === 'tr') ? frameHTML(ex.frame) : ''}
     <div class="why">${whyFor(ex, res)}</div>
-    ${!res.ok && ex.label === 'tr' && ex.sent && AI.ok !== false ? `<button class="link" data-act="ask-tr">Vraag Claude: kan mijn zin ook? ›</button><div id="ask-tr-out"></div>` : ''}
   </div><button class="btn block" data-act="ses-next" id="ses-next" style="margin-top:12px">Verder</button>`;
   if (!ex.listen && res.ok && ex.say && ex.type !== 'gen') setTimeout(() => Audio.say(ex.say), 150);
   setTimeout(() => { const n = $('#ses-next'); if (n) { n.focus({preventScroll: true}); n.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest'}); } }, 50);
@@ -223,7 +222,7 @@ function startStep(q, step) {
   if (step === 'lees') return toast('Lezen komt in een volgende versie');
   if (step === 'gebruik') return openUse(q);
 }
-const nextStep = q => BUILT_STEPS.find(s => !stepDone(q, s)) || (typeof READ !== 'undefined' && READ[q] && !stepDone(q, 'lees') ? 'lees' : null) || (!stepDone(q, 'gebruik') && AI.ok !== false ? 'gebruik' : 'oefen');
+const nextStep = q => BUILT_STEPS.find(s => !stepDone(q, s)) || (typeof READ !== 'undefined' && READ[q] && !stepDone(q, 'lees') ? 'lees' : null) || (!stepDone(q, 'gebruik') ? 'gebruik' : 'oefen');
 const STEP_NAME = {ontdek: 'Ontdek', oefen: 'Oefen', lees: 'Lees', luister: 'Luister', gebruik: 'Gebruik'};
 
 /* ===== LESSON (Ontdek, per square) ===== */

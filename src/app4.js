@@ -112,7 +112,7 @@ function townSVG(u) {
   </svg>`;
 }
 /* square: five guild houses */
-const STEP_DESC = {ontdek: 'De regel, voorbeelden en de nieuwe woorden', oefen: 'Oefeningen · checkpoint bij 80%', lees: 'Een korte tekst', luister: 'Zinnen horen, kiezen en typen', gebruik: 'Praat met de tutor of schrijf een paar zinnen'};
+const STEP_DESC = {ontdek: 'De regel, voorbeelden en de nieuwe woorden', oefen: 'Oefeningen · checkpoint bij 80%', lees: 'Een korte tekst', luister: 'Zinnen horen, kiezen en typen', gebruik: 'Praat of schrijf in je Claude Project'};
 const STEPS = ['ontdek', 'oefen', 'lees', 'luister', 'gebruik'];
 function guildSVG(q) {
   const shapes = ['M-20,36 V-4 H-14 V-12 H-7 V-20 H7 V-12 H14 V-4 H20 V36 Z', 'M-20,36 V-8 L0,-24 L20,-8 V36 Z', 'M-20,36 V-2 Q-20,-22 0,-22 Q20,-22 20,-2 V36 Z', 'M-20,36 V-14 H-9 V-22 H9 V-14 H20 V36 Z', 'M-20,36 V-6 L-10,-18 L0,-6 L10,-18 L20,-6 V36 Z'];
@@ -175,30 +175,6 @@ function viewSquare(q) {
       return `<button class="tapline" data-act="step" data-q="${q}" data-step="${st}" ${built && open ? '' : 'aria-disabled="true"'}><div class="t"><div style="font-weight:600;${built && open ? '' : 'color:var(--faint)'}">${STEP_NAME[st]}${sc ? ` <span class="small">· ${sc === 'test' ? 'getest' : sc === 1 ? 'gelezen' : sc + '%'}</span>` : ''}</div><div class="small">${STEP_DESC[st]}${built ? '' : ' · later'}</div></div><span class="chev" ${built && open ? '' : 'style="color:var(--faint)"'}>›</span></button>`; }).join('')}</div>
   </div>`;
 }
-function viewVandaag() {
-  const d = new Date(); const due = dueKeys().length; const left = Math.max(0, (S.settings.cap || 60) - doneToday()); const rev = Math.min(due, left);
-  const q = nextSquare(); const sq = SQ[q]; const unit = UNIT[sq.u]; const ns = nextStep(q);
-  const ws = weekStartDay(d), td = dayNum(d);
-  const actDays = [0, 1, 2, 3, 4, 5, 6].map(i => { const dd = new Date(d); dd.setDate(d.getDate() - (td - (ws + i))); const a = S.activity[dateKey(dd)]; return !!(a && a.n); });
-  const nAct = actDays.filter(Boolean).length;
-  return `<div class="stack">
-    <div class="spread"><div><div class="dateline">${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}</div><h1 data-en="Today">Vandaag</h1></div><button class="iconbtn" data-act="log-new" data-mode="quick" aria-label="Snel iets noteren in je logboek" data-en="Quick note to your log" style="border:1.5px solid var(--go);color:var(--go);font-size:24px">+</button></div>
-    ${coachTip('vandaag', 'Vandaag toont altijd één volgende stap. Daaronder: je herhalingen en Scroll, voor als je moe bent.')}
-    <div class="hero">
-      <div class="small">${esc(unit.name)} · ${esc(sq.name)}</div>
-      <div><div class="nl" style="font-size:24px;line-height:1.2">${STEP_NAME[ns]}: ${esc(sq.title.toLowerCase())}</div><div class="small" style="margin-top:4px">${STEP_DESC[ns]}</div></div>
-      <button class="btn block" data-act="step" data-q="${q}" data-step="${ns}">Start</button>
-    </div>
-    <div>
-      ${sicBlock()}
-      <button class="tapline" data-act="review"><div class="t"><div style="font-weight:600" data-en="Review">Herhalen</div><div class="small">${rev ? `${rev} kaart${rev === 1 ? '' : 'en'} · ~${Math.max(1, Math.ceil(rev * 10 / 60))} min` : due ? 'Daglimiet bereikt' : 'Niets te herhalen'}</div></div><span class="chev">›</span></button>
-      <button class="tapline" data-act="feed"><div class="t"><div style="font-weight:600">Scroll</div><div class="small">Eén tik per kaart, voor als je moe bent</div></div><span class="chev">›</span></button>
-      <button class="tapline" data-act="logbook"><div class="t"><div style="font-weight:600" data-en="Log">Logboek</div><div class="small">${S.log.filter(x => x.status === 'new').length ? S.log.filter(x => x.status === 'new').length + ' nog te verwerken' : 'Wat leerde je in de les of op straat?'}</div></div><span class="chev">›</span></button>
-      <button class="tapline" data-act="pad-go"><div class="t"><div style="font-weight:600" data-en="Path">Naar het pad</div><div class="small">Alle steden en pleinen</div></div><span class="chev">›</span></button>
-    </div>
-    <div class="stack" style="gap:6px"><div class="spread"><span class="small">Deze week</span><span class="small">${nAct} van 5 dagen</span></div><div class="weekbar">${actDays.map(a => `<span class="${a ? 'on' : ''}"></span>`).join('')}</div></div>
-  </div>`;
-}
 function viewNaslag() {
   const segs = [['grammatica', 'Grammatica', 'Grammar'], ['werkwoorden', 'Werkwoorden', 'Verbs'], ['woorden', 'Woorden', 'Words'], ['sets', 'Sets', 'Word sets']];
   let body = '';
@@ -237,7 +213,6 @@ function viewIk() {
     </div>
     <button class="tapline" data-act="then"><div class="t"><div style="font-weight:600">Toen en nu</div><div class="small">Je eerste gesprek en tekst naast je laatste</div></div><span class="chev">›</span></button>
     <button class="tapline" data-act="help"><div class="t"><div style="font-weight:600">Hoe werkt Elke Dag Zin?</div><div class="small">Rondleiding, kleuren en begrippen</div></div><span class="chev">›</span></button>
-    ${usageBlock()}
     <div class="stack" style="gap:6px"><div class="eyebrow" data-en="Settings">Instellingen</div>
       <label class="f" for="set-start">Openen in<select id="set-start"><option value="scroll" ${S.settings.startView !== 'pad' ? 'selected' : ''}>Scroll: snelle kaarten</option><option value="pad" ${S.settings.startView === 'pad' ? 'selected' : ''}>Pad: de kaart en je volgende stap</option></select></label>
       <label class="switch" for="set-tour"><span><b>Rondleiding bij het openen</b><br><span class="small">Toon de uitleg elke keer dat je de app opent. Hoe werkt Elke Dag Zin? hierboven toont ze altijd.</span></span><input type="checkbox" id="set-tour" ${S.settings.tourOnStart ? 'checked' : ''}></label>
@@ -251,18 +226,12 @@ function viewIk() {
       <label class="f" for="set-cap">Herhalingen per dag<select id="set-cap">${[30, 60, 90, 150].map(n => `<option value="${n}" ${S.settings.cap === n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
     </div>
     <div class="stack" style="gap:6px"><div class="eyebrow" data-en="Backup">Back-up</div>
-      <div class="small">${Store.mode === 'db' ? 'Je voortgang staat op claude.ai en werkt op al je toestellen.' : 'Je voortgang staat alleen in deze browser.'} Exporteer af en toe een back-up.</div>
-      <div class="grid2"><button class="btn line" data-act="export">Exporteer</button><button class="btn line" data-act="import">Importeer</button></div>
+      <div class="small">Je voortgang staat alleen op dit toestel. Bewaar af en toe een back-up in Bestanden.${S.settings.lastBackup ? ' Laatste back-up: ' + esc(dateKey(new Date(S.settings.lastBackup))) + '.' : ''}</div>
+      <div class="grid2"><button class="btn line" data-act="export" data-en="Save backup">Bewaar back-up</button><button class="btn line" data-act="import" data-en="Restore backup">Zet back-up terug</button></div>
+      <button class="link" data-act="export-text" data-en="Copy as text">Kopieer als tekst ›</button>
       <input type="file" id="imp-file" accept="application/json,.json" hidden>
       <button class="link" data-act="reset" style="color:var(--warn)">Alles wissen</button>
     </div>
   </div>`;
 }
-function render() {
-  const m = $('#main'); if (!m) return;
-  const st = m.scrollTop;
-  m.innerHTML = {vandaag: viewVandaag, pad: viewPad, praten: viewPraten, naslag: viewNaslag, ik: viewIk}[TAB]();
-  $$('#tabs button').forEach(b => { b.classList.toggle('on', b.dataset.tab === TAB); b.setAttribute('aria-selected', b.dataset.tab === TAB); });
-  m.scrollTop = st;
-  if (TAB === 'pad') afterRenderMaps();
-}
+/* render: see app13 */

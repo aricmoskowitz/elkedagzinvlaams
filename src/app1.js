@@ -91,58 +91,37 @@ function personRule(p) {
   }[p] || '';
 }
 
-/* ===== STATE ===== */
-const LS_KEY = 'goesting.v1';
-const blankState = () => ({v:2, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}});
-function migrate() { if (!S.v || S.v < 2) { S.v = 2; S.sq = S.sq || {}; S.cur = 'u1q1'; S.coach = S.coach || {}; S.settings = Object.assign(blankState().settings, S.settings || {}, {test: true}); delete S.units; } if (!SQ[S.cur]) S.cur = 'u1q1'; ['log', 'talks', 'extras'].forEach(k => { if (!Array.isArray(S[k])) S[k] = []; }); ['fix', 'sic'].forEach(k => { if (!S[k] || typeof S[k] !== 'object') S[k] = {}; }); if (S.settings.talkAudio === undefined) S.settings.talkAudio = true; }
+/* ===== STATE =====
+   2.0: one JSON state in localStorage (edz.v2), written 800 ms after the last change.
+   migrate() accepts a 1.5 state (v 2) unchanged and adds the 2.0 fields. */
+const LS_KEY = 'edz.v2';
+const LS_OLD = 'goesting.v1';
+const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', vertaling:true, verbeteren:'beurt', beurten:'6–8'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[]});
+function migrate() {
+  if (!S.v || S.v < 2) { S.v = 2; S.sq = S.sq || {}; S.cur = 'u1q1'; S.coach = S.coach || {}; S.settings = Object.assign(blankState().settings, S.settings || {}, {test: true}); delete S.units; }
+  if (!SQ[S.cur]) S.cur = 'u1q1';
+  ['log', 'talks', 'extras', 'imports', 'sets'].forEach(k => { if (!Array.isArray(S[k])) S[k] = []; });
+  ['fix', 'sic', 'seenAt', 'items', 'sq', 'seen', 'activity', 'custom', 'coach', 'mission'].forEach(k => { if (!S[k] || typeof S[k] !== 'object') S[k] = {}; });
+  const def = blankState().settings;
+  S.settings = Object.assign({}, def, S.settings || {});
+  S.settings.praten = Object.assign({}, def.praten, S.settings.praten || {});
+  if (S.settings.talkAudio === undefined) S.settings.talkAudio = true;
+  if (S.v < 3) S.v = 3;
+}
 let S = blankState();
 const Store = {
-  db: null, uid: null, mode: 'local', dirty: new Set(), timer: null, chain: {},
-  loadLocal() { try { const raw = localStorage.getItem(LS_KEY); if (raw) S = Object.assign(blankState(), JSON.parse(raw)); } catch (e) {} migrate(); },
-  saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} },
-  split() {
-    return {
-      state: {v: S.v, savedAt: S.savedAt, sq: S.sq, cur: S.cur, seen: S.seen, activity: S.activity, settings: S.settings, mission: S.mission, coach: S.coach},
-      items: {savedAt: S.savedAt, items: S.items},
-      words: {savedAt: S.savedAt, sets: S.sets, custom: S.custom, fix: S.fix, extras: S.extras, sic: S.sic},
-      log: {savedAt: S.savedAt, log: S.log, talks: S.talks}
-    };
+  timer: null,
+  loadLocal() {
+    try { const raw = localStorage.getItem(LS_KEY) || localStorage.getItem(LS_OLD); if (raw) S = Object.assign(blankState(), JSON.parse(raw)); } catch (e) {}
+    migrate();
   },
-  ref(name) { return this.db.doc('data/users/' + this.uid + '/' + name); },
-  async connect() {
-    if (!window.claude || !window.claude.use) return;
-    try {
-      const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
-      if (!db || !user) return;
-      const uid = await user.id(); if (!uid) return;
-      this.db = db; this.uid = uid;
-      const snaps = await Promise.all(['state', 'items', 'words', 'log'].map(n => this.ref(n).get()));
-      const [st, it, wd, lg] = snaps.map(s => s.exists ? s.data() : null);
-      this.mode = 'db';
-      const remoteAt = st ? (st.savedAt || 0) : 0;
-      if (st && remoteAt > (S.savedAt || 0)) {
-        S = Object.assign(blankState(), JSON.parse(JSON.stringify(st)), it ? {items: JSON.parse(JSON.stringify(it.items || {}))} : {}, wd ? JSON.parse(JSON.stringify({sets: wd.sets || [], custom: wd.custom || {}, fix: wd.fix || {}, extras: wd.extras || [], sic: wd.sic || {}})) : {}, lg ? JSON.parse(JSON.stringify({log: lg.log || [], talks: lg.talks || []})) : {});
-        migrate(); this.saveLocal(); render();
-      } else if (S.savedAt > remoteAt) { ['state', 'items', 'words', 'log'].forEach(n => this.dirty.add(n)); this.flush(); }
-      render();
-    } catch (e) { this.mode = 'local'; }
-  },
-  mark(...names) {
-    S.savedAt = Date.now(); names.forEach(n => this.dirty.add(n)); this.saveLocal();
-    clearTimeout(this.timer); this.timer = setTimeout(() => this.flush(), 1800);
-  },
-  flush() {
-    if (this.mode !== 'db' || !this.dirty.size) return;
-    const parts = this.split(); const names = [...this.dirty]; this.dirty.clear();
-    names.forEach(n => {
-      const body = JSON.parse(JSON.stringify(parts[n]));
-      this.chain[n] = (this.chain[n] || Promise.resolve()).then(() => this.ref(n).set(body)).catch(e => {
-        if (e && e.code === 'unavailable') { this.dirty.add(n); setTimeout(() => this.flush(), 4000); }
-        else if (e && (e.code === 'revoked' || e.code === 'not_granted' || e.code === 'invalid_argument')) this.mode = 'local';
-      });
-    });
-  }
+  saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { if (!this.warned) { this.warned = true; toast('Opslaan lukte niet. Maak een back-up via Ik.'); } } },
+  // the names are kept from 1.5 (state, items, words, log); there is one document now
+  mark() { S.savedAt = Date.now(); clearTimeout(this.timer); this.timer = setTimeout(() => this.flush(), 800); },
+  flush() { clearTimeout(this.timer); this.timer = null; this.saveLocal(); },
+  persist() { try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {} }
 };
+addEventListener('pagehide', () => Store.flush());
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') Store.flush(); });
 
 /* ===== SRS ===== */

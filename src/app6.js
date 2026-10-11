@@ -31,19 +31,7 @@ document.addEventListener('click', e => {
     case 'arc-next': toast('Boog 2 volgt later. Je steekt de bergen over als boog 1 klaar is.'); break;
     case 'testout': startTestout(d.qs.split(',')); break;
     case 'help': openHelp(); break;
-    case 'log-new': openLogForm(d.mode); break;
-    case 'logbook': openLogbook(); break;
-    case 'log-open': openLogEntry(d.id); break;
-    case 'log-proc': closeOverlay('proc'); processLog(d.id); break;
-    case 'log-del': confirmBox('Deze notitie verwijderen?', 'Verwijder', () => { S.log = S.log.filter(x => x.id !== d.id); Store.mark('log'); closeOverlay('logbook'); openLogbook(); }); break;
-    case 'talk-start': closeSheet(); startTalk(d.id, d.q); break;
-    case 'talk-close': closeTalk(); break;
-    case 'talk-end': endTalk(); break;
-    case 'talk-audio': S.settings.talkAudio = !S.settings.talkAudio; el.textContent = S.settings.talkAudio ? 'Stem aan' : 'Stem uit'; Store.mark('state'); break;
     case 'talk-view': viewTalkHistory(d.id); break;
-    case 'write-start': openWrite(d.q); break;
-    case 'zeg': openZeg(d.id); break;
-    case 'ask-tr': askTranslation(el); break;
     case 'extra-open': openExtra(d.id); break;
     case 'extra-practise': { const x = S.extras.find(y => y.id === d.id); if (x) { closeOverlay('extra'); startSession({keys: x.examples.map((_, i) => 'e:' + x.id + '~' + i + ':tr'), intros: false}); } break; }
     case 'plan-open': openPlan(); break;
@@ -52,7 +40,6 @@ document.addEventListener('click', e => {
     case 'read-again': openRead(d.q); break;
     case 'markt': TAB = 'pad'; PAD.lvl = 'markt'; PAD.u = d.u; render(); $('#main').scrollTop = 0; break;
     case 'markt-review': if (!marktOpen(d.u)) { toast('Doe eerst alle pleinen van deze stad.'); break; } { const ks = marktKeys(d.u); ks.forEach(k => introduce(k)); startSession({keys: ks, markt: d.u, intros: false}); } break;
-    case 'markt-write': if (marktOpen(d.u)) openWrite(squaresOf(d.u)[0].id); break;
     case 'round': startRound(d.q, +d.r); break;
     case 'plan-go': openPlan(d.id); break;
     case 'plan-sq': openPlanSquare(d.id); break;
@@ -108,6 +95,7 @@ document.addEventListener('click', e => {
     case 'flip': FLASH.flipped = true; flashRender(); break;
     case 'flash-grade': grade('w:' + FLASH.ids[FLASH.i] + ':rec', d.ok === '1'); if (d.ok === '1') FLASH.knew++; FLASH.i++; FLASH.flipped = false; flashRender(); break;
     case 'export': exportData(); break;
+    case 'export-text': copyBackup(); break;
     case 'import': $('#imp-file').click(); break;
     case 'reset': confirmBox('Alle voortgang, sets en eigen woorden wissen?', 'Wis alles', () => { S = blankState(); Store.mark('state', 'items', 'words'); render(); toast('Alles gewist'); }); break;
     case 'sheet-close': closeSheet(); break;
@@ -144,12 +132,11 @@ document.addEventListener('change', e => {
 /* ===== INIT ===== */
 (function init() {
   try { const l = document.createElement('link'); l.rel = 'apple-touch-icon'; l.href = ICON_PNG; document.head.appendChild(l); } catch (e) {}
+  let first = false; try { first = !localStorage.getItem(LS_KEY) && !localStorage.getItem(LS_OLD); } catch (e) {}
   Store.loadLocal(); Audio.load();
+  if (first) Store.persist();
   render();
   setTimeout(() => { if (TAB === 'ik') render(); }, 800);
-  AI.get().then(() => render());
-  if (location.hash === '#feed') { openFeed(); Store.connect(); return; }
-  // wait for the saved state (localStorage can be empty inside claude.ai on iPhone) before deciding on the tour
-  const timeout = new Promise(r => setTimeout(r, 2500));
-  Promise.race([Store.connect(), timeout]).then(() => { if (S.settings.tourOnStart || (!S.coach.tour && !S.savedAt)) openTour(0); else if (S.settings.startView !== 'pad' && !$('.overlay')) openFeed(); });
+  if (location.hash === '#feed') { openFeed(); return; }
+  if (S.settings.tourOnStart || (!S.coach.tour && !S.savedAt)) openTour(0); else if (S.settings.startView !== 'pad' && !$('.overlay')) openFeed();
 })();

@@ -26,7 +26,7 @@ icon_b64 = 'data:image/png;base64,' + base64.b64encode(open(png_path, 'rb').read
 
 css = open(os.path.join(D, 'src', 'style.css')).read()
 js = open(os.path.join(D, 'src', 'content.js')).read() + '\n' + open(os.path.join(D, 'src', 'content2.js')).read() + '\n' + open(os.path.join(D, 'src', 'content4.js')).read() + '\n' + open(os.path.join(D, 'src', 'content5.js')).read() + '\n' + open(os.path.join(D, 'src', 'content3.js')).read() + '\n'
-for n in ['app1', 'app2', 'app3', 'app4', 'app8', 'app5', 'app7', 'app9', 'app10', 'app11', 'app12', 'app13', 'app6']:
+for n in ['app1', 'app2', 'app3', 'app4', 'app8', 'app5', 'app7', 'app9', 'app10', 'app12', 'app13', 'app6']:
     js += open(os.path.join(D, 'src', n + '.js')).read() + '\n'
 
 html = f'''<title>Elke Dag Zin</title>

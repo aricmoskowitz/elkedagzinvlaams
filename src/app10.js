@@ -52,16 +52,6 @@ function addFix(c, src, plan) {
   const id = uid('f'); S.fix[id] = {wrong: String(c.wrong).slice(0, 240), right: String(c.right).slice(0, 240), why: String(c.why || '').slice(0, 300), type: c.type || '', src, date: dateKey(), plan: plan || null};
   introduce('c:' + id + ':fix');
 }
-const PLAN_SCHEMA = `"corrections": [{"wrong": "the learner's exact sentence or phrase", "right": "the corrected sentence", "why": "one short English sentence naming the rule", "type": "word order | article | verb form | adjective | spelling | word choice | other", "plan": "the square id whose grammar point this error is about, or null", "newTopic": null}],
-"words": [{"w": "lemma", "p": "n|v|adj|adv", "g": "de|het|null", "pl": "", "dim": "", "d": "simple Dutch definition, max 12 easy words", "s": "short example sentence", "en": "English", "plan": "the square id where this word fits best by theme or grammar"}],
-"grammar": [{"topic": "short Dutch name (English)", "plan": "square id or null", "mastered": false, "newTopic": null}]`;
-const PLAN_RULES = `Placement rules:
-- Every correction gets a "plan": the square whose grammar point the mistake is about (e.g. a verb that should go to the end after "dat" belongs to the square about dat/of clauses). For a pure spelling or vocabulary slip, use the square where that word is taught, or null.
-- If the grammar point is NOT covered by any square, set "plan": null and fill "newTopic": {"title": "short Dutch name (English)", "town": "the town id where it belongs best, e.g. u4", "rule": "one-sentence English rule", "examples": [{"nl": "", "en": ""}, {"nl": "", "en": ""}]}.
-- "words": every Dutch content word the learner used or clearly learned that is NOT in the plan's word list below (no names, no function words), at most 10. Each gets the square where it fits best.
-- "grammar": up to 3 constructions the learner used CORRECTLY, placed the same way; mastered = true only if used correctly several times.`;
-function planWordList() { return LEX.map(l => l.w).join(', '); }
-
 /* ---------- the processing card, grouped by place in the plan ---------- */
 function openProc(o) {
   const groups = {}; const G = key => (groups[key] = groups[key] || {key, corrections: [], words: [], used: [], good: []});
@@ -141,94 +131,8 @@ function openProc(o) {
   };
 }
 
-/* ---------- log, talk review and writing use the plan ---------- */
-async function processLog(id) {
-  const x = S.log.find(e => e.id === id); if (!x) return;
-  closeSheet();
-  const ov = openOverlay('proc', `<button class="iconbtn" data-act="overlay-close" data-id="proc" aria-label="Sluiten">✕</button><span class="small">Verwerken</span>`, `<div class="stack"><h1>Claude leest mee</h1>${thinking('Claude verbetert je tekst en zoekt voor elke fout en elk woord de plek in je plan… dit kan tot een minuut duren.')}</div>`);
-  const prompt = `You process a learner's log entry for a Dutch learning app. ${LEVEL}
-The learner wrote this ${x.mode === 'quick' ? 'quick note' : 'reflection'} about something learned outside the app (source: ${x.source}). It may mix Dutch and English.
-
-ENTRY:
-"""${x.text}"""
-
-THE LEARNING PLAN (square id = arc · town · square topic):
-${planText()}
-
-WORDS ALREADY IN THE PLAN: ${planWordList()}
-
-Tasks: correct the Dutch (full corrected text; keep English in brackets), list the real errors, place everything in the plan, and add one short encouraging sentence in simple Dutch.
-${PLAN_RULES}
-
-Reply with only JSON: {"corrected": "...", ${PLAN_SCHEMA}, "note": "..."}`;
-  try {
-    const r = await AI.json(prompt, 'default');
-    closeOverlay('proc');
-    openProc({title: 'Je logboek in je plan', head: 'Verwerken', src: 'log', text: x.text, corrected: r.corrected, corrections: arr(r.corrections), words: arr(r.words), grammar: arr(r.grammar), note: r.note,
-      onSave: () => { x.status = 'done'; x.result = {corrected: String(r.corrected || '').slice(0, 4000)}; }});
-  } catch (e) { $('.obody .inner', ov).innerHTML = `<div class="stack"><h1>Dat lukte niet</h1><div class="card soft">${AI.fail(e)}</div><button class="btn line" data-act="log-proc" data-id="${x.id}">Probeer opnieuw</button></div>`; }
-}
 const arr = a => Array.isArray(a) ? a : [];
-async function endTalk() {
-  if (!TALK || TALK.busy) return; const T = TALK; T.busy = true;
-  $('#talk-status').innerHTML = thinking('Claude bespreekt je gesprek en zoekt de plek van elke fout in je plan… dit kan even duren.');
-  const mineTxt = T.msgs.filter(m => m.who === 'me').map(m => m.text);
-  const transcript = T.msgs.map(m => (m.who === 'me' ? 'Learner: ' : 'Partner: ') + m.text).join('\n');
-  const prompt = `Review a Dutch conversation practice. ${LEVEL}
-Scene: ${T.sc.roleEn}. Goal: ${T.sc.goalEn}
-Transcript:
-${transcript}
 
-THE LEARNING PLAN (square id = arc · town · square topic):
-${planText()}
-
-WORDS ALREADY IN THE PLAN: ${planWordList()}
-
-List only real errors in the LEARNER's lines ("wrong" = the learner's exact message), at most 8, and place everything in the plan.
-${PLAN_RULES}
-
-Reply with only JSON: {${PLAN_SCHEMA}, "good": "one sentence in simple Dutch about what went well", "tip": "one concrete tip in English", "goalReached": true}`;
-  try {
-    const r = await AI.json(prompt, 'default');
-    S.talks.unshift({id: T.id, date: dateKey(), sc: T.sc.id, q: T.q, msgs: T.msgs.slice(0, 40).map(m => ({who: m.who, text: m.text})), good: r.good || '', tip: r.tip || ''});
-    if (S.talks.length > 60) S.talks.length = 60;
-    if (T.q && mineTxt.length >= 3) sqstate(T.q).steps.gebruik = 1;
-    Store.mark('log', 'state'); closeOverlay('talk'); TALK = null;
-    openProc({title: r.goalReached ? 'Doel bereikt! Zo past het in je plan' : 'Je gesprek in je plan', head: 'Bespreking', src: 'talk', text: mineTxt.join(' '), corrections: arr(r.corrections), words: arr(r.words), grammar: arr(r.grammar), note: r.good, tip: r.tip});
-  } catch (e) { $('#talk-status').innerHTML = `<div class="card soft small">${AI.fail(e)}</div>`; T.busy = false; }
-}
-function openWrite(q) {
-  const sq = SQ[q]; const w = WRITING[sq.u]; closeSheet();
-  const ov = openOverlay('write', `<button class="iconbtn" data-act="overlay-close" data-id="write" aria-label="Sluiten">✕</button><span class="small">Schrijf · ${esc(sq.name)}</span>`, `<div class="stack">
-    <h1>Schrijf</h1><div class="nl" style="font-size:18px">${esc(w.prompt)}</div><button class="en-hidden" data-act="reveal-en" data-en-text="${esc(w.en)}" style="align-self:flex-start">Toon Engels</button>
-    <textarea id="write-t" rows="7" lang="nl" placeholder="Schrijf hier je zinnen…"></textarea>
-    <div id="write-err" class="small" style="color:var(--warn)" hidden>Schrijf eerst minstens één zin.</div>
-    <div id="write-status"></div>
-    <button class="btn block" id="write-go">Laat nakijken</button></div>`);
-  $('#write-go', ov).onclick = async () => {
-    const text = $('#write-t', ov).value.trim(); if (!text) { $('#write-err', ov).hidden = false; return; }
-    $('#write-go', ov).disabled = true; $('#write-status', ov).innerHTML = thinking('Claude kijkt je tekst na… dit kan tot een minuut duren.');
-    const prompt = `Correct a short Dutch writing task. ${LEVEL}
-Task: ${w.en}  Grammar focus: ${sq.title} (${sq.en}), square ${q}.
-Text:
-"""${text}"""
-
-THE LEARNING PLAN (square id = arc · town · square topic):
-${planText()}
-
-WORDS ALREADY IN THE PLAN: ${planWordList()}
-${PLAN_RULES}
-
-Reply with only JSON: {"corrected": "the full corrected text", ${PLAN_SCHEMA}, "good": "one sentence in simple Dutch about what went well", "tip": "one concrete tip in English about the grammar focus"}`;
-    try {
-      const r = await AI.json(prompt, 'default');
-      S.log.unshift({id: uid('l'), date: dateKey(), mode: 'write', source: 'app', text: text.slice(0, 4000), status: 'done', result: {corrected: String(r.corrected || '').slice(0, 4000)}});
-      sqstate(q).steps.gebruik = 1; Store.mark('log', 'state');
-      closeOverlay('write');
-      openProc({title: 'Nagekeken: zo past het in je plan', head: 'Schrijven', src: 'write', text, corrected: r.corrected, corrections: arr(r.corrections), words: arr(r.words), grammar: arr(r.grammar), note: r.good, tip: r.tip});
-    } catch (e) { $('#write-status', ov).innerHTML = `<div class="card soft small">${AI.fail(e)}</div>`; $('#write-go', ov).disabled = false; }
-  };
-}
 /* ---------- your items on a square ---------- */
 function mineBlock(id) {
   const m = mineFor(id);

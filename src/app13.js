@@ -15,6 +15,7 @@ function render() {
 function padLinks() {
   const due = dueKeys().length; const left = Math.max(0, (S.settings.cap || 60) - doneToday()); const rev = Math.min(due, left);
   return `<div>
+    ${backupReminder()}
     <button class="tapline" data-act="review"><div class="t"><div style="font-weight:600" data-en="Review">Herhalen</div><div class="small">${rev ? `${rev} kaart${rev === 1 ? '' : 'en'} · ~${Math.max(1, Math.ceil(rev * 10 / 60))} min` : due ? 'Daglimiet bereikt' : 'Niets te herhalen'}</div></div><span class="chev">›</span></button>
     <button class="tapline" data-act="feed"><div class="t"><div style="font-weight:600">Scroll</div><div class="small">Eén tik per kaart, voor als je moe bent</div></div><span class="chev">›</span></button>
   </div>`;
@@ -53,7 +54,6 @@ function wordForm(setId, prefill) {
   const s = openSheet(`<form id="wform" class="stack" autocomplete="off">
     <h2>Nieuw woord</h2>
     <label class="f">Woord<input id="nw-w" type="text" lang="nl" autocapitalize="off" autocorrect="off" spellcheck="false" required value="${esc(prefill || '')}"></label>
-    ${AI.ok !== false ? '<button class="link" type="button" id="nw-draft">Laat Claude de kaart invullen ›</button><div id="nw-draft-st"></div>' : ''}
     <div id="nw-err" class="small" style="color:var(--warn)" hidden>Vul het woord en de Nederlandse uitleg in.</div>
     <label class="f">Soort<select id="nw-p"><option value="n">zelfstandig naamwoord</option><option value="v">werkwoord</option><option value="adj">bijvoeglijk naamwoord</option><option value="adv">bijwoord / ander</option></select></label>
     <div id="nw-noun" class="stack" style="gap:10px"><div class="row"><label class="chip"><input type="radio" name="nw-g" value="de" checked> <b class="de">de</b></label><label class="chip"><input type="radio" name="nw-g" value="het"> <b class="het">het</b></label></div>
@@ -64,7 +64,6 @@ function wordForm(setId, prefill) {
     <label class="f">Set<select id="nw-set"><option value="">Alleen Mijn woorden</option>${S.sets.map(x => `<option value="${x.id}" ${x.id === setId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
     <button class="btn block" type="submit">Bewaar</button>
   </form>`);
-  const dr = s.querySelector('#nw-draft'); if (dr) dr.onclick = () => draftWord(s);
   s.querySelector('#nw-p').onchange = e => { s.querySelector('#nw-noun').hidden = e.target.value !== 'n'; };
   s.querySelector('#wform').onsubmit = e => {
     e.preventDefault();
@@ -117,7 +116,7 @@ function wordCardHTML(l, opts = {}) {
     ${!l.v && l.why ? `<div class="why small">${l.why}</div>` : ''}
     ${l.note ? `<div class="why small" style="border-left:3px solid var(--line);padding-left:10px">${l.note}</div>` : ''}
     <div><button class="en-hidden" data-act="reveal-en" data-en-text="${esc(l.en || '')}">Toon Engels</button></div>
-    ${opts.actions === false ? '' : `${inSets.length ? `<div class="small">In: ${inSets.map(x => esc(x.name)).join(', ')}</div>` : ''}<div class="row wrap"><button class="btn line" data-act="add-to-set" data-id="${esc(l.id)}">+ Aan een set</button>${AI.ok !== false ? `<button class="btn line" data-act="zeg" data-id="${esc(l.id)}">Zeg het anders</button>` : ''}</div>`}
+    ${opts.actions === false ? '' : `${inSets.length ? `<div class="small">In: ${inSets.map(x => esc(x.name)).join(', ')}</div>` : ''}<div class="row wrap"><button class="btn line" data-act="add-to-set" data-id="${esc(l.id)}">+ Aan een set</button></div>`}
   </div>`;
 }
 function addToSetSheet(wordId) {
