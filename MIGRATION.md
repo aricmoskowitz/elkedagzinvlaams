@@ -24,9 +24,9 @@ EDZ-EINDE
 5. **Photos:** in a Project conversation, attach a photo of your class notes and write *foto*. Claude transcribes it, explains it, offers a practice and ends with a report.
 
 ## B. Build the app (Claude Code)
-1. Create a GitHub repo `elke-dag-zin`. Put in `CLAUDE.md`, `SPEC-2.0.md`, `FORMATS.md`, `REFERENCE.md`, `MIGRATION.md` and the 1.5 source (`src/`, `build.py`, `tests/`) from the kit.
+1. The GitHub repo is `elkedagzinvlaams`. It holds `CLAUDE.md`, `SPEC-2.0.md`, `FORMATS.md`, `REFERENCE.md`, `MIGRATION.md` and the 1.5 source (`src/`, `build.py`, `tests/`) from the kit.
 2. Start Claude Code in the repo with: *"Read CLAUDE.md and SPEC-2.0.md. Build version 2.0 following section 7, one step at a time, running the tests after each step."*
-3. Turn on GitHub Pages (Settings → Pages → deploy from `main`, root).
+3. Turn on GitHub Pages (Settings → Pages → Deploy from a branch → `main`, `/ (root)`). The app is then at `https://aricmoskowitz.github.io/elkedagzinvlaams/`.
 
 ## C. Move your progress
 1. In the **old app** (claude.ai): Ik → Back-up → **Exporteer**. Save the `.json` file to Files.

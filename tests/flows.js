@@ -164,6 +164,15 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(!!(await P.$('#update')), 'update toast "Nieuwe versie · Herlaad" when a new version waits'); await shot('16_update', P);
   await Promise.all([P.waitForEvent('load', {timeout: 5000}).catch(() => null), P.click('#update button')]); await P.waitForTimeout(600);
   ok(await P.evaluate(async () => (await caches.keys()).includes('edz-test-next') && !document.querySelector('#update')), 'Herlaad activates the new version and reloads');
+  const cdp = await A.ctx.newCDPSession(P);
+  const inst = await cdp.send('Page.getInstallabilityErrors');
+  ok(inst.installabilityErrors.length === 0, 'Chrome says the app is installable' + (inst.installabilityErrors.length ? ': ' + JSON.stringify(inst.installabilityErrors) : ''));
+  // iPhone with a notch: 47px on top, 34px home indicator
+  const pads = await P.evaluate(() => { const st = document.querySelector('style'); st.textContent = st.textContent.replace(/env\(safe-area-inset-top,0px\)/g, '47px').replace(/env\(safe-area-inset-bottom,0px\)/g, '34px');
+    const cs = el => getComputedStyle(document.querySelector(el)); const tb = document.querySelector('#tabs').getBoundingClientRect();
+    return {main: cs('#main').paddingTop, tabs: cs('#tabs').paddingBottom, tabsBottom: Math.round(tb.bottom), h: innerHeight}; });
+  await shot('18_notch', P);
+  ok(pads.main === '67px' && pads.tabs === '34px' && pads.tabsBottom === pads.h, 'with a notch: content starts below it, tab bar sits above the home indicator');
   const weight = require('fs').statSync(require('path').join(require('./page').ROOT, 'index.html')).size;
   ok(weight < 1024 * 1024, `page weight ${Math.round(weight / 1024)} KB < 1 MB`);
   errs.push(...A.errs); await A.close();

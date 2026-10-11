@@ -285,6 +285,6 @@ details.narc{display:flex;flex-direction:column}
 [hidden]{display:none!important}
 
 /* 2.0: update toast */
-#update{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;padding:6px 8px 6px 16px;border-radius:12px;font-size:14px;box-shadow:0 6px 18px rgba(30,27,22,.2)}
+#update{white-space:nowrap;position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;padding:6px 8px 6px 16px;border-radius:12px;font-size:14px;box-shadow:0 6px 18px rgba(30,27,22,.2)}
 #update .link{color:#fff;text-decoration:underline;min-height:40px;padding:0 10px}
 a.btn{text-decoration:none;text-align:center;box-sizing:border-box}
