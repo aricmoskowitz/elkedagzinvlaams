@@ -1,0 +1,8 @@
+EDZ-VERSLAG v1
+{"v":1,"modus":"foto","datum":"2026-10-15","onderwerp":"Whiteboard: de voltooide tijd","beurten":3,"bron":"les 15 oktober, whiteboard",
+"samenvatting":"Op de foto staat de voltooide tijd met hebben en zijn.",
+"tekst":"Ik heb gewerkt. Ik ben gegaan. Hij is naar huis gefietst.",
+"goed":[{"topic":"Voltooide tijd met zijn","plan":"u5q3","mastered":false}],
+"corrections":[],
+"words":[{"w":"het whiteboard","p":"n","g":"het","d":"een wit bord in de klas","en":"whiteboard","plan":null}]}
+EDZ-EINDE

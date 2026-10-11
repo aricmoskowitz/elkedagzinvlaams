@@ -1,0 +1,12 @@
+Top! Hier is het verslag.
+
+EDZ-VERSLAG v1
+{"v":1,"modus":"onderwerp","datum":"2026-10-13","onderwerp":"Met de tram naar de markt","beurten":7,
+"samenvatting":"Je vertelde hoe je naar de markt gaat. Je zette het werkwoord bijna altijd op plaats 2.",
+"corrections":[{"wrong":"Morgen ik neem de tram.","right":"Morgen neem ik de tram.","why":"Time in slot 1, so the verb comes next.","type":"word order","plan":"u1q2"}],
+"words":[{"w":"tram","p":"n","g":"de","d":"een voertuig op rails in de stad","en":"tram","plan":"u1q1"},
+ {"w":"trams","p":"n","g":"de","d":"meer dan één tram","en":"trams","plan":"u1q1"},
+ {"w":"neemt","p":"v","d":"vorm van nemen","en":"takes","plan":"u1q1"},
+ {"w":"ambetant","p":"adj","d":"vervelend","s":"Die file is ambetant.","en":"annoying","plan":null},
+ {"w":"de kraam","p":"n","g":"de","d":"een tafel op de markt","en":"stall","plan":"u2q1"}]}
+EDZ-EINDE

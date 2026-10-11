@@ -1,0 +1,16 @@
+Hier is je verslag:
+
+EDZ-VERSLAG v1
+{"v":1,"modus":"opdracht","datum":"2026-10-12","onderwerp":"Een babbel met de buurvrouw","plein":"u7q2","beurten":9,"doelBereikt":true,
+"samenvatting":"Je vertelde wat je van Antwerpen vindt en waarom. Je gebruikte omdat drie keer.",
+"tip":"After omdat, wait with the verb until the end of the clause.",
+"goed":[{"topic":"Omdat + werkwoord achteraan (because + verb last)","plan":"u7q1","mastered":false}],
+"corrections":[
+ {"wrong":"Ik vind Antwerpen mooi omdat het is oud.","right":"Ik vind Antwerpen mooi omdat het oud is.","why":"After omdat the conjugated verb goes to the end.","type":"word order","plan":"u7q1"},
+ {"wrong":"Ik heb gaan naar de markt.","right":"Ik ben naar de markt gegaan.","why":"Gaan (movement to a place) takes zijn; the participle is gegaan.","type":"verb form","plan":"u5q3"},
+ {"wrong":"Ik zou graag hebben een koffie.","right":"Ik had graag een koffie.","why":"Flemish polite ordering uses 'ik had graag'.","type":"word choice","plan":null,
+  "newTopic":{"title":"Beleefd bestellen: ik had graag (polite ordering)","town":"u4","rule":"Flemish uses the past 'ik had graag' to order politely.","examples":[{"nl":"Ik had graag een koffie.","en":"I'd like a coffee."},{"nl":"We hadden graag de rekening.","en":"We'd like the bill."}]}}],
+"words":[{"w":"trappenhal","p":"n","g":"de","pl":"trappenhallen","dim":"","d":"de ruimte met de trap in een gebouw","s":"Ik zie de buurvrouw in de trappenhal.","en":"stairwell","plan":"u6q3"}]}
+EDZ-EINDE
+
+Tot de volgende keer!
