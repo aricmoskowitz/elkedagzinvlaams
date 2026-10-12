@@ -41,6 +41,8 @@ function openHelp() {
     `<div class="stack"><h1>Hoe werkt Elke Dag Zin?</h1>
     <p class="why" style="margin:0">Je volgt een pad van steden. Elke stad leert één stuk grammatica in een thema uit het dagelijkse leven. In een stad liggen drie pleinen, en op elk plein doe je vijf stappen. Alles wat je oefent, komt later terug in je herhalingen, precies wanneer je het bijna vergeet.</p>
     <div class="card soft why"><b style="color:var(--go)">Groen</b> = tikken · <b class="de">blauw</b> = de · <b class="het">rood</b> = het · <b class="verbword">goud</b> = het werkwoord</div>
+    <h2>Vlaggen en voortgang</h2>
+    ${progressLegend()}
     <button class="btn line" data-act="tour-again">Toon de rondleiding opnieuw</button>
     <button class="btn line" data-act="tips-again">Toon alle tips opnieuw</button>
     <h2>Begrippen</h2>

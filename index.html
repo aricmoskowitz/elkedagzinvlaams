@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "c2ed0e4225";</script>
+<script>const APP_VERSION = "4ed4479bd8";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -327,6 +327,24 @@ a.btn{text-decoration:none;text-align:center;box-sizing:border-box}
 .rel b{color:var(--ink);font-weight:500}
 .fixlab{display:inline-block;background:var(--warn-tint);color:var(--warn);border-radius:6px;padding:1px 8px;font-weight:600;font-size:14px}
 .fixw.hint .fx.d{text-decoration:underline wavy var(--warn);text-underline-offset:5px;text-decoration-thickness:1.5px}
+
+/* 2.4: progress on the maps, the town's goal, the opdracht box */
+.goal{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;padding:12px 14px;border:1.5px solid var(--line);border-radius:14px}
+.goal .gr{display:contents}
+.goal .gk{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);padding-top:3px}
+.goal .gv{font-weight:500}
+.goal .can .gv{font-size:18px;line-height:1.3}
+.progsum{margin-top:-6px}
+.legend{display:grid;gap:10px;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px}
+.legend .lgs{display:grid;gap:8px}
+.legend .lg{display:flex;align-items:center;gap:12px;font-size:15px}
+.legend svg{flex:none}
+.mission{display:flex;align-items:flex-start;gap:12px}
+.mbox{flex:none;width:32px;height:32px;border-radius:8px;border:1.5px solid var(--go);background:var(--bg);color:#fff;font-size:17px;font-weight:700;cursor:pointer}
+.mbox.on{background:var(--ink);border-color:var(--ink)}
+.sparkle path{animation:twinkle 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1.15)}}
+@media (prefers-reduced-motion:reduce){.sparkle path{animation:none}}
 
 </style>
 </head>
@@ -1463,13 +1481,15 @@ function personRule(p) {
    migrate() accepts a 1.5 state (v 2) unchanged and adds the 2.0 fields. */
 const LS_KEY = 'edz.v2';
 const LS_OLD = 'goesting.v1';
-const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', vertaling:true, verbeteren:'beurt', beurten:'6–8'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[], drip:{ids:[], day:0}, themes:{}});
+const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', vertaling:true, verbeteren:'beurt', beurten:'6–8'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[], drip:{ids:[], day:0}, themes:{}, missions:{}});
 function migrate() {
   if (!S.v || S.v < 2) { S.v = 2; S.sq = S.sq || {}; S.cur = 'u1q1'; S.coach = S.coach || {}; S.settings = Object.assign(blankState().settings, S.settings || {}, {test: true}); delete S.units; }
   if (!SQ[S.cur]) S.cur = 'u1q1';
   ['log', 'talks', 'extras', 'imports', 'sets'].forEach(k => { if (!Array.isArray(S[k])) S[k] = []; });
   if (!S.drip || !Array.isArray(S.drip.ids)) S.drip = {ids: [], day: 0};
-  ['fix', 'sic', 'seenAt', 'items', 'sq', 'seen', 'activity', 'custom', 'coach', 'mission', 'themes'].forEach(k => { if (!S[k] || typeof S[k] !== 'object') S[k] = {}; });
+  // 2.4: the opdracht is kept per town; a week in S.mission that named a town counts for that town
+  Object.entries(S.mission).forEach(([wk, u]) => { if (u && UNIT[u] && !S.missions[u]) { const d = new Date((+wk) * 864e5); S.missions[u] = d.toISOString().slice(0, 10); } });
+  ['fix', 'sic', 'seenAt', 'items', 'sq', 'seen', 'activity', 'custom', 'coach', 'mission', 'themes', 'missions'].forEach(k => { if (!S[k] || typeof S[k] !== 'object') S[k] = {}; });
   const def = blankState().settings;
   S.settings = Object.assign({}, def, S.settings || {});
   S.settings.praten = Object.assign({}, def.praten, S.settings.praten || {});
@@ -2347,7 +2367,7 @@ function drawScene(cv, sc) {
   // squares: kerb, cobbles, a fountain, and an opening with a zebra crossing where each road comes in
   (sc.squares || []).forEach(q => {
     const [cx, cy] = sqCenter(q); const h = q.h * TS, n = Math.round(q.h * 2);
-    R(cx - h - 2, cy - h - 2, 2 * h + 4, 2 * h + 4, W.curb); R(cx - h, cy - h, 2 * h, 2 * h, W.stone);
+    R(cx - h - 2, cy - h - 2, 2 * h + 4, 2 * h + 4, q.gold ? '#E0A82E' : W.curb); R(cx - h, cy - h, 2 * h, 2 * h, W.stone); // gold: everything perfect
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if ((x + y) % 2) R(cx - h + x * TS + 2, cy - h + y * TS + 2, 4, 4, W.cobble2);
     R(cx - 5, cy - 5, 10, 10, W.cobble2); R(cx - 2, cy - 2, 4, 4, W.fountain);
     (q.open || []).forEach(sd => { const [mx, my] = sqSide(q, sd); const [dx, dy] = DIR[sd];
@@ -2361,6 +2381,7 @@ function drawScene(cv, sc) {
   }
   houses.forEach(h => {
     const px = h.x * TS, py = h.y * TS, roof = h.grey ? W.greyRoof : h.roof, wall = h.grey ? '#E4E0D8' : W.wall;
+    if (h.guild) { drawMiniGuild(R, px, py, h.col, h.on); return; }
     if (h.hall) { const win = h.grey ? '#E4E0D8' : '#F4EFE4';
       R(px - 3, py + 2, 22, 14, roof); R(px - 1, py - 1, 18, 3, roof); R(px + 2, py - 4, 12, 3, roof); R(px + 5, py - 7, 6, 3, roof); R(px + 7, py - 9, 2, 2, h.grey ? '#CFCAC1' : '#F2D35B');
       R(px - 3, py + 15, 22, 1, 'rgba(0,0,0,.25)'); R(px, py + 4, 4, 4, win); R(px + 12, py + 4, 4, 4, win); R(px + 6, py, 4, 3, win); R(px + 6, py + 9, 4, 6, h.grey ? '#8C877E' : W.ink); return; }
@@ -2455,8 +2476,11 @@ const usedSides = (roads, i) => roads.filter(r => r.from === i).map(r => r.out).
 // houses around a square: the corners, and the middle of every side without a road (the guild hall on top)
 function squareHouses(g, s, used, roof) {
   const [cx, cy] = s.t; const o = Math.ceil(s.h - .5) + 2; const out = [];
-  const spots = (used.includes('N') ? [] : [{x: cx - 1, y: cy - o - 1, hall: true}]).concat([{x: cx - o, y: cy - o}, {x: cx + o - 1, y: cy - o}, {x: cx - o, y: cy + o - 1}, {x: cx + o - 1, y: cy + o - 1}],
-    used.includes('W') ? [] : [{x: cx - o - 1, y: cy - 1}], used.includes('E') ? [] : [{x: cx + o, y: cy - 1}], used.includes('S') ? [] : [{x: cx - 1, y: cy + o}]);
+  // the town hall stands on the first side without a road (top if it can); 2.4: it stands for the Grote Markt
+  const hs = ['N', 'S', 'W', 'E'].find(d => !used.includes(d));
+  const mid = {N: {x: cx - 1, y: cy - o - 1}, S: {x: cx - 1, y: cy + o}, W: {x: cx - o - 1, y: cy - 1}, E: {x: cx + o, y: cy - 1}};
+  const spots = (hs ? [{...mid[hs], hall: true}] : []).concat([{x: cx - o, y: cy - o}, {x: cx + o - 1, y: cy - o}, {x: cx - o, y: cy + o - 1}, {x: cx + o - 1, y: cy + o - 1}],
+    ['W', 'E', 'S'].filter(d => d !== hs && !used.includes(d)).map(d => mid[d]));
   spots.forEach(h => { const cells = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([dx, dy]) => [h.x + dx, h.y + dy]);
     if (cells.every(([x, y]) => g[y] && ['grass', 'sand', 'flower', 'tuft'].includes(g[y][x]))) { cells.forEach(([x, y]) => { g[y][x] = 'house'; }); out.push({...h, roof}); } });
   return out;
@@ -2509,9 +2533,14 @@ function buildWorld() {
   WORLD = {g, spots, roads: roads.concat([pass]), squares: WSQ.map((s, i) => ({...s, open: used[i]})),
     legs: WROADS.map((r, k) => legPts(WSQ[r.from], WSQ[r.to], roads[k], r.out, r.in))};
 }
+// 2.4: per town the town hall is its Grote Markt and three houses are its pleinen: grey until done, in colour once done
+function worldRoles(i) { if (!WORLD) buildWorld(); const hs = WORLD.spots[i]; const pleinen = hs.filter(h => !h.hall).slice(0, 3); return {hall: hs.find(h => h.hall), pleinen, rest: hs.filter(h => !h.hall && !pleinen.includes(h))}; }
 function worldHouses() {
   const out = [];
-  WORLD.spots.forEach((hs, i) => { const st = townState(UNITS[i].id); const grey = st === 'later' || st === 'locked'; hs.forEach(h => out.push({...h, grey})); });
+  UNITS.forEach((u, i) => { const st = townState(u.id); const off = st === 'later' || st === 'locked'; const r = worldRoles(i); const tp = u.built ? townProgress(u.id) : null;
+    if (r.hall) out.push({...r.hall, grey: off || !(tp && tp.marktDone)});
+    r.pleinen.forEach((h, j) => out.push({...h, grey: off || !(tp && tp.pleinen[j] && tp.pleinen[j].complete)}));
+    r.rest.forEach(h => out.push({...h, grey: off})); });
   return out;
 }
 const townPx = i => sqCenter(WSQ[i]);
@@ -2522,13 +2551,14 @@ function worldOverlay() {
     const L = TOWN_LABEL[i]; const sw = u.name.length * 7 + 14;
     const lx = Math.max(sw / 2 + 2, Math.min(WGW * TS - sw / 2 - 2, L === 'W' ? x - 24 - sw / 2 : L === 'E' ? x + 24 + sw / 2 : x));
     const ly = L === 'N' ? y - 44 : L === 'S' ? y + 28 : y - 8;
-    const qs = u.built ? squaresOf(u.id) : [];
-    return `<g class="wtown" data-act="town" data-u="${u.id}" role="button" tabindex="0" aria-label="${esc(u.name)}: ${esc(u.gram)}${st === 'done' ? ', klaar' : dim ? ', nog dicht' : ''}">
+    const tpw = u.built && !dim ? townProgress(u.id) : null;
+    return `<g class="wtown" data-act="town" data-u="${u.id}" role="button" tabindex="0" aria-label="${esc(u.name)}: ${esc(u.gram)}${tpw ? `, ${tpw.complete} van 3 pleinen klaar${tpw.marktDone ? ', Grote Markt gehaald' : ''}${tpw.perfect ? ', perfect' : ''}` : dim ? ', nog dicht' : ''}">
       <rect x="${x - 30}" y="${y - 30}" width="60" height="60" fill="transparent"/>
       ${dim ? `<g opacity=".8" fill="#fff"><circle cx="${x - 12}" cy="${y + 2}" r="14"/><circle cx="${x + 3}" cy="${y - 8}" r="15"/><circle cx="${x + 15}" cy="${y + 5}" r="12"/><circle cx="${x - 1}" cy="${y + 12}" r="12"/></g>` : ''}
       ${sign(lx, ly, u.name, dim)}
-      ${(st === 'open' || st === 'next') && qs.length ? blocks(lx, L === 'N' ? ly - 8 : ly + 21, qs.length, qs.filter(q => sqComplete(q.id)).length) : ''}
-      ${st === 'done' ? flag(x + 14, y - 30) : ''}
+      ${tpw ? worldRoles(i).pleinen.map((h, j) => tpw.pleinen[j] && tpw.pleinen[j].complete ? miniFlag(h.x * TS + 10, h.y * TS - 9, tpw.pleinen[j].perfect) : '').join('') : ''}
+      ${tpw && tpw.marktDone ? bunting(x - 24, y - 24, x + 24, y - 24, tpw.perfect) + bunting(x - 24, y + 22, x + 24, y + 22, tpw.perfect) : ''}
+      ${tpw && tpw.perfect ? sparkles(x, y, 26) : ''}
       ${st === 'open' || st === 'next' ? arrow(x, L === 'N' ? ly - 16 : y - 28, st === 'next') : ''}
     </g>`;
   }).join('');
@@ -2562,50 +2592,66 @@ function buildTown(u) {
   const roads = TROADS.map(r => roadBetween(TSQ[r.from], r.out, TSQ[r.to], r.in, r.kind));
   roads.concat([entry]).forEach(r => markRoad(g, r));
   TSQ.forEach(s => markSquare(g, s));
+  // each plein gets its five guild houses around its square (on sides without a road), in step order
+  const guild = TSQ.slice(0, 3).map((q, j) => {
+    const [cx, cy] = q.t; const used = usedSides(TROADS, j).concat(j === 0 ? ['N'] : []); const signSide = j === 0 ? 'S' : 'N'; // the plein's sign stands there
+    const side = {N: [[cx - 4, cy - 6], [cx - 1, cy - 6], [cx + 2, cy - 6]], E: [[cx + 5, cy - 4], [cx + 5, cy - 1], [cx + 5, cy + 2]], S: [[cx - 4, cy + 5], [cx - 1, cy + 5], [cx + 2, cy + 5]], W: [[cx - 6, cy - 4], [cx - 6, cy - 1], [cx - 6, cy + 2]]};
+    const slots = ['N', 'E', 'S', 'W'].filter(d => d !== signSide).flatMap(d => used.includes(d) ? [side[d][0], side[d][2]] : side[d]);
+    const out = [];
+    for (const [x, y] of slots) { if (out.length === 5) break;
+      const cells = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([dx, dy]) => [x + dx, y + dy]);
+      if (cells.every(([a, b]) => g[b] && ['grass', 'flower', 'tuft', 'field', 'field2'].includes(g[b][a]))) { cells.forEach(([a, b]) => { g[b][a] = 'house'; }); out.push({x, y}); } }
+    return out;
+  });
+  const nearSquare = (x, y) => TSQ.some(q => Math.abs(x - q.t[0]) <= q.h + 4 && Math.abs(y - q.t[1]) <= q.h + 4);
   const houses = [];
   for (let y = 1; y < TGH - 2; y += 3) for (let x = 1; x < TGW - 2; x += 3) {
     const free = [[0, 0], [1, 0], [0, 1], [1, 1]].every(([dx, dy]) => ['grass', 'flower', 'tuft'].includes(g[y + dy][x + dx]));
-    if (free && nearPath(g, x, y, 2) && !nearPath(g, x, y, 0) && hsh(x + i, y) < (u === 'u6' ? .95 : .7)) { houses.push({x, y, roof: hsh(x, y + i) > .5 ? ROOF[i] : '#9C6B4A'}); [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([dx, dy]) => g[y + dy][x + dx] = 'house'); }
+    if (free && !nearSquare(x, y) && nearPath(g, x, y, 2) && !nearPath(g, x, y, 0) && hsh(x + i, y) < (u === 'u6' ? .95 : .7)) { houses.push({x, y, roof: hsh(x, y + i) > .5 ? ROOF[i] : '#9C6B4A'}); [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([dx, dy]) => g[y + dy][x + dx] = 'house'); }
   }
   plantTrees(g, 0, TGW - 2, 0, TGH - 2, u === 'u5' ? .55 : .3);
   const entryLeg = lineTo(entry.slice(), top, sqCenter(TSQ[0]));
-  return (TOWN_CACHE[u] = {g, houses, roads: roads.concat([entry]), squares: TSQ.map((s, j) => ({...s, open: usedSides(TROADS, j).concat(j === 0 ? ['N'] : []), fountain: j === 3})),
+  return (TOWN_CACHE[u] = {g, houses, guild, roads: roads.concat([entry]), squares: TSQ.map((s, j) => ({...s, open: usedSides(TROADS, j).concat(j === 0 ? ['N'] : []), fountain: j === 3})),
     legs: TROADS.map((r, k) => legPts(TSQ[r.from], TSQ[r.to], roads[k], r.out, r.in)), entry: entryLeg});
 }
 function townOverlay(u) {
-  const qs = squaresOf(u); const nq = nextSquare();
+  const qs = squaresOf(u); const nq = nextSquare(); const T = buildTown(u); const tp = townProgress(u);
   const pl = qs.map((q, j) => {
-    const [cx, cy] = PLAZA_T[j]; const x = (cx + .5) * TS, y = (cy + 0.5) * TS; const st = sqState(q.id); const dim = st === 'locked';
-    const done = BUILT_STEPS.filter(s => stepDone(q.id, s)).length;
-    return `<g data-act="square" data-q="${q.id}" role="button" tabindex="0" style="cursor:pointer" aria-label="Plein ${q.n}: ${esc(q.name)}${st === 'done' ? ', klaar' : dim ? ', nog dicht' : ''}">
+    const [x, y] = sqCenter(TSQ[j]); const st = sqState(q.id); const dim = st === 'locked'; const pp = tp.pleinen[j];
+    // flags on its guild houses; Ronde 2/3 flags across the square; sparkles when everything is perfect
+    const flags = (T.guild[j] || []).map((h, k) => { const lv = houseLevel(q.id, STEPS[k]); return lv ? miniFlag(h.x * TS + 10, h.y * TS - 9, lv === 2) : ''; }).join('');
+    const label = `Plein ${q.n}: ${esc(q.name)} · ${pp.done} van 5 gildehuizen${pp.top ? `, ${pp.top} op 100%` : ''}${pp.ronde > 1 ? `, Ronde ${pp.ronde}` : ''}${pp.perfect ? ', perfect' : dim ? ', nog dicht' : ''}`;
+    return `<g data-act="square" data-q="${q.id}" role="button" tabindex="0" style="cursor:pointer" aria-label="${label}">
       <rect x="${x - 36}" y="${y - 30}" width="72" height="60" fill="${dim ? 'rgba(255,255,255,.55)' : 'transparent'}"/>
+      ${flags}${roundsFlags(x - 26, y - 16, x + 26, y - 16, pp.ronde)}${pp.perfect ? sparkles(x, y, 30) : ''}
       ${sign(x, j === 0 ? y + 34 : y - 46, q.name, dim)}
-      ${!dim && st !== 'done' ? blocks(x, y - 24, 3, done) : ''}
-      ${st === 'done' ? flag(x + 22, y - 24) : ''}
       ${st === 'next' || st === 'open' ? arrow(x, j === 0 ? y - 36 : y - 56, st === 'next') : ''}
     </g>`;
   }).join('');
-  const [mx, my] = tc(PLAZA_T[3]); const mOpen = marktOpen(u);
-  const markt = marktId(u) ? `<g data-act="markt" data-u="${u}" role="button" tabindex="0" style="cursor:pointer" aria-label="Grote Markt">
+  const [mx, my] = sqCenter(TSQ[3]); const mh = TSQ[3].h * TS; const mOpen = marktOpen(u);
+  const markt = marktId(u) ? `<g data-act="markt" data-u="${u}" role="button" tabindex="0" style="cursor:pointer" aria-label="Grote Markt${tp.marktDone ? ', gehaald met ' + tp.markt + '%' : ''}">
       <rect x="${mx - 40}" y="${my - 32}" width="80" height="64" fill="${mOpen ? 'transparent' : 'rgba(255,255,255,.55)'}"/>
-      ${sign(mx, my - 50, '★ Grote Markt', !mOpen)}${marktDone(u) ? flag(mx + 26, my - 28) : ''}</g>` : '';
+      ${tp.marktDone ? bunting(mx - mh + 2, my - mh + 4, mx + mh - 2, my - mh + 4, tp.perfect) + bunting(mx - mh + 2, my + 4, mx + mh - 2, my + 4, tp.perfect) : ''}
+      ${tp.perfect ? sparkles(mx, my, 40) : ''}
+      ${sign(mx, my - 50, '★ Grote Markt' + (tp.marktDone ? ' · ' + tp.markt + '%' : ''), !mOpen)}</g>` : '';
   const here = qs.findIndex(q => q.id === nq);
   const hp = here >= 0 ? standPx(sqCenter(TSQ[here])) : [sqSide(TSQ[0], 'N')[0], 14];
   return pl + markt + heroG(...hp);
 }
 function sqState(q) { if (sqComplete(q)) return 'done'; if (!sqOpen(q)) return 'locked'; return nextSquare() === q ? 'next' : 'open'; }
+// 2.4: the town's goal in one card above the map, progress on the map, one opdracht box (also on the Grote Markt)
 function viewTown(u) {
-  const unit = UNIT[u]; const qs = squaresOf(u); const locked = townState(u) === 'locked';
-  const wk = String(weekStartDay()); const mDone = S.mission[wk] === u;
+  const unit = UNIT[u]; const qs = squaresOf(u); const locked = townState(u) === 'locked'; const tp = townProgress(u);
+  const sum = [`${tp.complete} van ${qs.length} pleinen klaar`].concat(tp.perfectPleinen ? [`${tp.perfectPleinen} perfect`] : [], tp.marktDone ? [`Grote Markt ${tp.markt}%`] : [], tp.mission ? ['opdracht gedaan'] : []);
   return `<div class="stack">
     <button class="back" data-act="pad-up">‹ Pad</button>
-    <div><div class="eyebrow">Boog ${arcOf(u).n} · Stad ${townIndexInArc(u)} · ${esc(arcOf(u).level)}</div><h1>${esc(unit.name)}</h1><div class="small" style="margin-top:2px">${esc(unit.gram)} · ${esc(unit.theme.toLowerCase())}</div></div>
-    ${coachTip('town', 'Een stad heeft drie pleinen: korte lessen van 10 à 15 minuten, en een Grote Markt om alles te herhalen. Het pijltje wijst naar je volgende plein. Tik op een plein.')}
-    ${sceneHTML('townmap', TGW, TGH, townOverlay(u), 'Plattegrond van ' + unit.name)}
+    <div><div class="eyebrow">Boog ${arcOf(u).n} · Stad ${townIndexInArc(u)} · ${esc(arcOf(u).level)}</div><h1>${esc(unit.name)}</h1></div>
+    ${goalCard(u)}
+    ${coachTip('town2', 'Rond elk plein staan zijn vijf gildehuizen. Een huis krijgt kleur en een gele vlag als je het gehaald hebt, een vlag met een ster bij 100%. Na Ronde 2 hangen er vlaggetjes over het plein, na Ronde 3 gouden. Wat alles betekent, staat bij Ik → Hoe werkt Elke Dag Zin?')}
+    ${sceneHTML('townmap', TGW, TGH, townOverlay(u), 'Plattegrond van ' + unit.name + ': ' + sum.join(', '))}
+    <div class="small progsum">${sum.join(' · ')}</div>
     ${locked ? `<div class="card soft stack" style="gap:8px"><div>${esc(unit.name)} is nog dicht. Test je erin: 15 vragen over de hele stad.</div><button class="btn line" data-act="testout" data-qs="${qs.map(q => q.id).join(',')}">Test je in</button></div>` : ''}
-    ${marktLink(u)}
-    <div class="card soft stack" style="gap:6px"><div class="eyebrow" data-en="After this town">Na deze stad</div><div class="nl" style="font-size:17px">${esc(unit.can)}</div></div>
-    <div class="row" style="align-items:flex-start;gap:12px"><button class="iconbtn" data-act="mission" data-u="${u}" aria-pressed="${mDone}" aria-label="Opdracht gedaan" style="border:1.5px solid ${mDone ? 'var(--ink)' : 'var(--go)'};border-radius:8px;width:32px;height:32px;flex:none;font-size:16px;${mDone ? 'background:var(--ink);color:#fff' : ''}">${mDone ? '✓' : ''}</button><div><div class="eyebrow" data-en="Field mission this week">Opdracht in de stad</div><div>${esc(unit.mission)}</div></div></div>
+    ${missionRow(u)}
     <button class="link" data-act="unit-set" data-u="${u}">Oefen de woorden van ${esc(unit.name)} ›</button>
   </div>`;
 }
@@ -2632,7 +2678,7 @@ function guildHouse(x, st, i) {
   return `<g transform="translate(${x},14)" shape-rendering="crispEdges">${s}</g>`;
 }
 function squareOverlay(q) {
-  const open = sqOpen(q); const nx = nextStep(q);
+  const open = sqOpen(q); const nx = nextStep(q); const pp = pleinProgress(q);
   const h = STEPS.map((st, i) => {
     const built = ACTIVE_STEPS.includes(st); const done = stepDone(q, st);
     const state = !built ? 'later' : !open ? 'locked' : (st === nx && !sqComplete(q)) ? 'next' : 'open';
@@ -2640,13 +2686,13 @@ function squareOverlay(q) {
     return `<g data-act="step" data-q="${q}" data-step="${st}" role="button" tabindex="0" style="cursor:pointer" aria-label="${STEP_NAME[st]}${done ? ', klaar' : ''}${built ? '' : ', later'}">
       <rect x="${x - 4}" y="0" width="64" height="150" fill="transparent"/>
       ${guildHouse(x, state, i)}
-      ${done ? flag(x + 44, 10) : ''}
+      ${pp.levels[i] ? `<g transform="translate(${x + 44},4) scale(1.5)">${miniFlag(0, 0, pp.levels[i] === 2)}</g>` : ''}
       ${state === 'next' ? arrow(x + 28, 9, true) : ''}
       ${sign(x + 28, 118, STEP_NAME[st], state === 'later' || state === 'locked')}
     </g>`;
   }).join('');
   const ni = STEPS.indexOf(nx);
-  return h + heroG(8 + ni * 65 + 28, 186);
+  return h + roundsFlags(10, 40, 324, 40, pp.ronde, 2) + (pp.perfect ? sparkles(0, 0, 1, STEPS.map((_, i) => [8 + i * 65 + (i % 2 ? 50 : 8), i % 2 ? 26 : 70, i * .3])) : '') + heroG(8 + ni * 65 + 28, 186);
 }
 function viewSquare(q) {
   const sq = SQ[q]; const unit = UNIT[sq.u]; const open = sqOpen(q);
@@ -2665,9 +2711,11 @@ function viewSquare(q) {
 
 /* ---------- navigation with movement ---------- */
 function afterRenderMaps() {
-  const w = $('#world'); if (w) { if (!WORLD) buildWorld(); WORLD.houses = worldHouses(); drawScene($('canvas', w), WORLD);
+  const w = $('#world'); if (w) { if (!WORLD) buildWorld(); WORLD.houses = worldHouses(); drawScene($('canvas', w), {...WORLD, squares: WORLD.squares.map((q, i) => ({...q, gold: townProgress(UNITS[i].id).perfect}))});
     if (!afterRenderMaps.scrolled) { afterRenderMaps.scrolled = true; const y = townPx(UNIT[SQ[nextSquare()].u].n - 1)[1] / (WGH * TS) * w.offsetHeight; $('#main').scrollTop = Math.max(0, w.offsetTop + y - 220); } }
-  const t = $('#townmap'); if (t && PAD.u) drawScene($('canvas', t), buildTown(PAD.u));
+  const t = $('#townmap'); if (t && PAD.u) { const T = buildTown(PAD.u); const qs = squaresOf(PAD.u); const tp = townProgress(PAD.u);
+    const gh = T.guild.flatMap((slots, j) => qs[j] ? slots.map((h, k) => ({...h, guild: true, col: FACADE[k], on: houseLevel(qs[j].id, STEPS[k]) > 0})) : []);
+    drawScene($('canvas', t), {...T, houses: T.houses.concat(gh), squares: T.squares.map((q, j) => ({...q, gold: j < 3 ? !!(tp.pleinen[j] && tp.pleinen[j].perfect) : tp.perfect}))}); }
   const s = $('#sqmap'); if (s) drawScene($('canvas', s), buildSquare());
 }
 async function goTown(u) {
@@ -2963,6 +3011,8 @@ function openHelp() {
     `<div class="stack"><h1>Hoe werkt Elke Dag Zin?</h1>
     <p class="why" style="margin:0">Je volgt een pad van steden. Elke stad leert één stuk grammatica in een thema uit het dagelijkse leven. In een stad liggen drie pleinen, en op elk plein doe je vijf stappen. Alles wat je oefent, komt later terug in je herhalingen, precies wanneer je het bijna vergeet.</p>
     <div class="card soft why"><b style="color:var(--go)">Groen</b> = tikken · <b class="de">blauw</b> = de · <b class="het">rood</b> = het · <b class="verbword">goud</b> = het werkwoord</div>
+    <h2>Vlaggen en voortgang</h2>
+    ${progressLegend()}
     <button class="btn line" data-act="tour-again">Toon de rondleiding opnieuw</button>
     <button class="btn line" data-act="tips-again">Toon alle tips opnieuw</button>
     <h2>Begrippen</h2>
@@ -3293,19 +3343,18 @@ function marktKeys(u) {
 }
 function viewMarkt(u) {
   const unit = UNIT[u]; const open = marktOpen(u); const sc = (S.markt || {})[u];
-  const wk = String(weekStartDay()); const mDone = S.mission[wk] === u;
   const line = (act, attrs, title, desc, on = true) => `<button class="tapline" data-act="${act}" ${attrs} ${on ? '' : 'aria-disabled="true"'}><div class="t"><div style="font-weight:600;${on ? '' : 'color:var(--faint)'}">${title}</div><div class="small">${desc}</div></div><span class="chev" ${on ? '' : 'style="color:var(--faint)"'}>›</span></button>`;
   return `<div class="stack">
     <button class="back" data-act="pad-town" data-u="${u}">‹ ${esc(unit.name)}</button>
     <div><div class="eyebrow">Boog ${arcOf(u).n} · Stad ${townIndexInArc(u)} · Grote Markt</div><h1>Grote Markt van ${esc(unit.name)}</h1><div class="small" style="margin-top:2px">Alles van deze stad samen, en je opdracht in de stad</div></div>
     ${coachTip('markt', 'Elke stad eindigt op haar Grote Markt. Hier herhaal je de hele stad door elkaar: woorden, zinnen en luisteren. 80% en de stad is echt van jou. Doe ook je opdracht in de echte stad.')}
-    <div class="card soft stack" style="gap:6px"><div class="eyebrow">Na deze stad</div><div class="nl" style="font-size:17px">${esc(unit.can)}</div></div>
+    ${goalCard(u)}
     ${open ? '' : '<div class="card soft">De Grote Markt gaat open als je alle pleinen van deze stad klaar hebt.</div>'}
     <div>
       ${line('markt-review', `data-u="${u}"`, `Herhaal de hele stad${sc ? ` <span class="small">· ${sc}%</span>` : ''}`, '16 vragen door elkaar · checkpoint bij 80%', open)}
       ${line('praten', `data-mode="opdracht" data-u="${u}"`, `Praten in Claude: ${esc(sceneFor(u).title)}${stepDone(marktId(u), 'gebruik') ? ' <span class="small">· gedaan</span>' : ''}`, esc(sceneFor(u).goal), open)}
-      ${line('mission', `data-u="${u}"`, `Opdracht in de stad${mDone ? ' <span class="small">· gedaan deze week</span>' : ''}`, esc(unit.mission || ''), true)}
     </div>
+    ${missionRow(u)}
   </div>`;
 }
 function marktLink(u) {
@@ -4363,6 +4412,107 @@ function fixEx(key, f) {
     answer: f.right, accept: [norm(f.right)], whole: true, why: esc(f.why || ''), say: f.right};
 }
 
+/* ===== VERSION 2.4: progress you can see =====
+   One visual language on every level:
+   - a building is a piece of work: grey until it is done, in its colour once done
+   - a yellow flag on it = gehaald (80% or more); a flag with a white star = 100%
+   - Ronde 2: colourful flags go up across the plein (on the stad map and over its guild houses);
+     Ronde 3: the same flags turn gold, with sparkles
+   - bunting over a Grote Markt (and around a town on the Pad) = the Grote Markt is done
+   - gold kerbs and sparkles = everything perfect
+   Stad map: each plein has its own five guild houses, in the same colours as on the plein.
+   Pad: each town has three plein houses and a town hall for its Grote Markt. */
+
+/* ---------- the numbers ---------- */
+// 0 = not yet, 1 = gehaald, 2 = 100% (Ontdek and Gebruik are done or not; a test-out counts as gehaald)
+function houseLevel(q, st) {
+  const v = S.sq[q] && S.sq[q].steps && S.sq[q].steps[st]; if (!v) return 0;
+  if (v === 'test') return 1; if (st === 'ontdek' || st === 'gebruik') return 2;
+  return v >= 100 ? 2 : 1;
+}
+function pleinProgress(q) {
+  const levels = STEPS.map(st => houseLevel(q, st));
+  const complete = sqComplete(q); const r = (S.sq[q] && S.sq[q].rounds && S.sq[q].rounds.oefen) || 1;
+  const ronde = stepDone(q, 'oefen') ? r : 0;
+  return {levels, done: levels.filter(Boolean).length, top: levels.filter(l => l === 2).length, complete, ronde, perfect: levels.every(l => l === 2) && ronde >= 3};
+}
+const missionDone = u => !!(S.missions || {})[u];
+function townProgress(u) {
+  const ps = squaresOf(u).map(q => pleinProgress(q.id)); const m = (S.markt || {})[u] || 0;
+  return {pleinen: ps, complete: ps.filter(p => p.complete).length, perfectPleinen: ps.filter(p => p.perfect).length, markt: m, marktDone: m >= 80, marktTop: m >= 100, mission: missionDone(u),
+    perfect: ps.length > 0 && ps.every(p => p.perfect) && m >= 100 && missionDone(u)};
+}
+
+/* ---------- the opdracht in de stad: one per town, the same box everywhere ---------- */
+// 1.5–2.3 kept one town per week in S.mission; 2.4 keeps a date per town (S.missions) and still fills S.mission for the week bar
+// the town's goal: grammar, theme and what you can do after it (stad page and Grote Markt)
+function goalCard(u) {
+  const unit = UNIT[u];
+  return `<div class="goal">
+      <div class="gr"><span class="gk" data-en="Grammar">Grammatica</span><span class="gv">${esc(unit.gram)}</span></div>
+      <div class="gr"><span class="gk" data-en="Theme">Thema</span><span class="gv">${esc(unit.theme)}</span></div>
+      <div class="gr can"><span class="gk" data-en="After this town you can">Na deze stad</span><span class="gv nl">${esc(unit.can)}</span></div>
+    </div>`;
+}
+function missionToggle(u) {
+  S.missions = S.missions || {}; const wk = String(weekStartDay());
+  if (S.missions[u]) { delete S.missions[u]; if (S.mission[wk] === u) S.mission[wk] = null; }
+  else { S.missions[u] = dateKey(); S.mission[wk] = u; toast('Goed gedaan. Amai!'); }
+  Store.mark('state'); render();
+}
+function missionRow(u) {
+  const unit = UNIT[u]; const on = missionDone(u); const d = on ? S.missions[u] : '';
+  return `<div class="mission"><button class="mbox${on ? ' on' : ''}" data-act="mission" data-u="${u}" role="checkbox" aria-checked="${on}" aria-label="Opdracht in de stad gedaan">${on ? '✓' : ''}</button>
+    <div><div class="eyebrow" data-en="Field mission">Opdracht in de stad</div><div>${esc(unit.mission || '')}</div>${on ? `<div class="small">Gedaan op ${esc(shortDate(d))}</div>` : ''}</div></div>`;
+}
+
+/* ---------- small pixel pieces for the map overlays (SVG) ---------- */
+const GOLD = '#E0A82E';
+function miniFlag(x, y, top) {
+  return `<g transform="translate(${x},${y})" shape-rendering="crispEdges"><rect width="1.4" height="11" fill="#2A2620"/><rect x="1.4" width="8" height="5" fill="${top ? GOLD : '#F2D35B'}" stroke="#2A2620" stroke-width=".8"/>${top ? '<path d="M5.4,0.7 L6.1,2 L7.5,2.1 L6.4,3 L6.8,4.3 L5.4,3.6 L4,4.3 L4.4,3 L3.3,2.1 L4.7,2 Z" fill="#fff"/>' : ''}</g>`;
+}
+// feestvlaggetjes: a sagging string of small triangles between two points
+function bunting(x1, y1, x2, y2, gold, z = 1) {
+  const sag = 7 * z, n = Math.max(3, Math.round(Math.hypot(x2 - x1, y2 - y1) / (7 * z))); const cols = gold ? [GOLD, '#F2D35B'] : FACADE;
+  let s = `<path d="M${x1},${y1} Q${(x1 + x2) / 2},${(y1 + y2) / 2 + sag} ${x2},${y2}" fill="none" stroke="#2A2620" stroke-width="${.8 * z}"/>`;
+  for (let k = 1; k < n; k++) { const t = k / n; const x = (1 - t) ** 2 * x1 + 2 * (1 - t) * t * (x1 + x2) / 2 + t * t * x2, y = (1 - t) ** 2 * y1 + 2 * (1 - t) * t * ((y1 + y2) / 2 + sag) + t * t * y2;
+    s += `<path class="bt" d="M${x - 2 * z},${y} L${x + 2 * z},${y} L${x},${y + 4 * z} Z" fill="${cols[k % cols.length]}" stroke="#2A2620" stroke-width="${.5 * z}"/>`; }
+  return `<g class="bunting${gold ? ' gold' : ''}" aria-hidden="true">${s}</g>`;
+}
+// Ronde 2: flags across; Ronde 3: gold flags with sparkles along them
+function roundsFlags(x1, y1, x2, y2, ronde, z = 1) {
+  if (ronde < 2) return ''; const gold = ronde >= 3;
+  return bunting(x1, y1, x2, y2, gold, z) + (gold ? sparkles(0, 0, 1, [.15, .5, .85].map((t, k) => [x1 + (x2 - x1) * t, (y1 + y2) / 2 + 7 * z * (1 - (2 * t - 1) ** 2) - 6 * z, k * .5])) : '');
+}
+// sparkles around a perfect square (they twinkle unless reduced motion); pts overrides where they go
+function sparkles(cx, cy, r, pts) {
+  return `<g class="sparkle" aria-hidden="true">${(pts || [[-1, -1, 0], [1, -.8, .4], [1.1, .9, .8], [-.9, 1, 1.2], [0, -1.25, .6]]).map(([dx, dy, dl]) => `<g transform="translate(${cx + dx * r},${cy + dy * r})"><path style="animation-delay:${dl}s" d="M0,-7 L1.6,-1.6 L7,0 L1.6,1.6 L0,7 L-1.6,1.6 L-7,0 L-1.6,-1.6 Z" fill="#fff" stroke="${GOLD}" stroke-width="1"/></g>`).join('')}</g>`;
+}
+
+/* ---------- a guild house on the stad map (canvas), in the plein's colours ---------- */
+function drawMiniGuild(R, px, py, col, on) {
+  const ink = on ? '#2A2620' : '#A9A49A', c = on ? col : '#DAD5CC', win = on ? '#F4EFE4' : '#EEEAE2';
+  [[2, 6, 12, 10], [4, 3, 8, 3], [6, 1, 4, 2]].forEach(([x, y, w, h]) => R(px + x - 1, py + y - 1, w + 2, h + 1, ink));
+  [[2, 6, 12, 10], [4, 3, 8, 3], [6, 1, 4, 2]].forEach(([x, y, w, h]) => R(px + x, py + y, w, h, c));
+  R(px + 4, py + 8, 3, 3, win); R(px + 9, py + 8, 3, 3, win); R(px + 6, py + 12, 4, 4, ink);
+}
+
+/* ---------- what the flags mean: Ik → Hoe werkt Elke Dag Zin? ---------- */
+function progressLegend() {
+  const row = (icon, text) => `<div class="lg"><svg viewBox="0 0 22 18" width="33" height="27" aria-hidden="true">${icon}</svg><span>${text}</span></div>`;
+  const house = (col, on) => `<g shape-rendering="crispEdges"><rect x="4" y="7" width="12" height="10" fill="${on ? col : '#DAD5CC'}" stroke="${on ? '#2A2620' : '#A9A49A'}"/><rect x="7" y="3" width="6" height="4" fill="${on ? col : '#DAD5CC'}" stroke="${on ? '#2A2620' : '#A9A49A'}"/></g>`;
+  const spark = '<path transform="translate(17,5)" d="M0,-4.5 L1.1,-1.1 L4.5,0 L1.1,1.1 L0,4.5 L-1.1,1.1 L-4.5,0 L-1.1,-1.1 Z" fill="#fff" stroke="#E0A82E" stroke-width=".9"/>';
+  return `<div class="legend"><div class="lgs">
+    ${row(house('#C8553D', false), 'Grijs gildehuis: nog niet gedaan')}
+    ${row(house('#C8553D', true) + miniFlag(13, 0, false), 'In kleur met een gele vlag: gehaald (80% of meer)')}
+    ${row(house('#C8553D', true) + miniFlag(13, 0, true), 'Vlag met een ster: 100%')}
+    ${row(bunting(1, 6, 21, 6, false), 'Vlaggetjes over een plein: Ronde 2 gehaald')}
+    ${row(bunting(1, 6, 15, 6, true) + spark, 'Gouden vlaggetjes met glitter: Ronde 3 gehaald')}
+    ${row(`<rect x="2" y="5" width="13" height="11" fill="#DDD4C3" stroke="#E0A82E" stroke-width="2"/>` + spark, 'Gouden stoeprand: plein perfect (alles 100% en Ronde 3)')}
+    ${row(bunting(1, 6, 21, 6, false) + '<text x="11" y="17" text-anchor="middle" font-size="6" font-weight="700" fill="#2A2620">★</text>', 'Vlaggetjes over de Grote Markt, of rond een stad op het Pad: de Grote Markt gehaald')}
+  </div><div class="small">Op het Pad heeft elke stad drie huizen (één per plein) en een stadhuis voor de Grote Markt. Is alles perfect, ook de opdracht in de stad, dan wordt de hele stad goud.</div></div>`;
+}
+
 /* ===== LONG-PRESS ENGLISH ===== */
 (function () {
   let timer = null, tip = null, fired = false;
@@ -4422,7 +4572,7 @@ document.addEventListener('click', e => {
     case 'review': startReview(); break;
     case 'step': closeSheet(); if (TAB === 'pad' && PAD.lvl === 'sq') goStep(d.q, d.step); else startStep(d.q, d.step); break;
     case 'feed': openFeed(); break;
-    case 'mission': { const wk = String(weekStartDay()); S.mission[wk] = S.mission[wk] === d.u ? null : d.u; Store.mark('state'); render(); if (S.mission[wk]) toast('Goed gedaan. Amai!'); break; }
+    case 'mission': missionToggle(d.u); break; // app17: one opdracht per town, the same box on the stad page and the Grote Markt
     case 'town': goTown(d.u); break;
     case 'naslag': NASLAG = d.seg; render(); break;
     case 'cards': closeOverlay('setpage'); openCards(d.set); break;

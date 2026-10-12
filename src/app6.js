@@ -57,7 +57,7 @@ document.addEventListener('click', e => {
     case 'review': startReview(); break;
     case 'step': closeSheet(); if (TAB === 'pad' && PAD.lvl === 'sq') goStep(d.q, d.step); else startStep(d.q, d.step); break;
     case 'feed': openFeed(); break;
-    case 'mission': { const wk = String(weekStartDay()); S.mission[wk] = S.mission[wk] === d.u ? null : d.u; Store.mark('state'); render(); if (S.mission[wk]) toast('Goed gedaan. Amai!'); break; }
+    case 'mission': missionToggle(d.u); break; // app17: one opdracht per town, the same box on the stad page and the Grote Markt
     case 'town': goTown(d.u); break;
     case 'naslag': NASLAG = d.seg; render(); break;
     case 'cards': closeOverlay('setpage'); openCards(d.set); break;

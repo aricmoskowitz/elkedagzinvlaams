@@ -59,19 +59,18 @@ function marktKeys(u) {
 }
 function viewMarkt(u) {
   const unit = UNIT[u]; const open = marktOpen(u); const sc = (S.markt || {})[u];
-  const wk = String(weekStartDay()); const mDone = S.mission[wk] === u;
   const line = (act, attrs, title, desc, on = true) => `<button class="tapline" data-act="${act}" ${attrs} ${on ? '' : 'aria-disabled="true"'}><div class="t"><div style="font-weight:600;${on ? '' : 'color:var(--faint)'}">${title}</div><div class="small">${desc}</div></div><span class="chev" ${on ? '' : 'style="color:var(--faint)"'}>›</span></button>`;
   return `<div class="stack">
     <button class="back" data-act="pad-town" data-u="${u}">‹ ${esc(unit.name)}</button>
     <div><div class="eyebrow">Boog ${arcOf(u).n} · Stad ${townIndexInArc(u)} · Grote Markt</div><h1>Grote Markt van ${esc(unit.name)}</h1><div class="small" style="margin-top:2px">Alles van deze stad samen, en je opdracht in de stad</div></div>
     ${coachTip('markt', 'Elke stad eindigt op haar Grote Markt. Hier herhaal je de hele stad door elkaar: woorden, zinnen en luisteren. 80% en de stad is echt van jou. Doe ook je opdracht in de echte stad.')}
-    <div class="card soft stack" style="gap:6px"><div class="eyebrow">Na deze stad</div><div class="nl" style="font-size:17px">${esc(unit.can)}</div></div>
+    ${goalCard(u)}
     ${open ? '' : '<div class="card soft">De Grote Markt gaat open als je alle pleinen van deze stad klaar hebt.</div>'}
     <div>
       ${line('markt-review', `data-u="${u}"`, `Herhaal de hele stad${sc ? ` <span class="small">· ${sc}%</span>` : ''}`, '16 vragen door elkaar · checkpoint bij 80%', open)}
       ${line('praten', `data-mode="opdracht" data-u="${u}"`, `Praten in Claude: ${esc(sceneFor(u).title)}${stepDone(marktId(u), 'gebruik') ? ' <span class="small">· gedaan</span>' : ''}`, esc(sceneFor(u).goal), open)}
-      ${line('mission', `data-u="${u}"`, `Opdracht in de stad${mDone ? ' <span class="small">· gedaan deze week</span>' : ''}`, esc(unit.mission || ''), true)}
     </div>
+    ${missionRow(u)}
   </div>`;
 }
 function marktLink(u) {

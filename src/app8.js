@@ -61,7 +61,7 @@ function drawScene(cv, sc) {
   // squares: kerb, cobbles, a fountain, and an opening with a zebra crossing where each road comes in
   (sc.squares || []).forEach(q => {
     const [cx, cy] = sqCenter(q); const h = q.h * TS, n = Math.round(q.h * 2);
-    R(cx - h - 2, cy - h - 2, 2 * h + 4, 2 * h + 4, W.curb); R(cx - h, cy - h, 2 * h, 2 * h, W.stone);
+    R(cx - h - 2, cy - h - 2, 2 * h + 4, 2 * h + 4, q.gold ? '#E0A82E' : W.curb); R(cx - h, cy - h, 2 * h, 2 * h, W.stone); // gold: everything perfect
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if ((x + y) % 2) R(cx - h + x * TS + 2, cy - h + y * TS + 2, 4, 4, W.cobble2);
     R(cx - 5, cy - 5, 10, 10, W.cobble2); R(cx - 2, cy - 2, 4, 4, W.fountain);
     (q.open || []).forEach(sd => { const [mx, my] = sqSide(q, sd); const [dx, dy] = DIR[sd];
@@ -75,6 +75,7 @@ function drawScene(cv, sc) {
   }
   houses.forEach(h => {
     const px = h.x * TS, py = h.y * TS, roof = h.grey ? W.greyRoof : h.roof, wall = h.grey ? '#E4E0D8' : W.wall;
+    if (h.guild) { drawMiniGuild(R, px, py, h.col, h.on); return; }
     if (h.hall) { const win = h.grey ? '#E4E0D8' : '#F4EFE4';
       R(px - 3, py + 2, 22, 14, roof); R(px - 1, py - 1, 18, 3, roof); R(px + 2, py - 4, 12, 3, roof); R(px + 5, py - 7, 6, 3, roof); R(px + 7, py - 9, 2, 2, h.grey ? '#CFCAC1' : '#F2D35B');
       R(px - 3, py + 15, 22, 1, 'rgba(0,0,0,.25)'); R(px, py + 4, 4, 4, win); R(px + 12, py + 4, 4, 4, win); R(px + 6, py, 4, 3, win); R(px + 6, py + 9, 4, 6, h.grey ? '#8C877E' : W.ink); return; }
@@ -169,8 +170,11 @@ const usedSides = (roads, i) => roads.filter(r => r.from === i).map(r => r.out).
 // houses around a square: the corners, and the middle of every side without a road (the guild hall on top)
 function squareHouses(g, s, used, roof) {
   const [cx, cy] = s.t; const o = Math.ceil(s.h - .5) + 2; const out = [];
-  const spots = (used.includes('N') ? [] : [{x: cx - 1, y: cy - o - 1, hall: true}]).concat([{x: cx - o, y: cy - o}, {x: cx + o - 1, y: cy - o}, {x: cx - o, y: cy + o - 1}, {x: cx + o - 1, y: cy + o - 1}],
-    used.includes('W') ? [] : [{x: cx - o - 1, y: cy - 1}], used.includes('E') ? [] : [{x: cx + o, y: cy - 1}], used.includes('S') ? [] : [{x: cx - 1, y: cy + o}]);
+  // the town hall stands on the first side without a road (top if it can); 2.4: it stands for the Grote Markt
+  const hs = ['N', 'S', 'W', 'E'].find(d => !used.includes(d));
+  const mid = {N: {x: cx - 1, y: cy - o - 1}, S: {x: cx - 1, y: cy + o}, W: {x: cx - o - 1, y: cy - 1}, E: {x: cx + o, y: cy - 1}};
+  const spots = (hs ? [{...mid[hs], hall: true}] : []).concat([{x: cx - o, y: cy - o}, {x: cx + o - 1, y: cy - o}, {x: cx - o, y: cy + o - 1}, {x: cx + o - 1, y: cy + o - 1}],
+    ['W', 'E', 'S'].filter(d => d !== hs && !used.includes(d)).map(d => mid[d]));
   spots.forEach(h => { const cells = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([dx, dy]) => [h.x + dx, h.y + dy]);
     if (cells.every(([x, y]) => g[y] && ['grass', 'sand', 'flower', 'tuft'].includes(g[y][x]))) { cells.forEach(([x, y]) => { g[y][x] = 'house'; }); out.push({...h, roof}); } });
   return out;
@@ -223,9 +227,14 @@ function buildWorld() {
   WORLD = {g, spots, roads: roads.concat([pass]), squares: WSQ.map((s, i) => ({...s, open: used[i]})),
     legs: WROADS.map((r, k) => legPts(WSQ[r.from], WSQ[r.to], roads[k], r.out, r.in))};
 }
+// 2.4: per town the town hall is its Grote Markt and three houses are its pleinen: grey until done, in colour once done
+function worldRoles(i) { if (!WORLD) buildWorld(); const hs = WORLD.spots[i]; const pleinen = hs.filter(h => !h.hall).slice(0, 3); return {hall: hs.find(h => h.hall), pleinen, rest: hs.filter(h => !h.hall && !pleinen.includes(h))}; }
 function worldHouses() {
   const out = [];
-  WORLD.spots.forEach((hs, i) => { const st = townState(UNITS[i].id); const grey = st === 'later' || st === 'locked'; hs.forEach(h => out.push({...h, grey})); });
+  UNITS.forEach((u, i) => { const st = townState(u.id); const off = st === 'later' || st === 'locked'; const r = worldRoles(i); const tp = u.built ? townProgress(u.id) : null;
+    if (r.hall) out.push({...r.hall, grey: off || !(tp && tp.marktDone)});
+    r.pleinen.forEach((h, j) => out.push({...h, grey: off || !(tp && tp.pleinen[j] && tp.pleinen[j].complete)}));
+    r.rest.forEach(h => out.push({...h, grey: off})); });
   return out;
 }
 const townPx = i => sqCenter(WSQ[i]);
@@ -236,13 +245,14 @@ function worldOverlay() {
     const L = TOWN_LABEL[i]; const sw = u.name.length * 7 + 14;
     const lx = Math.max(sw / 2 + 2, Math.min(WGW * TS - sw / 2 - 2, L === 'W' ? x - 24 - sw / 2 : L === 'E' ? x + 24 + sw / 2 : x));
     const ly = L === 'N' ? y - 44 : L === 'S' ? y + 28 : y - 8;
-    const qs = u.built ? squaresOf(u.id) : [];
-    return `<g class="wtown" data-act="town" data-u="${u.id}" role="button" tabindex="0" aria-label="${esc(u.name)}: ${esc(u.gram)}${st === 'done' ? ', klaar' : dim ? ', nog dicht' : ''}">
+    const tpw = u.built && !dim ? townProgress(u.id) : null;
+    return `<g class="wtown" data-act="town" data-u="${u.id}" role="button" tabindex="0" aria-label="${esc(u.name)}: ${esc(u.gram)}${tpw ? `, ${tpw.complete} van 3 pleinen klaar${tpw.marktDone ? ', Grote Markt gehaald' : ''}${tpw.perfect ? ', perfect' : ''}` : dim ? ', nog dicht' : ''}">
       <rect x="${x - 30}" y="${y - 30}" width="60" height="60" fill="transparent"/>
       ${dim ? `<g opacity=".8" fill="#fff"><circle cx="${x - 12}" cy="${y + 2}" r="14"/><circle cx="${x + 3}" cy="${y - 8}" r="15"/><circle cx="${x + 15}" cy="${y + 5}" r="12"/><circle cx="${x - 1}" cy="${y + 12}" r="12"/></g>` : ''}
       ${sign(lx, ly, u.name, dim)}
-      ${(st === 'open' || st === 'next') && qs.length ? blocks(lx, L === 'N' ? ly - 8 : ly + 21, qs.length, qs.filter(q => sqComplete(q.id)).length) : ''}
-      ${st === 'done' ? flag(x + 14, y - 30) : ''}
+      ${tpw ? worldRoles(i).pleinen.map((h, j) => tpw.pleinen[j] && tpw.pleinen[j].complete ? miniFlag(h.x * TS + 10, h.y * TS - 9, tpw.pleinen[j].perfect) : '').join('') : ''}
+      ${tpw && tpw.marktDone ? bunting(x - 24, y - 24, x + 24, y - 24, tpw.perfect) + bunting(x - 24, y + 22, x + 24, y + 22, tpw.perfect) : ''}
+      ${tpw && tpw.perfect ? sparkles(x, y, 26) : ''}
       ${st === 'open' || st === 'next' ? arrow(x, L === 'N' ? ly - 16 : y - 28, st === 'next') : ''}
     </g>`;
   }).join('');
@@ -276,50 +286,66 @@ function buildTown(u) {
   const roads = TROADS.map(r => roadBetween(TSQ[r.from], r.out, TSQ[r.to], r.in, r.kind));
   roads.concat([entry]).forEach(r => markRoad(g, r));
   TSQ.forEach(s => markSquare(g, s));
+  // each plein gets its five guild houses around its square (on sides without a road), in step order
+  const guild = TSQ.slice(0, 3).map((q, j) => {
+    const [cx, cy] = q.t; const used = usedSides(TROADS, j).concat(j === 0 ? ['N'] : []); const signSide = j === 0 ? 'S' : 'N'; // the plein's sign stands there
+    const side = {N: [[cx - 4, cy - 6], [cx - 1, cy - 6], [cx + 2, cy - 6]], E: [[cx + 5, cy - 4], [cx + 5, cy - 1], [cx + 5, cy + 2]], S: [[cx - 4, cy + 5], [cx - 1, cy + 5], [cx + 2, cy + 5]], W: [[cx - 6, cy - 4], [cx - 6, cy - 1], [cx - 6, cy + 2]]};
+    const slots = ['N', 'E', 'S', 'W'].filter(d => d !== signSide).flatMap(d => used.includes(d) ? [side[d][0], side[d][2]] : side[d]);
+    const out = [];
+    for (const [x, y] of slots) { if (out.length === 5) break;
+      const cells = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([dx, dy]) => [x + dx, y + dy]);
+      if (cells.every(([a, b]) => g[b] && ['grass', 'flower', 'tuft', 'field', 'field2'].includes(g[b][a]))) { cells.forEach(([a, b]) => { g[b][a] = 'house'; }); out.push({x, y}); } }
+    return out;
+  });
+  const nearSquare = (x, y) => TSQ.some(q => Math.abs(x - q.t[0]) <= q.h + 4 && Math.abs(y - q.t[1]) <= q.h + 4);
   const houses = [];
   for (let y = 1; y < TGH - 2; y += 3) for (let x = 1; x < TGW - 2; x += 3) {
     const free = [[0, 0], [1, 0], [0, 1], [1, 1]].every(([dx, dy]) => ['grass', 'flower', 'tuft'].includes(g[y + dy][x + dx]));
-    if (free && nearPath(g, x, y, 2) && !nearPath(g, x, y, 0) && hsh(x + i, y) < (u === 'u6' ? .95 : .7)) { houses.push({x, y, roof: hsh(x, y + i) > .5 ? ROOF[i] : '#9C6B4A'}); [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([dx, dy]) => g[y + dy][x + dx] = 'house'); }
+    if (free && !nearSquare(x, y) && nearPath(g, x, y, 2) && !nearPath(g, x, y, 0) && hsh(x + i, y) < (u === 'u6' ? .95 : .7)) { houses.push({x, y, roof: hsh(x, y + i) > .5 ? ROOF[i] : '#9C6B4A'}); [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([dx, dy]) => g[y + dy][x + dx] = 'house'); }
   }
   plantTrees(g, 0, TGW - 2, 0, TGH - 2, u === 'u5' ? .55 : .3);
   const entryLeg = lineTo(entry.slice(), top, sqCenter(TSQ[0]));
-  return (TOWN_CACHE[u] = {g, houses, roads: roads.concat([entry]), squares: TSQ.map((s, j) => ({...s, open: usedSides(TROADS, j).concat(j === 0 ? ['N'] : []), fountain: j === 3})),
+  return (TOWN_CACHE[u] = {g, houses, guild, roads: roads.concat([entry]), squares: TSQ.map((s, j) => ({...s, open: usedSides(TROADS, j).concat(j === 0 ? ['N'] : []), fountain: j === 3})),
     legs: TROADS.map((r, k) => legPts(TSQ[r.from], TSQ[r.to], roads[k], r.out, r.in)), entry: entryLeg});
 }
 function townOverlay(u) {
-  const qs = squaresOf(u); const nq = nextSquare();
+  const qs = squaresOf(u); const nq = nextSquare(); const T = buildTown(u); const tp = townProgress(u);
   const pl = qs.map((q, j) => {
-    const [cx, cy] = PLAZA_T[j]; const x = (cx + .5) * TS, y = (cy + 0.5) * TS; const st = sqState(q.id); const dim = st === 'locked';
-    const done = BUILT_STEPS.filter(s => stepDone(q.id, s)).length;
-    return `<g data-act="square" data-q="${q.id}" role="button" tabindex="0" style="cursor:pointer" aria-label="Plein ${q.n}: ${esc(q.name)}${st === 'done' ? ', klaar' : dim ? ', nog dicht' : ''}">
+    const [x, y] = sqCenter(TSQ[j]); const st = sqState(q.id); const dim = st === 'locked'; const pp = tp.pleinen[j];
+    // flags on its guild houses; Ronde 2/3 flags across the square; sparkles when everything is perfect
+    const flags = (T.guild[j] || []).map((h, k) => { const lv = houseLevel(q.id, STEPS[k]); return lv ? miniFlag(h.x * TS + 10, h.y * TS - 9, lv === 2) : ''; }).join('');
+    const label = `Plein ${q.n}: ${esc(q.name)} · ${pp.done} van 5 gildehuizen${pp.top ? `, ${pp.top} op 100%` : ''}${pp.ronde > 1 ? `, Ronde ${pp.ronde}` : ''}${pp.perfect ? ', perfect' : dim ? ', nog dicht' : ''}`;
+    return `<g data-act="square" data-q="${q.id}" role="button" tabindex="0" style="cursor:pointer" aria-label="${label}">
       <rect x="${x - 36}" y="${y - 30}" width="72" height="60" fill="${dim ? 'rgba(255,255,255,.55)' : 'transparent'}"/>
+      ${flags}${roundsFlags(x - 26, y - 16, x + 26, y - 16, pp.ronde)}${pp.perfect ? sparkles(x, y, 30) : ''}
       ${sign(x, j === 0 ? y + 34 : y - 46, q.name, dim)}
-      ${!dim && st !== 'done' ? blocks(x, y - 24, 3, done) : ''}
-      ${st === 'done' ? flag(x + 22, y - 24) : ''}
       ${st === 'next' || st === 'open' ? arrow(x, j === 0 ? y - 36 : y - 56, st === 'next') : ''}
     </g>`;
   }).join('');
-  const [mx, my] = tc(PLAZA_T[3]); const mOpen = marktOpen(u);
-  const markt = marktId(u) ? `<g data-act="markt" data-u="${u}" role="button" tabindex="0" style="cursor:pointer" aria-label="Grote Markt">
+  const [mx, my] = sqCenter(TSQ[3]); const mh = TSQ[3].h * TS; const mOpen = marktOpen(u);
+  const markt = marktId(u) ? `<g data-act="markt" data-u="${u}" role="button" tabindex="0" style="cursor:pointer" aria-label="Grote Markt${tp.marktDone ? ', gehaald met ' + tp.markt + '%' : ''}">
       <rect x="${mx - 40}" y="${my - 32}" width="80" height="64" fill="${mOpen ? 'transparent' : 'rgba(255,255,255,.55)'}"/>
-      ${sign(mx, my - 50, '★ Grote Markt', !mOpen)}${marktDone(u) ? flag(mx + 26, my - 28) : ''}</g>` : '';
+      ${tp.marktDone ? bunting(mx - mh + 2, my - mh + 4, mx + mh - 2, my - mh + 4, tp.perfect) + bunting(mx - mh + 2, my + 4, mx + mh - 2, my + 4, tp.perfect) : ''}
+      ${tp.perfect ? sparkles(mx, my, 40) : ''}
+      ${sign(mx, my - 50, '★ Grote Markt' + (tp.marktDone ? ' · ' + tp.markt + '%' : ''), !mOpen)}</g>` : '';
   const here = qs.findIndex(q => q.id === nq);
   const hp = here >= 0 ? standPx(sqCenter(TSQ[here])) : [sqSide(TSQ[0], 'N')[0], 14];
   return pl + markt + heroG(...hp);
 }
 function sqState(q) { if (sqComplete(q)) return 'done'; if (!sqOpen(q)) return 'locked'; return nextSquare() === q ? 'next' : 'open'; }
+// 2.4: the town's goal in one card above the map, progress on the map, one opdracht box (also on the Grote Markt)
 function viewTown(u) {
-  const unit = UNIT[u]; const qs = squaresOf(u); const locked = townState(u) === 'locked';
-  const wk = String(weekStartDay()); const mDone = S.mission[wk] === u;
+  const unit = UNIT[u]; const qs = squaresOf(u); const locked = townState(u) === 'locked'; const tp = townProgress(u);
+  const sum = [`${tp.complete} van ${qs.length} pleinen klaar`].concat(tp.perfectPleinen ? [`${tp.perfectPleinen} perfect`] : [], tp.marktDone ? [`Grote Markt ${tp.markt}%`] : [], tp.mission ? ['opdracht gedaan'] : []);
   return `<div class="stack">
     <button class="back" data-act="pad-up">‹ Pad</button>
-    <div><div class="eyebrow">Boog ${arcOf(u).n} · Stad ${townIndexInArc(u)} · ${esc(arcOf(u).level)}</div><h1>${esc(unit.name)}</h1><div class="small" style="margin-top:2px">${esc(unit.gram)} · ${esc(unit.theme.toLowerCase())}</div></div>
-    ${coachTip('town', 'Een stad heeft drie pleinen: korte lessen van 10 à 15 minuten, en een Grote Markt om alles te herhalen. Het pijltje wijst naar je volgende plein. Tik op een plein.')}
-    ${sceneHTML('townmap', TGW, TGH, townOverlay(u), 'Plattegrond van ' + unit.name)}
+    <div><div class="eyebrow">Boog ${arcOf(u).n} · Stad ${townIndexInArc(u)} · ${esc(arcOf(u).level)}</div><h1>${esc(unit.name)}</h1></div>
+    ${goalCard(u)}
+    ${coachTip('town2', 'Rond elk plein staan zijn vijf gildehuizen. Een huis krijgt kleur en een gele vlag als je het gehaald hebt, een vlag met een ster bij 100%. Na Ronde 2 hangen er vlaggetjes over het plein, na Ronde 3 gouden. Wat alles betekent, staat bij Ik → Hoe werkt Elke Dag Zin?')}
+    ${sceneHTML('townmap', TGW, TGH, townOverlay(u), 'Plattegrond van ' + unit.name + ': ' + sum.join(', '))}
+    <div class="small progsum">${sum.join(' · ')}</div>
     ${locked ? `<div class="card soft stack" style="gap:8px"><div>${esc(unit.name)} is nog dicht. Test je erin: 15 vragen over de hele stad.</div><button class="btn line" data-act="testout" data-qs="${qs.map(q => q.id).join(',')}">Test je in</button></div>` : ''}
-    ${marktLink(u)}
-    <div class="card soft stack" style="gap:6px"><div class="eyebrow" data-en="After this town">Na deze stad</div><div class="nl" style="font-size:17px">${esc(unit.can)}</div></div>
-    <div class="row" style="align-items:flex-start;gap:12px"><button class="iconbtn" data-act="mission" data-u="${u}" aria-pressed="${mDone}" aria-label="Opdracht gedaan" style="border:1.5px solid ${mDone ? 'var(--ink)' : 'var(--go)'};border-radius:8px;width:32px;height:32px;flex:none;font-size:16px;${mDone ? 'background:var(--ink);color:#fff' : ''}">${mDone ? '✓' : ''}</button><div><div class="eyebrow" data-en="Field mission this week">Opdracht in de stad</div><div>${esc(unit.mission)}</div></div></div>
+    ${missionRow(u)}
     <button class="link" data-act="unit-set" data-u="${u}">Oefen de woorden van ${esc(unit.name)} ›</button>
   </div>`;
 }
@@ -346,7 +372,7 @@ function guildHouse(x, st, i) {
   return `<g transform="translate(${x},14)" shape-rendering="crispEdges">${s}</g>`;
 }
 function squareOverlay(q) {
-  const open = sqOpen(q); const nx = nextStep(q);
+  const open = sqOpen(q); const nx = nextStep(q); const pp = pleinProgress(q);
   const h = STEPS.map((st, i) => {
     const built = ACTIVE_STEPS.includes(st); const done = stepDone(q, st);
     const state = !built ? 'later' : !open ? 'locked' : (st === nx && !sqComplete(q)) ? 'next' : 'open';
@@ -354,13 +380,13 @@ function squareOverlay(q) {
     return `<g data-act="step" data-q="${q}" data-step="${st}" role="button" tabindex="0" style="cursor:pointer" aria-label="${STEP_NAME[st]}${done ? ', klaar' : ''}${built ? '' : ', later'}">
       <rect x="${x - 4}" y="0" width="64" height="150" fill="transparent"/>
       ${guildHouse(x, state, i)}
-      ${done ? flag(x + 44, 10) : ''}
+      ${pp.levels[i] ? `<g transform="translate(${x + 44},4) scale(1.5)">${miniFlag(0, 0, pp.levels[i] === 2)}</g>` : ''}
       ${state === 'next' ? arrow(x + 28, 9, true) : ''}
       ${sign(x + 28, 118, STEP_NAME[st], state === 'later' || state === 'locked')}
     </g>`;
   }).join('');
   const ni = STEPS.indexOf(nx);
-  return h + heroG(8 + ni * 65 + 28, 186);
+  return h + roundsFlags(10, 40, 324, 40, pp.ronde, 2) + (pp.perfect ? sparkles(0, 0, 1, STEPS.map((_, i) => [8 + i * 65 + (i % 2 ? 50 : 8), i % 2 ? 26 : 70, i * .3])) : '') + heroG(8 + ni * 65 + 28, 186);
 }
 function viewSquare(q) {
   const sq = SQ[q]; const unit = UNIT[sq.u]; const open = sqOpen(q);
@@ -379,9 +405,11 @@ function viewSquare(q) {
 
 /* ---------- navigation with movement ---------- */
 function afterRenderMaps() {
-  const w = $('#world'); if (w) { if (!WORLD) buildWorld(); WORLD.houses = worldHouses(); drawScene($('canvas', w), WORLD);
+  const w = $('#world'); if (w) { if (!WORLD) buildWorld(); WORLD.houses = worldHouses(); drawScene($('canvas', w), {...WORLD, squares: WORLD.squares.map((q, i) => ({...q, gold: townProgress(UNITS[i].id).perfect}))});
     if (!afterRenderMaps.scrolled) { afterRenderMaps.scrolled = true; const y = townPx(UNIT[SQ[nextSquare()].u].n - 1)[1] / (WGH * TS) * w.offsetHeight; $('#main').scrollTop = Math.max(0, w.offsetTop + y - 220); } }
-  const t = $('#townmap'); if (t && PAD.u) drawScene($('canvas', t), buildTown(PAD.u));
+  const t = $('#townmap'); if (t && PAD.u) { const T = buildTown(PAD.u); const qs = squaresOf(PAD.u); const tp = townProgress(PAD.u);
+    const gh = T.guild.flatMap((slots, j) => qs[j] ? slots.map((h, k) => ({...h, guild: true, col: FACADE[k], on: houseLevel(qs[j].id, STEPS[k]) > 0})) : []);
+    drawScene($('canvas', t), {...T, houses: T.houses.concat(gh), squares: T.squares.map((q, j) => ({...q, gold: j < 3 ? !!(tp.pleinen[j] && tp.pleinen[j].perfect) : tp.perfect}))}); }
   const s = $('#sqmap'); if (s) drawScene($('canvas', s), buildSquare());
 }
 async function goTown(u) {
