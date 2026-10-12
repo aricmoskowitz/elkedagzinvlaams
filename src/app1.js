@@ -63,6 +63,16 @@ function allForms(l) {
   const f = vForms(l); if (!f) return [];
   return uniq([f.ik, f.jij, f.hij, f.pl, f.im[0], f.im[1], f.pp, f.sep + f.pp, l.w].filter(Boolean).map(norm));
 }
+// 2.6: forms a word takes in running text that the card does not list: comparatives (ouder, oudere, oudst, oudste),
+// the plural of the diminutive (pintjes), and a separable verb written as one word (aankwam, aankomt, aankom)
+const COMP_IRR = {goed: ['beter', 'betere', 'best', 'beste'], veel: ['meer', 'meest', 'meeste'], weinig: ['minder', 'minst', 'minste'], graag: ['liever', 'liefst']};
+function textForms(l) {
+  const out = [];
+  if (l.p === 'adj') { if (COMP_IRR[l.w]) out.push(...COMP_IRR[l.w]); else if (l.e) { const c = l.e + 'r', s = l.w.replace(/s$/, '') + 'st'; out.push(c, c + 'e', s, s + 'e'); } }
+  if (l.p === 'n' && l.dim) out.push(l.dim + 's');
+  if (l.v && l.v.sep) { const f = vForms(l); [f.ik, f.hij, f.im[0], f.im[1]].forEach(x => x && out.push(f.sep + x)); }
+  return out;
+}
 function kofschip(l) {
   const v = l.v; if (!v || v.t !== 'w') return '';
   const last = v.kofl || v.st.replace(/(.)\1$/, '$1').slice(-1);

@@ -34,7 +34,7 @@ function tapWords(text) {
   return esc(text).split(/(\s+)/).map((tok, i) => {
     const core = tok.replace(/^[^\p{L}’']+|[^\p{L}’']+$/gu, '');
     if (!core) return tok;
-    if (FUNC_W.has(core.toLowerCase()) && !FORM_IX[norm(core)]) return tok;
+    if ((FUNC_W.has(core.toLowerCase()) || /^[’']s$/i.test(core)) && !FORM_IX[norm(core)]) return tok; // ’s (’s avonds) is no word to look up
     if (i > 0 && /^\p{Lu}/u.test(core) && !FORM_IX[norm(core)]) return tok;
     const n = norm(core); const id = FORM_IX[n] || (Object.values(S.custom || {}).find(l => norm(l.w) === n) || {}).id;
     return tok.replace(core, id ? `<button class="rw" data-act="word" data-id="${id}">${core}</button>` : `<button class="rw new" data-act="word-look" data-w="${esc(core)}">${core}</button>`);

@@ -249,6 +249,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(await P.evaluate(() => !!navigator.serviceWorker.controller), 'service worker controls the page');
   await A.ctx.setOffline(true); await P.reload(); await P.waitForTimeout(600);
   ok(await P.evaluate(() => typeof S === 'object' && !!document.querySelector('#tabs')), 'works offline after the first visit');
+  ok(await P.evaluate(() => loadDict().then(d => d.length >= 1000 && !!dictFind('kiest'), () => false)), 'the woordenboek works offline too (1,000+ words; kiest → kiezen)');
   await A.ctx.setOffline(false);
   ok(!(await P.$('#update')), 'no update toast without a new version');
   A.server.overrides['/sw.js'] = require('fs').readFileSync(require('path').join(require('./page').ROOT, 'sw.js'), 'utf8').replace(/edz-[0-9a-f]+/, 'edz-test-next');

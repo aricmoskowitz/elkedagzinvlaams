@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "b05ac3e73c";</script>
+<script>const APP_VERSION = "bfc903591b";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -1459,6 +1459,16 @@ const auxWord = a => a === 'z' ? 'is' : a === 'hz' ? 'heeft / is' : 'heeft';
 function allForms(l) {
   const f = vForms(l); if (!f) return [];
   return uniq([f.ik, f.jij, f.hij, f.pl, f.im[0], f.im[1], f.pp, f.sep + f.pp, l.w].filter(Boolean).map(norm));
+}
+// 2.6: forms a word takes in running text that the card does not list: comparatives (ouder, oudere, oudst, oudste),
+// the plural of the diminutive (pintjes), and a separable verb written as one word (aankwam, aankomt, aankom)
+const COMP_IRR = {goed: ['beter', 'betere', 'best', 'beste'], veel: ['meer', 'meest', 'meeste'], weinig: ['minder', 'minst', 'minste'], graag: ['liever', 'liefst']};
+function textForms(l) {
+  const out = [];
+  if (l.p === 'adj') { if (COMP_IRR[l.w]) out.push(...COMP_IRR[l.w]); else if (l.e) { const c = l.e + 'r', s = l.w.replace(/s$/, '') + 'st'; out.push(c, c + 'e', s, s + 'e'); } }
+  if (l.p === 'n' && l.dim) out.push(l.dim + 's');
+  if (l.v && l.v.sep) { const f = vForms(l); [f.ik, f.hij, f.im[0], f.im[1]].forEach(x => x && out.push(f.sep + x)); }
+  return out;
 }
 function kofschip(l) {
   const v = l.v; if (!v || v.t !== 'w') return '';
@@ -3165,6 +3175,7 @@ const FORM_IX = (() => {
   const ix = {};
   const add = (f, id) => { const k = norm(f); if (k && k.length > 1 && !ix[k]) ix[k] = id; };
   LEX.forEach(l => { [l.w, l.pl, l.dim, l.e].forEach(f => f && add(f, l.id)); if (l.v) allForms(l).forEach(f => add(f, l.id)); });
+  LEX.forEach(l => textForms(l).forEach(f => add(f, l.id))); // after every listed form, so a listed form always wins
   return ix;
 })();
 const SQ_OF_WORD = (() => { const m = {}; PLAN_SQ.forEach(q => (q.words || []).forEach(w => { m[w] = q.id; })); return m; })();
@@ -3497,7 +3508,7 @@ function tapWords(text) {
   return esc(text).split(/(\s+)/).map((tok, i) => {
     const core = tok.replace(/^[^\p{L}’']+|[^\p{L}’']+$/gu, '');
     if (!core) return tok;
-    if (FUNC_W.has(core.toLowerCase()) && !FORM_IX[norm(core)]) return tok;
+    if ((FUNC_W.has(core.toLowerCase()) || /^[’']s$/i.test(core)) && !FORM_IX[norm(core)]) return tok; // ’s (’s avonds) is no word to look up
     if (i > 0 && /^\p{Lu}/u.test(core) && !FORM_IX[norm(core)]) return tok;
     const n = norm(core); const id = FORM_IX[n] || (Object.values(S.custom || {}).find(l => norm(l.w) === n) || {}).id;
     return tok.replace(core, id ? `<button class="rw" data-act="word" data-id="${id}">${core}</button>` : `<button class="rw new" data-act="word-look" data-w="${esc(core)}">${core}</button>`);
@@ -4700,6 +4711,8 @@ function feedListen(fid, j) {
    The file loads a few seconds after start (never while the app opens) and the service worker keeps it offline. */
 
 let DICT = null, DICT_IX = null, DICT_P = null;
+// names at the start of a sentence in the app's texts: they need no card (tests/validate.js)
+const WB_NAMES = ['sarah', 'lies', 'tom', 'karim', 'maria', 'emma', 'pieter', 'nadia', 'rubens', 'antwerpen', 'gent', 'brussel', 'zurenborg', 'berchem', 'meir', 'schelde', 'seef'];
 function loadDict() {
   if (DICT) return Promise.resolve(DICT);
   if (!DICT_P) DICT_P = fetch('woordenboek.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(list => {
@@ -4707,6 +4720,7 @@ function loadDict() {
     const add = (f, l) => { const k = norm(f || ''); if (k && !DICT_IX[k]) DICT_IX[k] = l; };
     DICT.forEach(l => add(l.w, l)); // lemmas first, so "kast" never points at another word's form
     DICT.forEach(l => { [l.pl, l.dim, l.e].concat(l.f || []).forEach(f => add(f, l)); if (l.v) allForms(l).forEach(f => add(f, l)); });
+    DICT.forEach(l => textForms(l).forEach(f => add(f, l)));
     enrichCustom();
     return DICT;
   }).catch(e => { DICT_P = null; throw e; });

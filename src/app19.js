@@ -16,6 +16,7 @@ function loadDict() {
     const add = (f, l) => { const k = norm(f || ''); if (k && !DICT_IX[k]) DICT_IX[k] = l; };
     DICT.forEach(l => add(l.w, l)); // lemmas first, so "kast" never points at another word's form
     DICT.forEach(l => { [l.pl, l.dim, l.e].concat(l.f || []).forEach(f => add(f, l)); if (l.v) allForms(l).forEach(f => add(f, l)); });
+    DICT.forEach(l => textForms(l).forEach(f => add(f, l)));
     enrichCustom();
     return DICT;
   }).catch(e => { DICT_P = null; throw e; });

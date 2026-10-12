@@ -95,7 +95,7 @@ const {openApp} = require('./page');
     const noCard = new Set(); const NAMES = new Set(WB_NAMES);
     Object.values(READ).map(R => R.text).concat(SENT.map(s => s.nl), LEX.map(l => l.s || '')).forEach(t => t.split(/\s+/).forEach((tok, i) => {
       const core = tok.replace(/^[^\p{L}’']+|[^\p{L}’']+$/gu, ''); if (!core || core.length < 2 || (i > 0 && /^\p{Lu}/u.test(core))) return;
-      const n = norm(core); if (FORM_IX[n] || dictFind(n) || NAMES.has(n) || ['de', 'het', 'een'].includes(n)) return; noCard.add(n); }));
+      const n = norm(core); if (FORM_IX[n] || dictFind(n) || NAMES.has(n) || ['de', 'het', 'een', "'s"].includes(n)) return; noCard.add(n); }));
     if (noCard.size) bad.push('words in the app texts without a card: ' + [...noCard].join(', '));
     // underline means "tap for the word card" only: the subject is bold, verbs are gold
     if (/<u>/.test(frameHTML(SENT[0]))) bad.push('frameHTML underlines the subject');
