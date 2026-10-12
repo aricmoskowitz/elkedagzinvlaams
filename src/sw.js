@@ -3,7 +3,7 @@
    system fallbacks look fine offline). A new version waits until the page says "herlaad". */
 const CACHE = 'edz-__VERSION__';
 const FONTS = 'edz-fonts';
-const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon180.png', 'icon192.png', 'icon512.png', 'icon512-maskable.png'];
+const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon180.png', 'icon192.png', 'icon512.png', 'icon512-maskable.png', 'woordenboek.json'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL.map(u => new Request(u, {cache: 'reload'})))));
 });

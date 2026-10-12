@@ -333,3 +333,5 @@ a.btn{text-decoration:none;text-align:center;box-sizing:border-box}
 /* 2.5: your own sentence, the words that differ */
 .yours .d{color:var(--warn);text-decoration:line-through;text-decoration-thickness:1.5px}
 .en-hl{font-weight:700;color:var(--ink)}
+.dictpill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--ink2);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:1px 8px;vertical-align:1px}
+.dictpill.vl{color:#7A5A12;background:#FBF3DC;border-color:#EAD9A6}

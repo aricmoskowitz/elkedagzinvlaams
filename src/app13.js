@@ -37,7 +37,7 @@ function tapWords(text) {
     if (FUNC_W.has(core.toLowerCase()) && !FORM_IX[norm(core)]) return tok;
     if (i > 0 && /^\p{Lu}/u.test(core) && !FORM_IX[norm(core)]) return tok;
     const n = norm(core); const id = FORM_IX[n] || (Object.values(S.custom || {}).find(l => norm(l.w) === n) || {}).id;
-    return tok.replace(core, id ? `<button class="rw" data-act="word" data-id="${id}">${core}</button>` : `<button class="rw new" data-act="word-add" data-w="${esc(core)}">${core}</button>`);
+    return tok.replace(core, id ? `<button class="rw" data-act="word" data-id="${id}">${core}</button>` : `<button class="rw new" data-act="word-look" data-w="${esc(core)}">${core}</button>`);
   }).join('');
 }
 function readHTML(text) { return tapWords(text); }

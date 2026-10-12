@@ -74,6 +74,8 @@ document.addEventListener('click', e => {
     case 'card-grade': cardGrade(d.ok === '1'); break;
     case 'cards-again': startCards(shuffle(CARDS.unknown), {mode: CARDS.mode, dir: CARDS.dir, name: CARDS.name}); break;
     case 'word-add': closeSheet(); quickAdd(d.w); break;
+    case 'word-look': closeSheet(); lookupWord(d.w); break;
+    case 'dict-word': { const l = dictById(d.id); if (l) { closeSheet(); openDictCard(l); } break; }
     case 'word': showWord(d.id); break;
     case 'lesson-ro': openLesson(d.q, true); break;
     case 'lesson-done': closeOverlay('lesson'); startStep(d.q, 'oefen'); break;
@@ -127,7 +129,8 @@ document.addEventListener('submit', e => { if (e.target.id === 'ex-form') { e.pr
 document.addEventListener('input', e => {
   const t = e.target;
   if (t.id === 'ex-in') { const er = $('#ex-err'); if (er) er.hidden = true; }
-  if (t.id === 'wsearch') { WQ = t.value; $('#wlist').innerHTML = wordList(); }
+  if (t.id === 'wsearch') { WQ = t.value; $('#wlist').innerHTML = wordList() + dictHits(WQ); }
+  if (t.id === 'nw-w') { clearTimeout(t._dt); t._dt = setTimeout(() => dictFillForm(t), 350); }
   if (t.id === 'nsearch') { NQ = t.value; naslagFilter(); }
   if (t.id === 'set-rate') { S.settings.rate = Number(t.value); $('#rate-out').textContent = t.value; Store.mark('state'); }
 });
