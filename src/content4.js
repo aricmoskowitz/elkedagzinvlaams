@@ -60,16 +60,16 @@ SENT.push(
 );
 SQUARES.push(
 {id:'u7q1',u:'u7',n:1,name:'Omdatplein',title:'Omdat en want',en:'Omdat and want',
- rule:'Both give a reason. After <i>omdat</i> the conjugated verb goes to the <b>end</b>: <i>…omdat het <u>regent</u></i>. After <i>want</i> the order stays normal: <i>…want het <u>regent</u></i>, <i>…want het <u>is</u> zaterdag</i>.',ex:['u7s1','u7s2','u7s4'],
+ rule:'Both give a reason. After <i>omdat</i> the conjugated verb goes to the <b>end</b>: <i>…omdat het <b class="verbword">regent</b></i>. After <i>want</i> the order stays normal: <i>…want het <b class="verbword">regent</b></i>, <i>…want het <b class="verbword">is</b> zaterdag</i>.',ex:['u7s1','u7s2','u7s4'],
  words:['omdat','want','waarom','goed','leuk','moe','druk','mening','vinden'],sents:['u7s1','u7s2','u7s3','u7s4','u7s5','u7s6','u7s7','u7s8']},
 {id:'u7q2',u:'u7',n:2,name:'Denkplein',title:'Dat, of en vraagwoorden',en:'Dat, of and question words',
- rule:'<i>Ik weet / denk / hoop / vraag</i> + a clause with <i>dat</i>, <i>of</i> or a question word (<i>waar, wat, hoeveel</i>): the conjugated verb goes to the <b>end</b> of that clause. <i>Ik weet dat de halte dichtbij <u>is</u>.</i> <i>Weet u waar de Meir <u>is</u>?</i>',ex:['u7s9','u7s11','u7s13'],
+ rule:'<i>Ik weet / denk / hoop / vraag</i> + a clause with <i>dat</i>, <i>of</i> or a question word (<i>waar, wat, hoeveel</i>): the conjugated verb goes to the <b>end</b> of that clause. <i>Ik weet dat de halte dichtbij <b class="verbword">is</b>.</i> <i>Weet u waar de Meir <b class="verbword">is</b>?</i>',ex:['u7s9','u7s11','u7s13'],
  words:['weten','denken','vragen','begrijpen','zeggen','hopen','zeker','buurt','buur','buurvrouw'],sents:['u7s9','u7s10','u7s11','u7s12','u7s13','u7s14','u7s15','u7s16']},
 {id:'u7q3',u:'u7',n:3,name:'Alsplein',title:'Als, wanneer, toen',en:'When and if clauses',
- rule:'In an <i>als / wanneer / toen</i>-clause the verb goes to the end. When that clause comes <b>first</b>, it fills slot 1, so the main clause starts with its verb: <i>Als het <u>regent</u>, <u>neem</u> ik de tram.</i> <i>Toen</i> is for one time in the past.',ex:['u7s17','u7s20','u7s21'],
+ rule:'In an <i>als / wanneer / toen</i>-clause the verb goes to the end. When that clause comes <b>first</b>, it fills slot 1, so the main clause starts with its verb: <i>Als het <b class="verbword">regent</b>, <b class="verbword">neem</b> ik de tram.</i> <i>Toen</i> is for one time in the past.',ex:['u7s17','u7s20','u7s21'],
  words:['als','wanneer','toen','zon','weer','regenen','warm','koud','paraplu','vrij','schijnen'],sents:['u7s17','u7s18','u7s19','u7s20','u7s21','u7s22','u7s23','u7s24']},
 );
-GRAM.u7 = {title:'Bijzinnen', en:'Subordinate clauses', body:[], why:'A subordinate clause is a sentence inside a sentence. Dutch marks it by sending the conjugated verb to the end, so you hear where the clause stops: <i>…dat het museum vandaag open <u>is</u>.</i> Only <i>want, maar, en, of</i> (“or”) and <i>dus</i> keep normal order. And when a whole clause stands in slot 1, the main verb still has to be second: <i>Als het regent, neem ik…</i>', ex:['u7s1']};
+GRAM.u7 = {title:'Bijzinnen', en:'Subordinate clauses', body:[], why:'A subordinate clause is a sentence inside a sentence. Dutch marks it by sending the conjugated verb to the end, so you hear where the clause stops: <i>…dat het museum vandaag open <b class="verbword">is</b>.</i> Only <i>want, maar, en, of</i> (“or”) and <i>dus</i> keep normal order. And when a whole clause stands in slot 1, the main verb still has to be second: <i>Als het regent, neem ik…</i>', ex:['u7s1']};
 Object.assign(UNITS.find(x => x.id === 'u7'), {built: true, theme: 'Meningen en het weer', themeEn: 'Opinions and the weather',
   mission: 'Vraag een Antwerpenaar wat hij of zij van de stad vindt, en geef zelf je mening met “omdat”.', missionEn: 'Ask a local what they think of the city, and give your own opinion with “omdat”.'});
 SCENARIOS.splice(SCENARIOS.findIndex(s => s.id === 'sc-free'), 0,

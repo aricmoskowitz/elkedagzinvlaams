@@ -6,17 +6,25 @@ const Audio = {
     const vs = this.voices; if (!vs.length) return null;
     return vs.find(v => v.name === S.settings.voice) || vs.find(v => /ellen/i.test(v.name)) || vs.find(v => /nl[-_]BE/i.test(v.lang)) || vs[0];
   },
-  say(text) {
+  // btn: the speaker button that was tapped. While it plays it shows a stop sign; tapping it again stops.
+  btn: null,
+  say(text, btn) {
     if (!('speechSynthesis' in window)) { toast('Spraak is niet beschikbaar in deze browser'); return; }
+    if (btn && btn === this.btn && btn.classList.contains('playing')) { this.stop(); return; }
     try {
-      speechSynthesis.cancel();
+      this.stop();
       const u = new SpeechSynthesisUtterance(String(text).replace(/<[^>]+>/g, ''));
       const v = this.voice(); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'nl-BE';
-      u.rate = S.settings.rate || 0.9; speechSynthesis.speak(u);
+      u.rate = S.settings.rate || 0.9;
+      if (btn) { this.btn = btn; btn.classList.add('playing'); btn.dataset.label = btn.getAttribute('aria-label') || ''; btn.setAttribute('aria-label', 'Stop'); u.onend = u.onerror = () => { if (this.btn === btn) this.release(); }; }
+      speechSynthesis.speak(u);
     } catch (e) {}
-  }
+  },
+  release() { const b = this.btn; this.btn = null; if (b) { b.classList.remove('playing'); b.setAttribute('aria-label', b.dataset.label || 'Beluister'); } },
+  stop() { this.release(); try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {} }
 };
-const speakBtn = (text, label = 'Beluister') => `<button class="speak" data-act="say" data-text="${esc(text)}" aria-label="${label}" data-en="Listen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>`;
+const SPEAK_ICON = (n = 18) => `<svg class="ico-play" width="${n}" height="${n}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg><svg class="ico-stop" width="${n}" height="${n}" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>`;
+const speakBtn = (text, label = 'Beluister') => `<button class="speak" data-act="say" data-text="${esc(text)}" aria-label="${label}" data-en="Listen · tap again to stop">${SPEAK_ICON()}</button>`;
 
 /* ===== ARTICLES & WORD DISPLAY ===== */
 const art = l => l && l.g ? `<span class="art ${l.g}">${l.g}</span> ` : '';
@@ -36,7 +44,7 @@ function frameCols(s) {
   c.forEach((x, i) => {
     let sl = x.sl;
     if (sl === 's') sl = (i === 0) ? '1' : '3';
-    cols[sl].push(x.sl === 's' ? `<u>${esc(x.t)}</u>` : esc(x.t));
+    cols[sl].push(x.sl === 's' ? `<b class="subj">${esc(x.t)}</b>` : esc(x.t));
   });
   return cols;
 }
@@ -47,7 +55,7 @@ function frameHTML(s) {
   return `<div class="frame" role="img" aria-label="Zinsschema">` + show.map(n => {
     const empty = !cols[n].length;
     return `<div class="slot s${n}${empty ? ' empty' : ''}"><span class="lab" data-en="${labs[n][2]}">${labs[n][0]} · ${labs[n][1]}</span><span class="box">${empty ? (n === 1 ? 'leeg' : '–') : cols[n].join(' ')}</span></div>`;
-  }).join('') + `</div><div class="small" style="margin-top:4px">Onderstreept: het onderwerp.</div>`;
+  }).join('') + `</div><div class="small" style="margin-top:4px" data-en="Bold: the subject">Vet: het onderwerp.</div>`;
 }
 const SUBORD = new Set(['omdat', 'dat', 'of', 'als', 'wanneer', 'toen', 'waar', 'wat', 'wie', 'hoe', 'hoeveel', 'waarom', 'welke', 'terwijl', 'voordat', 'nadat', 'zodat', 'hoewel', 'tot', 'sinds', 'zodra']);
 function frameNote(s) {
@@ -91,6 +99,28 @@ function orderVariants(s) {
 }
 
 /* ===== EXERCISES ===== */
+// Translating into Dutch: when the Dutch sentence starts with something other than the subject
+// (inversie), the card says so and asks for that order; otherwise every correct order counts.
+function trAsk(s) {
+  const c = s.ch; const first = c[0];
+  if (s.q || first.sl === '2' || first.sl === 's') return {sub: '', accept: orderVariants(s).map(norm)};
+  const k = voorveldKind(s);
+  return {sub: `<span data-en="${VV_ASK[k][1]}">${VV_ASK[k][0]}</span> <span data-en="inversion: verb in slot 2, then the subject">(inversie)</span>`, accept: [norm(s.nl)]};
+}
+// what kind of thing stands in slot 1, so the card can ask for it without giving the words away
+const VV_TIME = /^(morgen|vandaag|gisteren|gisteravond|overmorgen|eergisteren|dan|nu|straks|later|vroeger|soms|altijd|vanavond|vanmorgen|vanmiddag|[’']s|om\b|elke|iedere|vorig|vorige|volgend|volgende|maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag|in (de|het) (vakantie|weekend|zomer|winter|lente|herfst|ochtend|avond|middag|nacht)|op (maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag)|na (de|het) (les|werk|middag|vakantie|film)|voor (de|het) (les|werk))\b/i;
+const VV_PLACE = /^(hier|daar|overal|binnen|buiten|thuis|(in|op|aan|bij|naast|achter|voor|onder|boven|na|tegenover|langs|tussen|rond) \S)/i;
+const VV_ASK = {tijd: ['Begin met <b>de tijd</b>', 'Start with the time'], plaats: ['Begin met <b>de plaats</b>', 'Start with the place'], bijzin: ['Begin met <b>de bijzin</b>', 'Start with the clause (als, wanneer, toen…)'],
+  voorwerp: ['Begin met <b>het voorwerp</b>', 'Start with the object'], engels: ['Begin <b>zoals de Engelse zin</b>', 'Start like the English sentence']};
+const VV_KIND = {u3s19: 'engels'}; // bij de koffie: neither a time nor a place
+function voorveldKind(s) {
+  const t = s.ch[0].t;
+  if (VV_KIND[s.id]) return VV_KIND[s.id];
+  if (SUBORD.has(t.toLowerCase().split(' ')[0])) return 'bijzin';
+  if (VV_TIME.test(t)) return 'tijd';
+  if (VV_PLACE.test(t)) return 'plaats';
+  return 'voorwerp';
+}
 const DAYWORD = {fix: 'Verbeter je zin', rec: 'Kies het woord', prod: 'Vul in', gen: 'De of het?', conj: 'Vervoeg', ord: 'Zet in de juiste volgorde', tr: 'Vertaal naar het Nederlands', lisMc: 'Welke zin hoor je?', lisType: 'Luister en typ'};
 const DAYWORD_EN = {fix: 'Correct your sentence', rec: 'Pick the word', prod: 'Fill in', gen: 'De or het?', conj: 'Conjugate', ord: 'Put in the right order', tr: 'Translate into Dutch', lisMc: 'Which sentence do you hear?', lisType: 'Listen and type'};
 
@@ -187,7 +217,7 @@ function makeEx(key, ctx = 'drill') {
       const o = pick(occ); const s = o.s;
       const body = `<span class="nl">${blankOut(s.nl, o.surf)}</span>`;
       const hint = l.v ? ` · <span class="nl">(${esc(l.w)})</span>` : '';
-      const base = {key, lex: l, sent: s, prompt: body, sub: `${esc(s.en)}${hint}`, answer: o.surf.toLowerCase(), why: clozeWhy(l, o.surf) + (s.why ? ' ' + s.why : ''), say: s.nl};
+      const base = {key, lex: l, sent: s, prompt: body, sub: `${enCue(s.en, l)}${hint}`, answer: o.surf.toLowerCase(), why: clozeWhy(l, o.surf) + (s.why ? ' ' + s.why : ''), say: s.nl};
       if (sk === 'rec' || ctx === 'feed') {
         const opts = shuffle([o.surf.toLowerCase(), ...distractorsFor(l, o.surf)]).slice(0, ctx === 'feed' ? 3 : 4);
         if (!opts.includes(o.surf.toLowerCase())) opts[0] = o.surf.toLowerCase();
@@ -204,11 +234,11 @@ function makeEx(key, ctx = 'drill') {
     return {type: 'type', key, lex: l, label: 'prod', prompt: defP, sub: `${POS[l.p] || ''}${l.g ? ' · <b class="' + l.g + '">' + l.g + '</b> …' : ''} · ${esc(l.w.length)} letters`, answer: l.w, accept: [norm(l.w)], why: `${wordHTML(l)}: ${esc(l.d)}. <span class="muted">(${esc(l.en)})</span>` + (l.why ? ' ' + l.why : ''), say: (l.g ? l.g + ' ' : '') + l.w};
   }
   const s = SX[id];
-  if (sk === 'tr') return {type: 'type', key, label: 'tr', prompt: `<span class="nl">${esc(s.en)}</span>`, sub: 'Zeg het in het Nederlands, uit je hoofd.', answer: s.nl, accept: orderVariants(s).map(norm), whole: true, why: frameNote(s) + (s.why ? ' ' + s.why : ''), frame: s, say: s.nl};
+  if (sk === 'tr') return {type: 'type', key, label: 'tr', prompt: `<span class="nl">${esc(s.en)}</span>`, sub: trAsk(s).sub || 'Zeg het in het Nederlands, uit je hoofd.', answer: s.nl, accept: trAsk(s).accept, whole: true, why: frameNote(s) + (s.why ? ' ' + s.why : ''), frame: s, say: s.nl};
   if (sk === 'ord') {
     const words = s.nl.split(' ').length;
     if (it && it.r >= 1 && words <= 6 && Math.random() < 0.4) {
-      return {type: 'type', key, sent: s, label: 'tr', prompt: `<span class="nl">${esc(s.en)}</span>`, sub: '', answer: s.nl, accept: orderVariants(s).map(norm), whole: true, why: frameNote(s) + (s.why ? ' ' + s.why : ''), frame: s, say: s.nl};
+      return {type: 'type', key, sent: s, label: 'tr', prompt: `<span class="nl">${esc(s.en)}</span>`, sub: trAsk(s).sub, answer: s.nl, accept: trAsk(s).accept, whole: true, why: frameNote(s) + (s.why ? ' ' + s.why : ''), frame: s, say: s.nl};
     }
     const lower = t => PROPER.has(t.split(' ')[0]) ? t : t[0].toLowerCase() + t.slice(1);
     const toks = shuffle(s.ch.map((x, i) => ({t: i === 0 ? lower(x.t) : x.t, i})));

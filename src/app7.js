@@ -10,7 +10,7 @@ const HOWTO = {
   gen: ['Kies het lidwoord.', '<b class="de">de</b> is blauw, <b class="het">het</b> is rood. Zo zie je het overal in de app.'],
   conj: ['Typ de juiste vorm van het werkwoord.', 'Voorbeeld: <i>nemen · hij ___</i> → <b class="verbword">neemt</b>'],
   ord: ['Tik de stukjes in de juiste volgorde. Tik een stukje opnieuw om het terug te leggen.', 'Denk aan de regel: het werkwoord staat op plaats 2.'],
-  tr: ['Schrijf de Engelse zin in het Nederlands.', 'Andere juiste volgordes tellen ook.'],
+  tr: ['Schrijf de Engelse zin in het Nederlands.', 'Staat er <i>Begin met de tijd</i> (of de plaats, de bijzin…)? Zet dat vooraan: het werkwoord blijft op plaats 2 en het onderwerp komt erna (inversie). Anders tellen andere juiste volgordes ook.'],
   lisMc: ['Luister en kies de zin die je hoort.', 'Tik op de luidspreker om opnieuw te luisteren.'],
   lisType: ['Luister en typ wat je hoort.', 'Hoofdletters en leestekens tellen niet mee.']
 };

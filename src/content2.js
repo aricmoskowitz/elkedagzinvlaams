@@ -140,7 +140,7 @@ SENT.push(
 
 SQUARES.push(
 {id:'u4q1',u:'u4',n:1,name:'Bakkershoek',title:'Willen en kunnen',en:'Want and can',
- rule:'A modal verb (<i>willen, kunnen</i>) takes slot 2. The main verb goes to the <b>end</b>, as an infinitive: <i>Ik <u>wil</u> een broodje <u>kopen</u>.</i> The two verbs form a bracket around the middle.',ex:['u4s1','u4s4','u4s5'],
+ rule:'A modal verb (<i>willen, kunnen</i>) takes slot 2. The main verb goes to the <b>end</b>, as an infinitive: <i>Ik <b class="verbword">wil</b> een broodje <b class="verbword">kopen</b>.</i> The two verbs form a bracket around the middle.',ex:['u4s1','u4s4','u4s5'],
  words:['willen','kunnen','brood','taart','bakker','kopen','betalen','kaart','graag'],sents:['u4s1','u4s2','u4s3','u4s4','u4s5','u4s6']},
 {id:'u4q2',u:'u4',n:2,name:'Koffieplein',title:'Mag ik…?',en:'May I…?',
  rule:'Ask politely with <i>mogen</i>: <i>Mag ik de rekening?</i> The modal comes first in a question. Often the second verb is left out because it is obvious (<i>Mag ik een koffie?</i> = may I <i>have</i> a coffee).',ex:['u4s7','u4s8','u4s11'],
@@ -149,13 +149,13 @@ SQUARES.push(
  rule:'<i>moeten</i> (must) and <i>zullen</i> (will, shall) work the same way: modal in slot 2, infinitive at the end. <i>Zullen we…?</i> makes a suggestion.',ex:['u4s13','u4s14','u4s15'],
  words:['moeten','zullen','vertrekken','wachten','boot','haven','straks','samen'],sents:['u4s13','u4s14','u4s15','u4s16','u4s17','u4s18']},
 {id:'u5q1',u:'u5',n:1,name:'Boekenplein',title:'Hebben + ge…t / ge…d',en:'Have + weak participle',
- rule:'The present perfect is <i>hebben</i> in slot 2 and a participle at the <b>end</b>: <i>Ik <u>heb</u> gisteren <u>gewerkt</u>.</i> Weak verbs: <i>ge</i> + stem + <i>t</i> or <i>d</i>. The stem ends in a letter of <b>’t kofschip</b> (t, k, f, s, ch, p)? Then <i>-t</i> (<i>gewerkt</i>); otherwise <i>-d</i> (<i>gespeeld</i>).',ex:['u5s1','u5s2','u5s4'],
+ rule:'The present perfect is <i>hebben</i> in slot 2 and a participle at the <b>end</b>: <i>Ik <b class="verbword">heb</b> gisteren <b class="verbword">gewerkt</b>.</i> Weak verbs: <i>ge</i> + stem + <i>t</i> or <i>d</i>. The stem ends in a letter of <b>’t kofschip</b> (t, k, f, s, ch, p)? Then <i>-t</i> (<i>gewerkt</i>); otherwise <i>-d</i> (<i>gespeeld</i>).',ex:['u5s1','u5s2','u5s4'],
  words:['gisteren','weekend','week','werken','spelen','koken','wandelen','maken','vorig'],sents:['u5s1','u5s2','u5s3','u5s4','u5s5','u5s6']},
 {id:'u5q2',u:'u5',n:2,name:'Museumplein',title:'Sterke deelwoorden',en:'Strong participles',
  rule:'Strong verbs change their vowel and end in <i>-en</i>: <i>lezen → gelezen, schrijven → geschreven, kijken → gekeken, zien → gezien</i>. Learn them in families (<i>ij – ee – e</i>).',ex:['u5s7','u5s9','u5s12'],
  words:['lezen','schrijven','kijken','museum','boek','schilderij','film'],sents:['u5s7','u5s8','u5s9','u5s10','u5s11','u5s12']},
 {id:'u5q3',u:'u5',n:3,name:'Reizigersplein',title:'Zijn + deelwoord',en:'Be + participle',
- rule:'Verbs of movement to a place or change of state take <i>zijn</i>: <i>ik <u>ben</u> naar zee <u>gegaan</u>, de trein <u>is</u> <u>vertrokken</u></i>. Also <i>zijn</i> and <i>blijven</i> themselves: <i>ik ben thuis gebleven</i>.',ex:['u5s14','u5s13','u5s18'],
+ rule:'Verbs of movement to a place or change of state take <i>zijn</i>: <i>ik <b class="verbword">ben</b> naar zee <b class="verbword">gegaan</b>, de trein <b class="verbword">is</b> <b class="verbword">vertrokken</b></i>. Also <i>zijn</i> and <i>blijven</i> themselves: <i>ik ben thuis gebleven</i>.',ex:['u5s14','u5s13','u5s18'],
  words:['blijven','thuis','trein','zee','vakantie','vriend','reizen'],sents:['u5s13','u5s14','u5s15','u5s16','u5s17','u5s18']},
 {id:'u6q1',u:'u6',n:1,name:'Gevelplein',title:'De en het + -e',en:'The + -e',
  rule:'Before a noun, after <i>de, het, die, dit, deze, dat</i>, the adjective <b>always</b> gets <i>-e</i>: <i>de oude kerk, het oude huis</i>. Watch the spelling: <i>groot → grote</i>.',ex:['u6s1','u6s2','u6s5'],
@@ -164,7 +164,7 @@ SQUARES.push(
  rule:'The one exception: <i>een</i> (or no article) + a singular <i>het</i>-word, and the adjective stays bare: <i>een oud huis, een hoog dak</i>. With a <i>de</i>-word it still gets <i>-e</i>: <i>een rode deur</i>.',ex:['u6s7','u6s10','u6s9'],
  words:['hoog','smal','rood','wit','gevel','dak','raam','tuin'],sents:['u6s7','u6s8','u6s9','u6s10','u6s11']},
 {id:'u6q3',u:'u6',n:3,name:'Binnenplaats',title:'Achter het werkwoord · meervoud',en:'After the verb · plurals',
- rule:'After the verb, the adjective has no ending: <i>het huis is <u>oud</u></i>. Before a plural it always has <i>-e</i>: <i>de oude trappen, gezellige cafés</i>.',ex:['u6s14','u6s13','u6s15'],
+ rule:'After the verb, the adjective has no ending: <i>het huis is <b>oud</b></i>. Before a plural it always has <i>-e</i>: <i>de oude trappen, gezellige cafés</i>.',ex:['u6s14','u6s13','u6s15'],
  words:['donker','licht','gezellig','kamer','trap','appartement'],sents:['u6s12','u6s13','u6s14','u6s15','u6s16','u6s17']},
 );
 Object.assign(GRAM, {

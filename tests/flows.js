@@ -56,14 +56,28 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(await answerAll(), 'Oefen session runs to the end'); await shot('05_session_end');
   ok(await p.evaluate(() => (S.sq.u1q1.steps.oefen || 0) >= 80), 'Oefen checkpoint stored');
   await p.evaluate(() => closeSession());
+  ok(await p.evaluate(() => nextStep('u1q1') === 'lees'), 'after Oefen the next guild house (and the cyclist) is Lees, not Luister');
 
-  // Lees
+  // Lees: five questions, 4 of 5 is gehaald, the speaker can stop the reading
+  await p.evaluate(() => { const fake = {speaking: false, speak(u) { this.u = u; }, cancel() { if (this.u && this.u.onend) { const u = this.u; this.u = null; u.onend(); } }, getVoices: () => []};
+    Object.defineProperty(window, 'speechSynthesis', {value: fake, configurable: true}); });
   await p.evaluate(() => { PAD.lvl = 'sq'; PAD.q = 'u7q1'; PAD.u = 'u7'; render(); startStep('u7q1', 'lees'); }); await p.waitForTimeout(200);
-  if (await p.evaluate(() => !!READ.u7q1)) {
-    await p.evaluate(() => READ.u7q1.qs.forEach((q, i) => readAnswer(i, q.a))); await shot('06_read');
-    ok(await p.evaluate(() => S.sq.u7q1.steps.lees === 100), 'Lees: three right answers mark the house done');
-    await p.click('[data-act=read-close]');
-  }
+  ok(await p.evaluate(() => $$('#read [id^=rq-]').length === 5), 'Lees shows five questions');
+  await p.click('#read .speak'); const playing = await p.evaluate(() => $('#read .speak').classList.contains('playing') && $('#read .speak').getAttribute('aria-label') === 'Stop');
+  await p.click('#read .speak'); const stopped = await p.evaluate(() => !$('#read .speak').classList.contains('playing') && !speechSynthesis.u);
+  ok(playing && stopped, 'Lees: the speaker turns into a stop button while it reads; tapping it again stops the reading');
+  await p.evaluate(() => READ.u7q1.qs.forEach((q, i) => readAnswer(i, i === 4 ? (q.a + 1) % 3 : q.a))); await shot('06_read');
+  ok(await p.evaluate(() => S.sq.u7q1.steps.lees === 80 && /gehaald/.test($('#read-end').textContent)), 'Lees: 4 of 5 right is gehaald (80%)');
+  await p.click('[data-act=read-close]');
+
+  // Scroll: the listening card asks what the sentence means; every card has a clear label
+  const lis = await p.evaluate(() => { const c = {kind: 'l', s: SENT.find(x => x.id === 'u1s2'), fid: 'ftest'}; FC.ftest = c;
+    const sec = document.createElement('section'); sec.className = 'fcard'; sec.dataset.fid = 'ftest'; sec.innerHTML = fcardHTML(c); document.body.appendChild(sec);
+    const n = $$('[data-act=flis]', sec).length; const hidden = $('.fback', sec).hidden; const k = $('.kind', sec); const pill = getComputedStyle(k).fontWeight === '600' && parseFloat(getComputedStyle(k).borderTopLeftRadius) > 10;
+    feedListen('ftest', c.opts.indexOf(c.s.en)); const r = {n, hidden, pill, right: !!$('.opt.right', sec), shown: !$('.fback', sec).hidden, ok: /Juist/.test($('.ffb', sec).textContent)}; sec.remove(); return r; });
+  ok(lis.n === 3 && lis.hidden && lis.shown && lis.right && lis.ok && lis.pill, 'Scroll Luister: three meanings to choose from, then the sentence; the card label is a clear pill');
+  const tr = await p.evaluate(() => { const ex = makeEx('s:u1s2:tr'); return {sub: ex.sub, ok: check(ex, ex.answer).ok, sv: check(ex, 'Ik neem morgen de tram.').kind}; });
+  ok(/Begin met <b>de tijd<\/b>/.test(tr.sub) && !/Morgen/i.test(tr.sub) && /inversie/.test(tr.sub) && tr.ok && tr.sv === 'order', 'Vertaal asks for inversion (the kind of slot 1, not its words) when the sentence has it, and subject-first is "Andere volgorde": ' + tr.sub.replace(/<[^>]+>/g, ''));
 
   // Grote Markt review + Gebruik sheet (no tutor any more)
   await p.evaluate(() => { PAD.lvl = 'markt'; PAD.u = 'u7'; render(); }); await shot('07_markt');

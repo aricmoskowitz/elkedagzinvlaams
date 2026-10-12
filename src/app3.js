@@ -96,7 +96,7 @@ function sesRender() {
   const inp = $('#ex-in'); if (inp) setTimeout(() => inp.focus(), 60);
 }
 function exHTML(ex) {
-  let h = `<div class="ex-label" data-en="${DAYWORD_EN[ex.label] || ''}">${DAYWORD[ex.label] || ''}</div>`;
+  let h = kindLabel(ex.label, 'ex-label');
   const how = howtoHTML(ex); if (how) h += how;
   if (ex.listen) h += `<div class="row">${speakBtn(ex.say, 'Speel af')}<span class="small">Tik om opnieuw te luisteren</span></div>`;
   if (ex.prompt) h += `<div class="ex-prompt">${ex.prompt}</div>`;
@@ -141,12 +141,19 @@ function showFeedback(ex, res, val) {
     <h3 data-en="${headsEn[res.kind]}">${heads[res.kind]}</h3>
     ${res.note ? `<div class="small">${res.note}</div>` : ''}
     <div class="row">${ex.say ? speakBtn(ex.say) : ''}<div class="answer">${ansHTML}</div></div>
+    ${yoursHTML(ex, res, val)}
     ${ex.sent && (ex.listen || ex.whole) ? `<div class="small">${esc(ex.sent.en)}</div>` : ''}
     ${ex.frame && (res.kind === 'order' || ex.label === 'ord' || ex.label === 'tr') ? frameHTML(ex.frame) : ''}
     <div class="why">${whyFor(ex, res)}</div>
   </div><button class="btn block" data-act="ses-next" id="ses-next" style="margin-top:12px">Verder</button>`;
   if (!ex.listen && res.ok && ex.say && ex.type !== 'gen') setTimeout(() => Audio.say(ex.say), 150);
   setTimeout(() => { const n = $('#ses-next'); if (n) { n.focus({preventScroll: true}); n.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest'}); } }, 50);
+}
+// a whole sentence that was not right: show Ari's own sentence with the words that differ struck through
+function yoursHTML(ex, res, val) {
+  if (res.ok || !ex.whole || ex.type === 'order' || !String(val || '').trim()) return '';
+  const words = String(val).trim().split(/\s+/); const diff = fixDiff(val, ex.answer);
+  return `<div class="small yours"><span data-en="Your sentence">Jij:</span> <span class="nl">${words.map((w, i) => diff.has(i) ? `<s class="d">${esc(w)}</s>` : esc(w)).join(' ')}</span></div>`;
 }
 function sesNext() { if (!SES) return; SES.i++; SES.answered = false; sesRender(); }
 function sesEnd() {
@@ -222,7 +229,9 @@ function startStep(q, step) {
   if (step === 'lees') return toast('Lezen komt in een volgende versie');
   if (step === 'gebruik') return openUse(q);
 }
-const nextStep = q => BUILT_STEPS.find(s => !stepDone(q, s)) || (typeof READ !== 'undefined' && READ[q] && !stepDone(q, 'lees') ? 'lees' : null) || (!stepDone(q, 'gebruik') ? 'gebruik' : 'oefen');
+// the next guild house in the plein's own order (Ontdek, Oefen, Lees, Luister, Gebruik); Lees only where the plein has a text
+const stepAvail = (q, s) => BUILT_STEPS.includes(s) || (s === 'lees' && typeof READ !== 'undefined' && !!READ[q]) || s === 'gebruik';
+const nextStep = q => STEPS.find(s => stepAvail(q, s) && !stepDone(q, s)) || 'oefen';
 const STEP_NAME = {ontdek: 'Ontdek', oefen: 'Oefen', lees: 'Lees', luister: 'Luister', gebruik: 'Gebruik'};
 
 /* ===== LESSON (Ontdek, per square) ===== */
@@ -237,7 +246,7 @@ function openLesson(q, readOnly) {
     <div><div class="eyebrow">${esc(unit.name)} · ${esc(sq.name)}</div><h1 style="margin-top:4px">${esc(sq.title)}</h1><div class="muted" style="margin-top:2px">${esc(sq.en)}</div></div>
     <p class="why" style="margin:0">${sq.rule}</p>
     ${sq.ex.map(id => { const s = SX[id]; return `<div class="card stack" style="gap:8px"><div class="row">${speakBtn(s.nl)}<div class="nl" style="font-size:19px">${tapWords(s.nl)}</div></div><div class="small">${esc(s.en)}</div>${frameHTML(s)}</div>`; }).join('')}
-    <div class="small">Goud = het werkwoord (plaats 2 en het einde). Onderstreept = het onderwerp.</div>
+    <div class="small">Goud = het werkwoord (plaats 2 en het einde). Vet = het onderwerp. Een groen onderlijnd woord tik je aan voor de woordkaart.</div>
     ${first ? `<div class="card soft"><div class="eyebrow">Waarom werkt het zo?</div><div class="why" style="margin-top:4px">${g.why}</div></div>` : ''}
     <h2>Nieuwe woorden</h2>
     ${groups.filter(x => x[1].length).map(x => `<div><div class="eyebrow">${x[0]}</div>${list(x[1])}</div>`).join('')}
