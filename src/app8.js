@@ -3,7 +3,7 @@
    top holds labels, markers, tap targets and the cyclist. */
 const TS = 8;
 const ACTIVE_STEPS = ['ontdek', 'oefen', 'luister', 'gebruik'];
-const W = {grass: '#A9D38C', grass2: '#98C67C', tuft: '#86B96A', path: '#EAD7A5', pathEdge: '#C9AE78', plaza: '#DDD4C3', cobble: '#C9BEA9', sand: '#F0E3B8', water: '#79B2E3', water2: '#A7CFF2', deep: '#5E9BD3', bridge: '#B98B5A', plank: '#8E6640', tree: '#3E7B3A', tree2: '#5FA052', trunk: '#7A5334', mtn: '#B89A78', mtn2: '#957658', snow: '#F6F3EC', field: '#C9B27A', field2: '#9CC27E', wall: '#F4EFE4', ink: '#2A2620', flowerA: '#E88AA6', flowerB: '#F2D35B', grey: '#BDB7AC', greyRoof: '#A39D92'};
+const W = {grass: '#A9D38C', grass2: '#98C67C', tuft: '#86B96A', path: '#EAD7A5', pathEdge: '#C9AE78', plaza: '#DDD4C3', cobble: '#C9BEA9', sand: '#F0E3B8', water: '#79B2E3', water2: '#A7CFF2', deep: '#5E9BD3', bridge: '#B98B5A', plank: '#8E6640', tree: '#3E7B3A', tree2: '#5FA052', trunk: '#7A5334', mtn: '#B89A78', mtn2: '#957658', snow: '#F6F3EC', field: '#C9B27A', field2: '#9CC27E', wall: '#F4EFE4', ink: '#2A2620', flowerA: '#E88AA6', flowerB: '#F2D35B', grey: '#BDB7AC', greyRoof: '#A39D92', stone: '#DDD4C3', cobble2: '#CDC2AD', curb: '#A99C84', zebra: '#F6F3EC', fountain: '#8FB8DE'};
 const ROOF = ['#C8553D', '#5E9E4E', '#D08A3A', '#4A78B0', '#8C5A9E', '#B8483A', '#7C7C8C'];
 const hsh = (x, y) => { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); };
 const grid = (w, h) => Array.from({length: h}, () => Array(w).fill('grass'));
@@ -53,11 +53,20 @@ function drawScene(cv, sc) {
         if (e(0, -1)) R(px, py, TS, 1, W.pathEdge); if (e(0, 1)) R(px, py + 7, TS, 1, W.pathEdge); if (e(-1, 0)) R(px, py, 1, TS, W.pathEdge); if (e(1, 0)) R(px + 7, py, 1, TS, W.pathEdge); }
     }
   }
-  (sc.curves || []).forEach(cv2 => {
-    const w = cv2.w, e = w + 4;
-    cv2.pts.forEach(([x, y]) => R(Math.round(x - e / 2), Math.round(y - e / 2), e, e, W.pathEdge));
-    cv2.pts.forEach(([x, y], k) => { const t = (g[Math.floor(y / TS)] || [])[Math.floor(x / TS)]; const wet = t === 'water' || t === 'deep';
-      R(Math.round(x - w / 2), Math.round(y - w / 2), w, w, wet ? W.bridge : W.path); if (wet && k % 3 === 0) R(Math.round(x - w / 2), Math.round(y), w, 1, W.plank); });
+  // roads: a kerb, then the stone, stamped every pixel; over water the road becomes a wooden bridge
+  const roads = sc.roads || [];
+  roads.forEach(pts => pts.forEach(([x, y]) => R(Math.round(x - RW / 2 - 2), Math.round(y - RW / 2 - 2), RW + 4, RW + 4, W.curb)));
+  roads.forEach(pts => pts.forEach(([x, y], k) => { const t = (g[Math.floor(y / TS)] || [])[Math.floor(x / TS)]; const wet = t === 'water' || t === 'deep';
+    R(Math.round(x - RW / 2), Math.round(y - RW / 2), RW, RW, wet ? W.bridge : W.stone); if (wet && k % 4 === 0) R(Math.round(x - RW / 2), Math.round(y), RW, 1, W.plank); }));
+  // squares: kerb, cobbles, a fountain, and an opening with a zebra crossing where each road comes in
+  (sc.squares || []).forEach(q => {
+    const [cx, cy] = sqCenter(q); const h = q.h * TS, n = Math.round(q.h * 2);
+    R(cx - h - 2, cy - h - 2, 2 * h + 4, 2 * h + 4, W.curb); R(cx - h, cy - h, 2 * h, 2 * h, W.stone);
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if ((x + y) % 2) R(cx - h + x * TS + 2, cy - h + y * TS + 2, 4, 4, W.cobble2);
+    R(cx - 5, cy - 5, 10, 10, W.cobble2); R(cx - 2, cy - 2, 4, 4, W.fountain);
+    (q.open || []).forEach(sd => { const [mx, my] = sqSide(q, sd); const [dx, dy] = DIR[sd];
+      if (dx) { R(Math.round(mx - 3), Math.round(my - RW / 2), 6, RW, W.stone); for (let k = 0; k < 3; k++) R(Math.round(mx + dx * 6 - 1), Math.round(my - RW / 2 + 1 + k * 4), 2, 2, W.zebra); }
+      else { R(Math.round(mx - RW / 2), Math.round(my - 3), RW, 6, W.stone); for (let k = 0; k < 3; k++) R(Math.round(mx - RW / 2 + 1 + k * 4), Math.round(my + dy * 6 - 1), 2, 2, W.zebra); } });
   });
   for (let y = 0; y < H; y++) for (let x = 0; x < Wd; x++) {
     const t = g[y][x], px = x * TS, py = y * TS;
@@ -80,18 +89,29 @@ const BIKE = [
 const BIKE_COL = {G: '#2F6B3A', K: '#2A2620', S: '#F2C9A0', W: '#F4EFE4', P: '#4A4A5A'};
 function bikeSVG(f) { let s = ''; BIKE[f].forEach((row, y) => [...row].forEach((ch, x) => { if (BIKE_COL[ch]) s += `<rect x="${x}" y="${y}" width="1.05" height="1.05" fill="${BIKE_COL[ch]}"/>`; })); return s; }
 const HERO_SCALE = 1.6;
-const heroAt = (px, py) => `translate(${px - 8 * HERO_SCALE},${py - 14 * HERO_SCALE}) scale(${HERO_SCALE})`;
+// the sprite faces right; riding left mirrors it around its own middle
+const heroAt = (px, py, left) => `translate(${px - 8 * HERO_SCALE},${py - 14 * HERO_SCALE}) ${left ? `translate(${16 * HERO_SCALE},0) scale(${-HERO_SCALE},${HERO_SCALE})` : `scale(${HERO_SCALE})`}`;
 function heroG(px, py) { return `<g id="hero" transform="${heroAt(px, py)}" shape-rendering="crispEdges" aria-hidden="true">${bikeSVG(0)}</g>`; }
-function rideCells(cells, endPx) {
+// ride along points (px) at a steady pace with a short ease in and out, then stop at endPx
+function ride(pts, endPx) {
   return new Promise(res => {
-    const hero = $('#hero'); if (!hero || !cells.length || reduceMotion) { if (hero && endPx) hero.setAttribute('transform', heroAt(...endPx)); return res(); }
-    const step = Math.max(1, Math.round(cells.length / 40)); let k = 0, f = 0;
-    const tick = () => {
-      if (k >= cells.length) { if (endPx) hero.setAttribute('transform', heroAt(...endPx)); return res(); }
-      const [cx, cy] = cells[k]; hero.setAttribute('transform', heroAt((cx + 1) * TS, (cy + 1.4) * TS));
-      f = 1 - f; hero.innerHTML = bikeSVG(f); k += step; setTimeout(tick, 42);
+    const hero = $('#hero'); if (!hero) return res();
+    const all = endPx ? pts.concat([endPx]) : pts.slice(); const seg = [0];
+    for (let k = 1; k < all.length; k++) seg.push(seg[k - 1] + Math.hypot(all[k][0] - all[k - 1][0], all[k][1] - all[k - 1][1]));
+    const total = seg[seg.length - 1]; let left = false;
+    for (let k = all.length - 1; k > 0; k--) { const dx = all[k][0] - all[k - 1][0]; if (Math.abs(dx) > .2) { left = dx < 0; break; } }
+    if (!total || reduceMotion || all.length < 2) { const e = all[all.length - 1]; if (e) hero.setAttribute('transform', heroAt(e[0], e[1], left)); return res(); }
+    const dur = Math.min(1600, Math.max(500, total / 0.32)); const t0 = performance.now(); let k = 0, frame = -1; left = false;
+    const step = now => {
+      const u = Math.min(1, (now - t0) / dur); const d = (u < .5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2) * total;
+      while (k < seg.length - 2 && seg[k + 1] < d) k++;
+      const f = (d - seg[k]) / ((seg[k + 1] - seg[k]) || 1); const x = all[k][0] + (all[k + 1][0] - all[k][0]) * f, y = all[k][1] + (all[k + 1][1] - all[k][1]) * f;
+      const dx = all[k + 1][0] - all[k][0]; if (Math.abs(dx) > .2) left = dx < 0;
+      const fr = Math.floor(d / 6) % 2; if (fr !== frame) { hero.innerHTML = bikeSVG(fr); frame = fr; }
+      hero.setAttribute('transform', heroAt(x, y, left));
+      if (u < 1) requestAnimationFrame(step); else res();
     };
-    tick();
+    requestAnimationFrame(step);
   });
 }
 function zoomOut(el, px, py, sw, sh) {
@@ -113,25 +133,63 @@ function sceneHTML(id, w, h, overlay, label) {
   return `<div class="world" id="${id}"><canvas aria-hidden="true"></canvas><svg viewBox="0 0 ${w * TS} ${h * TS}" role="img" aria-label="${esc(label)}">${overlay}</svg></div>`;
 }
 
-/* ---------- curves: smooth roads stamped in pixel steps ---------- */
-function catmull(pts, step = 3) {
-  const out = []; const P = [pts[0], ...pts, pts[pts.length - 1]];
-  for (let i = 1; i < P.length - 2; i++) {
-    const [p0, p1, p2, p3] = [P[i - 1], P[i], P[i + 1], P[i + 2]];
-    const len = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]); const n = Math.max(2, Math.round(len / step));
-    for (let k = 0; k < n; k++) { const t = k / n, t2 = t * t, t3 = t2 * t;
-      out.push([0, 1].map(j => 0.5 * (2 * p1[j] + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3))); }
-  }
-  out.push(pts[pts.length - 1]); return out;
+/* ---------- roads: straight, with a 90° turn, or curved; they meet a square like a street meets a plaza ----------
+   A square is a block of stone tiles. A road leaves from the middle of one side and enters the next square
+   in the middle of a side, so it never runs over a square. Road and square share one stone. */
+const DIR = {N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0]};
+const RW = 12; // road width in px
+function lineTo(out, a, b) { const n = Math.max(1, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1]))); for (let k = 1; k <= n; k++) out.push([a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n]); return out; }
+// straight, a short rounded corner, straight: first along x or along y
+function lPath(a, b, firstAxis) {
+  const c = firstAxis === 'x' ? [b[0], a[1]] : [a[0], b[1]]; const r = 6; const out = [a.slice()];
+  const toward = (p, q, d) => { const L = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1; return [p[0] + (q[0] - p[0]) * d / L, p[1] + (q[1] - p[1]) * d / L]; };
+  const c1 = toward(c, a, r), c2 = toward(c, b, r); lineTo(out, a, c1);
+  for (let k = 1; k <= 8; k++) { const t = k / 8; out.push([(1 - t) ** 2 * c1[0] + 2 * (1 - t) * t * c[0] + t * t * c2[0], (1 - t) ** 2 * c1[1] + 2 * (1 - t) * t * c[1] + t * t * c2[1]]); }
+  return lineTo(out, c2, b);
 }
-/* a road between two points with a gentle bend to one side */
-function bend(a, b, k) { const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1]; return [a, [mx - dy * k, my + dx * k], b]; }
-function markRoad(g, samples) { samples.forEach(([px, py]) => { const x = Math.floor(px / TS), y = Math.floor(py / TS); for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const r = g[y + dy]; if (r && r[x + dx] !== undefined && !['water', 'deep', 'plaza'].includes(r[x + dx])) r[x + dx] = 'road'; } }); }
-const toCells = samples => samples.map(([px, py]) => [px / TS - 1, py / TS - 1.4]);
+function bezier(p0, p1, p2, p3) { const out = []; const n = Math.max(2, Math.round(Math.hypot(p3[0] - p0[0], p3[1] - p0[1]) * 1.4));
+  for (let k = 0; k <= n; k++) { const t = k / n, u = 1 - t; out.push([0, 1].map(j => u * u * u * p0[j] + 3 * u * u * t * p1[j] + 3 * u * t * t * p2[j] + t * t * t * p3[j])); } return out; }
+// a square: {t: [tile x, tile y] of its centre tile, h: half size in tiles (2.5 = 5×5)}
+const sqCenter = s => [(s.t[0] + .5) * TS, (s.t[1] + .5) * TS];
+const sqSide = (s, d) => { const [cx, cy] = sqCenter(s); const h = s.h * TS; return {N: [cx, cy - h], S: [cx, cy + h], E: [cx + h, cy], W: [cx - h, cy]}[d]; };
+// kinds: 'line' straight, 'L' with a 90° turn, 'curve' smooth (leaves and arrives straight)
+function roadBetween(A, out, B, inn, kind) {
+  const a = sqSide(A, out), b = sqSide(B, inn);
+  if (kind === 'line') return lineTo([a.slice()], a, b);
+  if (kind === 'L') return lPath(a, b, DIR[out][0] ? 'x' : 'y');
+  const d0 = DIR[out], d1 = DIR[inn], L = Math.hypot(b[0] - a[0], b[1] - a[1]) * .5;
+  return bezier(a, [a[0] + d0[0] * L, a[1] + d0[1] * L], [b[0] + d1[0] * L, b[1] + d1[1] * L], b); // both handles point out of their square
+}
+// what the cyclist rides between two squares: centre → exit → road → entry → centre
+function legPts(A, B, road, out, inn) { const p = [sqCenter(A)]; lineTo(p, sqCenter(A), sqSide(A, out)); p.push(...road.slice(1)); return lineTo(p, sqSide(B, inn), sqCenter(B)); }
+function markRoad(g, pts) { pts.forEach(([px, py]) => { const x = Math.floor(px / TS), y = Math.floor(py / TS); for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const r = g[y + dy]; if (r && r[x + dx] !== undefined && !['water', 'deep', 'plaza'].includes(r[x + dx])) r[x + dx] = 'road'; } }); }
+function markSquare(g, s) { const lo = Math.ceil(s.h - .5); for (let y = s.t[1] - lo; y <= s.t[1] + lo; y++) for (let x = s.t[0] - lo; x <= s.t[0] + lo; x++) if (g[y] && g[y][x] !== undefined) g[y][x] = 'plaza'; }
+// the sides of a square that a road uses (houses and labels stay off them)
+const usedSides = (roads, i) => roads.filter(r => r.from === i).map(r => r.out).concat(roads.filter(r => r.to === i).map(r => r.in));
+// houses around a square: the corners, and the middle of every side without a road (the guild hall on top)
+function squareHouses(g, s, used, roof) {
+  const [cx, cy] = s.t; const o = Math.ceil(s.h - .5) + 2; const out = [];
+  const spots = (used.includes('N') ? [] : [{x: cx - 1, y: cy - o - 1, hall: true}]).concat([{x: cx - o, y: cy - o}, {x: cx + o - 1, y: cy - o}, {x: cx - o, y: cy + o - 1}, {x: cx + o - 1, y: cy + o - 1}],
+    used.includes('W') ? [] : [{x: cx - o - 1, y: cy - 1}], used.includes('E') ? [] : [{x: cx + o, y: cy - 1}], used.includes('S') ? [] : [{x: cx - 1, y: cy + o}]);
+  spots.forEach(h => { const cells = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([dx, dy]) => [h.x + dx, h.y + dy]);
+    if (cells.every(([x, y]) => g[y] && ['grass', 'sand', 'flower', 'tuft'].includes(g[y][x]))) { cells.forEach(([x, y]) => { g[y][x] = 'house'; }); out.push({...h, roof}); } });
+  return out;
+}
 
 /* ---------- LEVEL 1: the arc (world) ---------- */
 const WGW = 42, WGH = 64;
-const TOWN_T = [[9, 7], [29, 10], [13, 21], [30, 28], [11, 37], [28, 44], [15, 54]];
+// three towns to the right, one long road back, then right again; always on down the map
+const TOWN_T = [[6, 5], [19, 10], [31, 17], [24, 29], [7, 29], [12, 42], [29, 46]];
+const WSQ = TOWN_T.map(t => ({t, h: 2.5}));
+const WROADS = [
+  {from: 0, out: 'E', to: 1, in: 'N', kind: 'L'},
+  {from: 1, out: 'E', to: 2, in: 'N', kind: 'curve'},
+  {from: 2, out: 'S', to: 3, in: 'E', kind: 'L'},
+  {from: 3, out: 'W', to: 4, in: 'E', kind: 'line'},
+  {from: 4, out: 'S', to: 5, in: 'N', kind: 'curve'},
+  {from: 5, out: 'E', to: 6, in: 'N', kind: 'L'},
+];
+const TOWN_LABEL = ['S', 'S', 'W', 'S', 'N', 'W', 'W']; // where each town's sign stands, off its roads
 const PASS = [20, 63];
 let WORLD = null;
 const coastX = y => (y < 15 || y > 40) ? 99 : 37 - Math.round(2.5 * Math.sin((y - 15) / 25 * Math.PI)) + Math.round(Math.sin(y / 2.3) * .6);
@@ -144,74 +202,66 @@ function buildWorld() {
   // a lake in the west and the river that runs from it to the east edge
   for (let y = 0; y < WGH; y++) for (let x = 0; x < WGW; x++) { const d = ((x - 4.5) / 3.6) ** 2 + ((y - 50) / 2.8) ** 2; if (d < 1) g[y][x] = d < .45 ? 'deep' : 'water'; else if (d < 1.35 && g[y][x] === 'grass') g[y][x] = 'sand'; }
   for (let x = 7; x < WGW; x++) { const ry = riverY(x); g[ry][x] = 'water'; g[ry + 1][x] = 'water'; }
-  // fields by Smulstad, flower meadows by Stekjesdorp and here and there
-  for (let y = 15; y <= 19; y++) for (let x = 18; x <= 25; x++) if (g[y][x] === 'grass') g[y][x] = (x + y) % 3 ? 'field' : 'field2';
+  // the roads, and the last one: down out of Waaromberg, over the river, two 90° turns to the pass
+  const roads = WROADS.map(r => roadBetween(WSQ[r.from], r.out, WSQ[r.to], r.in, r.kind));
+  const px = (PASS[0] + .5) * TS, a = sqSide(WSQ[6], 'S'), y1 = 56.5 * TS;
+  const pass = lineTo([a.slice()], a, [a[0], y1 - 6]); pass.push(...lPath([a[0], y1 - 6], [px + 6, y1], 'y').slice(1), ...lPath([px + 6, y1], [px, WGH * TS], 'x').slice(1));
+  roads.concat([pass]).forEach(r => markRoad(g, r));
+  WSQ.forEach(s => markSquare(g, s));
+  const used = WSQ.map((_, i) => usedSides(WROADS, i).concat(i === 6 ? ['S'] : []));
+  const spots = WSQ.map((s, i) => squareHouses(g, s, used[i], ROOF[i]));
+  // fields by Smulstad, flower meadows here and there
+  for (let y = 20; y <= 24; y++) for (let x = 14; x <= 21; x++) if (g[y][x] === 'grass') g[y][x] = (x + y) % 3 ? 'field' : 'field2';
   const meadow = (x0, x1, y0, y1, p) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (g[y] && g[y][x] === 'grass' && hsh(x * 1.3, y) > p) g[y][x] = 'flower'; };
-  meadow(22, 35, 2, 16, .62); meadow(2, 9, 28, 33, .7); meadow(16, 26, 38, 42, .78); meadow(0, 41, 0, 56, .975);
-  // the road: one smooth curve through every town and on to the pass
-  const pts = TOWN_T.map(tc); const seg = [];
-  for (let i = 0; i < pts.length - 1; i++) { const s = catmull(bend(pts[i], pts[i + 1], i % 2 ? -0.18 : 0.18)); seg.push(s); markRoad(g, s); }
-  const passPts = catmull([pts[6], [(PASS[0] - 1) * TS, (58) * TS], [(PASS[0] + .5) * TS, (WGH - .5) * TS]]); markRoad(g, passPts);
-  // town squares
-  TOWN_T.forEach(([cx, cy]) => { for (let y = cy - 3; y <= cy + 3; y++) for (let x = cx - 3; x <= cx + 3; x++) if (g[y] && ((x - cx) ** 2 + (y - cy) ** 2) <= 8.5 && !['water', 'deep'].includes(g[y][x])) g[y][x] = 'plaza'; });
+  meadow(24, 33, 1, 9, .62); meadow(1, 6, 15, 22, .7); meadow(19, 27, 35, 40, .78); meadow(0, 41, 0, 56, .975);
   // the mountains that close the arc, with one pass
-  for (let y = 58; y < WGH; y++) for (let x = 0; x < WGW; x += 2) if ((x < PASS[0] - 3 || x > PASS[0] + 2) && g[y][x] !== 'road') { g[y][x] = 'mtn'; g[y][x + 1] = 'mtn'; }
-  for (let y = 56; y <= 57; y++) for (let x = 0; x < WGW; x += 2) if ((x < 10 || x > 28) && hsh(x, y) > .45 && g[y][x] === 'grass' && g[y][x + 1] === 'grass') { g[y][x] = 'mtn'; g[y][x + 1] = 'mtn'; }
+  for (let y = 58; y < WGH; y++) for (let x = 0; x < WGW; x += 2) if ((x < PASS[0] - 3 || x > PASS[0] + 2) && g[y][x] !== 'road' && g[y][x + 1] !== 'road') { g[y][x] = 'mtn'; g[y][x + 1] = 'mtn'; }
+  for (let y = 56; y <= 57; y++) for (let x = 0; x < WGW; x += 2) if ((x < 10 || x > 30) && hsh(x, y) > .45 && g[y][x] === 'grass' && g[y][x + 1] === 'grass') { g[y][x] = 'mtn'; g[y][x + 1] = 'mtn'; }
   // a few woods, not everywhere
-  plantTrees(g, 34, 41, 0, 13, .55); plantTrees(g, 0, 4, 10, 30, .55); plantTrees(g, 31, 41, 52, 57, .6); plantTrees(g, 17, 25, 24, 33, .3); plantTrees(g, 0, 7, 0, 3, .5);
+  plantTrees(g, 35, 41, 0, 13, .55); plantTrees(g, 0, 4, 9, 22, .55); plantTrees(g, 31, 41, 52, 57, .6); plantTrees(g, 2, 12, 34, 38, .4); plantTrees(g, 18, 28, 33, 41, .3); plantTrees(g, 8, 14, 12, 20, .35); plantTrees(g, 0, 7, 0, 1, .5);
   for (let y = 0; y < WGH; y++) for (let x = 0; x < WGW; x++) if (g[y][x] === 'grass' && hsh(x + 3, y + 7) < 0.03) g[y][x] = 'tuft';
-  WORLD = {g, route: seg.map(toCells), curves: [{pts: seg.flat(), w: 9}, {pts: passPts, w: 9}], pier: true};
-}
-/* houses ring each town square, leaving the road free; the guild hall stands at the top */
-function ringHouses(cx, cy, roof, grey, avoid, n = 5) {
-  const out = [];
-  const angles = [-90, -30, -150, 30, 150, 90, -60, -120];
-  for (const a of angles) {
-    if (out.length >= n) break;
-    if (avoid.some(b => Math.abs(((a - b + 540) % 360) - 180) < 38)) continue;
-    const r = a === -90 ? 4.6 : 4.3, x = Math.round(cx + Math.cos(a * Math.PI / 180) * r - 1), y = Math.round(cy + Math.sin(a * Math.PI / 180) * r - 1);
-    out.push({x, y, roof, grey, hall: a === -90 && out.length === 0});
-  }
-  return out;
-}
-function townAngles(i) {
-  const pts = TOWN_T; const out = [];
-  const ang = (a, b) => Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
-  if (i > 0) out.push(ang(pts[i], pts[i - 1])); if (i < pts.length - 1) out.push(ang(pts[i], pts[i + 1])); else out.push(90);
-  return out;
+  WORLD = {g, spots, roads: roads.concat([pass]), squares: WSQ.map((s, i) => ({...s, open: used[i]})),
+    legs: WROADS.map((r, k) => legPts(WSQ[r.from], WSQ[r.to], roads[k], r.out, r.in))};
 }
 function worldHouses() {
   const out = [];
-  TOWN_T.forEach(([cx, cy], i) => { const u = UNITS[i]; const st = townState(u.id); const grey = st === 'later' || st === 'locked';
-    out.push(...ringHouses(cx, cy, ROOF[i], grey, townAngles(i), 5)); });
+  WORLD.spots.forEach((hs, i) => { const st = townState(UNITS[i].id); const grey = st === 'later' || st === 'locked'; hs.forEach(h => out.push({...h, grey})); });
   return out;
 }
-const townPx = i => [(TOWN_T[i][0] + 0.5) * TS, (TOWN_T[i][1] + 0.5) * TS];
+const townPx = i => sqCenter(WSQ[i]);
+const standPx = ([x, y]) => [x + 6, y + 8]; // where the cyclist waits on a square
 function worldOverlay() {
   const t = UNITS.map((u, i) => {
     const [x, y] = townPx(i); const st = townState(u.id); const dim = st === 'later' || st === 'locked';
-    const below = i % 2 === 0 ? y < 380 : y < 60; const ly = below ? y + 34 : y - 54;
+    const L = TOWN_LABEL[i]; const sw = u.name.length * 7 + 14;
+    const lx = Math.max(sw / 2 + 2, Math.min(WGW * TS - sw / 2 - 2, L === 'W' ? x - 24 - sw / 2 : L === 'E' ? x + 24 + sw / 2 : x));
+    const ly = L === 'N' ? y - 44 : L === 'S' ? y + 28 : y - 8;
     const qs = u.built ? squaresOf(u.id) : [];
     return `<g class="wtown" data-act="town" data-u="${u.id}" role="button" tabindex="0" aria-label="${esc(u.name)}: ${esc(u.gram)}${st === 'done' ? ', klaar' : dim ? ', nog dicht' : ''}">
-      <rect x="${x - 44}" y="${y - 44}" width="88" height="86" fill="transparent"/>
-      ${dim ? `<g opacity=".8" fill="#fff"><circle cx="${x - 18}" cy="${y + 2}" r="18"/><circle cx="${x + 4}" cy="${y - 10}" r="20"/><circle cx="${x + 22}" cy="${y + 6}" r="16"/><circle cx="${x - 2}" cy="${y + 16}" r="16"/></g>` : ''}
-      ${sign(x, ly, u.name, dim)}
-      ${(st === 'open' || st === 'next') && qs.length ? blocks(x, below ? ly + 21 : ly - 8, qs.length, qs.filter(q => sqComplete(q.id)).length) : ''}
-      ${st === 'done' ? flag(x + 22, y - 38) : ''}
-      ${st === 'open' || st === 'next' ? arrow(x, below ? y - 44 : ly - 16, st === 'next') : ''}
+      <rect x="${x - 30}" y="${y - 30}" width="60" height="60" fill="transparent"/>
+      ${dim ? `<g opacity=".8" fill="#fff"><circle cx="${x - 12}" cy="${y + 2}" r="14"/><circle cx="${x + 3}" cy="${y - 8}" r="15"/><circle cx="${x + 15}" cy="${y + 5}" r="12"/><circle cx="${x - 1}" cy="${y + 12}" r="12"/></g>` : ''}
+      ${sign(lx, ly, u.name, dim)}
+      ${(st === 'open' || st === 'next') && qs.length ? blocks(lx, L === 'N' ? ly - 8 : ly + 21, qs.length, qs.filter(q => sqComplete(q.id)).length) : ''}
+      ${st === 'done' ? flag(x + 14, y - 30) : ''}
+      ${st === 'open' || st === 'next' ? arrow(x, L === 'N' ? ly - 16 : y - 28, st === 'next') : ''}
     </g>`;
   }).join('');
   const [px, py] = [(PASS[0] + .5) * TS, (WGH - 1) * TS];
   const mist = [[50, 476, 70, 14], [160, 488, 80, 16], [290, 474, 70, 14], [110, 504, 100, 12], [250, 506, 90, 12]].map(([cx, cy, rx, ry]) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".5"/>`).join('');
   const border = `${mist}<g data-act="arc-next" role="button" tabindex="0" aria-label="Boog 2, volgt later">${sign(px, py - 24, 'Boog 2 · Thuiskomen', true)}</g>`;
-  const [hx, hy] = townPx(UNIT[SQ[nextSquare()].u].n - 1);
-  return t + border + heroG(hx + 22, hy + 18);
+  return t + border + heroG(...standPx(townPx(UNIT[SQ[nextSquare()].u].n - 1)));
 }
-function worldView() { return sceneHTML('world', WGW, WGH, worldOverlay(), 'Boog 1: zeven steden langs een kronkelende weg, met een meer, een rivier en een bergpas naar boog 2'); }
+function worldView() { return sceneHTML('world', WGW, WGH, worldOverlay(), 'Boog 1: zeven steden langs een weg met rechte stukken, haakse bochten en bochten, met een meer, een rivier en een bergpas naar boog 2'); }
 
 /* ---------- LEVEL 2: a town ---------- */
 const TGW = 42, TGH = 40;
 const PLAZA_T = [[9, 8], [28, 13], [12, 25], [29, 31]];
+const TSQ = PLAZA_T.map((t, j) => ({t, h: j === 3 ? 4.5 : 3.5})); // three 7×7 squares and a 9×9 Grote Markt (the first square's sign stands below it, off the way in)
+const TROADS = [
+  {from: 0, out: 'E', to: 1, in: 'W', kind: 'curve'},
+  {from: 1, out: 'S', to: 2, in: 'E', kind: 'L'},
+  {from: 2, out: 'S', to: 3, in: 'W', kind: 'curve'},
+];
 const TOWN_CACHE = {};
 function buildTown(u) {
   if (TOWN_CACHE[u]) return TOWN_CACHE[u];
@@ -221,18 +271,20 @@ function buildTown(u) {
   if (u === 'u4') for (let y = 0; y < TGH; y++) for (let x = 37; x < TGW; x++) { g[y][x] = x > 38 ? 'deep' : 'water'; if (x === 37) g[y][36] = 'sand'; }
   if (u === 'u7') for (let y = 0; y <= 3; y++) for (let x = 18; x < TGW; x += 2) if (hsh(x, y) > .25) { g[y][x] = 'mtn'; g[y][x + 1] = 'mtn'; }
   if (u === 'u1') for (let y = 33; y < TGH; y++) for (let x = 30; x < TGW; x++) if (((x - 37) / 6) ** 2 + ((y - 38) / 4) ** 2 < 1) g[y][x] = 'water';
-  const P = PLAZA_T.map(tc);
-  const entryS = catmull([[(PLAZA_T[0][0] + .5) * TS, 0], [(PLAZA_T[0][0] - 1) * TS, 3 * TS], P[0]]);
-  const streets = [0, 1, 2].map(s => catmull(bend(P[s], P[s + 1], s % 2 ? 0.2 : -0.2)));
-  markRoad(g, entryS); streets.forEach(s => markRoad(g, s));
-  PLAZA_T.forEach(([cx, cy], j) => { const r2 = j === 3 ? 14 : 11; for (let y = cy - 4; y <= cy + 4; y++) for (let x = cx - 4; x <= cx + 4; x++) if (g[y] && g[y][x] !== undefined && (x - cx) ** 2 + (y - cy) ** 2 <= r2 && !['water', 'deep'].includes(g[y][x])) g[y][x] = 'plaza'; });
+  // the way in: straight down from the top of the map into the first square
+  const top = sqSide(TSQ[0], 'N'); const entry = lineTo([[top[0], 0]], [top[0], 0], top);
+  const roads = TROADS.map(r => roadBetween(TSQ[r.from], r.out, TSQ[r.to], r.in, r.kind));
+  roads.concat([entry]).forEach(r => markRoad(g, r));
+  TSQ.forEach(s => markSquare(g, s));
   const houses = [];
   for (let y = 1; y < TGH - 2; y += 3) for (let x = 1; x < TGW - 2; x += 3) {
     const free = [[0, 0], [1, 0], [0, 1], [1, 1]].every(([dx, dy]) => ['grass', 'flower', 'tuft'].includes(g[y + dy][x + dx]));
     if (free && nearPath(g, x, y, 2) && !nearPath(g, x, y, 0) && hsh(x + i, y) < (u === 'u6' ? .95 : .7)) { houses.push({x, y, roof: hsh(x, y + i) > .5 ? ROOF[i] : '#9C6B4A'}); [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([dx, dy]) => g[y + dy][x + dx] = 'house'); }
   }
   plantTrees(g, 0, TGW - 2, 0, TGH - 2, u === 'u5' ? .55 : .3);
-  return (TOWN_CACHE[u] = {g, houses, streets: streets.map(toCells), entry: toCells(entryS), curves: [{pts: entryS.concat(streets.flat()), w: 10}]});
+  const entryLeg = lineTo(entry.slice(), top, sqCenter(TSQ[0]));
+  return (TOWN_CACHE[u] = {g, houses, roads: roads.concat([entry]), squares: TSQ.map((s, j) => ({...s, open: usedSides(TROADS, j).concat(j === 0 ? ['N'] : []), fountain: j === 3})),
+    legs: TROADS.map((r, k) => legPts(TSQ[r.from], TSQ[r.to], roads[k], r.out, r.in)), entry: entryLeg});
 }
 function townOverlay(u) {
   const qs = squaresOf(u); const nq = nextSquare();
@@ -241,19 +293,18 @@ function townOverlay(u) {
     const done = BUILT_STEPS.filter(s => stepDone(q.id, s)).length;
     return `<g data-act="square" data-q="${q.id}" role="button" tabindex="0" style="cursor:pointer" aria-label="Plein ${q.n}: ${esc(q.name)}${st === 'done' ? ', klaar' : dim ? ', nog dicht' : ''}">
       <rect x="${x - 36}" y="${y - 30}" width="72" height="60" fill="${dim ? 'rgba(255,255,255,.55)' : 'transparent'}"/>
-      ${sign(x, y - 46, q.name, dim)}
+      ${sign(x, j === 0 ? y + 34 : y - 46, q.name, dim)}
       ${!dim && st !== 'done' ? blocks(x, y - 24, 3, done) : ''}
       ${st === 'done' ? flag(x + 22, y - 24) : ''}
-      ${st === 'next' || st === 'open' ? arrow(x, y - 56, st === 'next') : ''}
+      ${st === 'next' || st === 'open' ? arrow(x, j === 0 ? y - 36 : y - 56, st === 'next') : ''}
     </g>`;
   }).join('');
   const [mx, my] = tc(PLAZA_T[3]); const mOpen = marktOpen(u);
   const markt = marktId(u) ? `<g data-act="markt" data-u="${u}" role="button" tabindex="0" style="cursor:pointer" aria-label="Grote Markt">
       <rect x="${mx - 40}" y="${my - 32}" width="80" height="64" fill="${mOpen ? 'transparent' : 'rgba(255,255,255,.55)'}"/>
-      <g shape-rendering="crispEdges"><rect x="${mx - 3}" y="${my - 3}" width="6" height="6" fill="#79B2E3" stroke="#2A2620"/></g>
       ${sign(mx, my - 50, '★ Grote Markt', !mOpen)}${marktDone(u) ? flag(mx + 26, my - 28) : ''}</g>` : '';
   const here = qs.findIndex(q => q.id === nq);
-  const hp = here >= 0 ? [(PLAZA_T[here][0] + 3) * TS, (PLAZA_T[here][1] + 2.6) * TS] : [(PLAZA_T[0][0] + 1) * TS, 3 * TS];
+  const hp = here >= 0 ? standPx(sqCenter(TSQ[here])) : [sqSide(TSQ[0], 'N')[0], 14];
   return pl + markt + heroG(...hp);
 }
 function sqState(q) { if (sqComplete(q)) return 'done'; if (!sqOpen(q)) return 'locked'; return nextSquare() === q ? 'next' : 'open'; }
@@ -340,8 +391,8 @@ async function goTown(u) {
   try {
     const i = UNIT[u].n - 1; const from = UNIT[SQ[nextSquare()].u].n - 1;
     if (st !== 'locked' && i !== from) {
-      let cells = []; if (i > from) for (let s = from; s < i; s++) cells = cells.concat(WORLD.route[s]); else for (let s = from - 1; s >= i; s--) cells = cells.concat(WORLD.route[s].slice().reverse());
-      const [x, y] = townPx(i); await rideCells(cells, [x + 18, y + 14]);
+      let pts = [standPx(townPx(from))]; if (i > from) for (let s = from; s < i; s++) pts = pts.concat(WORLD.legs[s]); else for (let s = from - 1; s >= i; s--) pts = pts.concat(WORLD.legs[s].slice().reverse());
+      await ride(pts, standPx(townPx(i)));
     }
     const [x, y] = townPx(i); await zoomOut($('#world'), x, y, WGW * TS, WGH * TS);
   } finally { RIDING = false; }
@@ -353,11 +404,10 @@ async function goSquare(q) {
     const u = SQ[q].u; const qs = squaresOf(u); const j = qs.findIndex(x => x.id === q); const nj = qs.findIndex(x => x.id === nextSquare());
     const town = TOWN_CACHE[u];
     if (town && $('#townmap') && sqOpen(q)) {
-      let cells = [];
-      if (nj < 0) cells = town.entry.slice(3).concat(j >= 1 ? town.streets[0] : []).concat(j >= 2 ? town.streets[1] : []);
-      else if (j > nj) for (let s = nj; s < j; s++) cells = cells.concat(town.streets[s]);
-      else for (let s = nj - 1; s >= j; s--) cells = cells.concat(town.streets[s].slice().reverse());
-      await rideCells(cells, [(PLAZA_T[j][0] + 3) * TS, (PLAZA_T[j][1] + 2.6) * TS]);
+      let pts;
+      if (nj < 0) { pts = town.entry.slice(); for (let s = 0; s < j; s++) pts = pts.concat(town.legs[s]); }
+      else { pts = [standPx(sqCenter(TSQ[nj]))]; if (j > nj) for (let s = nj; s < j; s++) pts = pts.concat(town.legs[s]); else for (let s = nj - 1; s >= j; s--) pts = pts.concat(town.legs[s].slice().reverse()); }
+      await ride(pts, standPx(sqCenter(TSQ[j])));
     }
     await zoomOut($('#townmap'), (PLAZA_T[j][0] + 1) * TS, PLAZA_T[j][1] * TS, TGW * TS, TGH * TS);
   } finally { RIDING = false; }
@@ -366,9 +416,8 @@ async function goSquare(q) {
 async function goStep(q, st) {
   const hero = $('#hero'); const i = STEPS.indexOf(st);
   if (hero && $('#sqmap') && !reduceMotion && ACTIVE_STEPS.includes(st) && sqOpen(q)) {
-    const from = STEPS.indexOf(nextStep(q)); const cells = []; const a = 8 + from * 65 + 28, b = 8 + i * 65 + 28;
-    for (let k = 0; k <= 10; k++) cells.push([(a + (b - a) * k / 10) / TS - 1, 186 / TS - 1.4]);
-    await rideCells(cells, [b, 186]);
+    const from = STEPS.indexOf(nextStep(q)); const a = 8 + from * 65 + 28, b = 8 + i * 65 + 28;
+    await ride(lineTo([[a, 186]], [a, 186], [b, 186]));
   }
   startStep(q, st);
 }
