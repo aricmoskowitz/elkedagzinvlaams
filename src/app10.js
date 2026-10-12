@@ -50,6 +50,7 @@ function mineCountTown(u) {
 /* ---------- corrections with a place ---------- */
 function addFix(c, src, plan) {
   if (!c || !c.wrong || !c.right || norm(c.wrong) === norm(c.right)) return;
+  if (nameSlip(c.wrong, c.right)) return; // 2.7: a misheard name (op de meer → op de Meir) is no Dutch mistake
   const id = uid('f'); S.fix[id] = {wrong: String(c.wrong).slice(0, 240), right: String(c.right).slice(0, 240), why: String(c.why || '').slice(0, 300), type: c.type || '', src, date: dateKey(), plan: plan || null};
   introduce('c:' + id + ':fix');
 }
@@ -96,7 +97,7 @@ function openProc(o) {
     <h1>${esc(o.title || 'Verwerkt')}</h1>
     ${o.note ? `<div class="card soft nl" style="font-size:17px">${esc(o.note)}</div>` : ''}
     ${o.corrected ? `<details class="card"><summary class="small" style="cursor:pointer">${esc(o.correctedLabel || 'Je tekst, verbeterd')}</summary><div class="nl" style="font-size:17px;line-height:1.5;margin-top:8px">${esc(o.corrected)}</div></details>` : ''}
-    <div class="procsum"><b>${nC}</b> ${nC === 1 ? 'fout' : 'fouten'} · <b>${words.length}</b> ${words.length === 1 ? 'nieuw woord' : 'nieuwe woorden'}${nNew ? ` · <b>${nNew}</b> nieuw in je plan` : ''}</div>
+    <div class="procsum"><b>${nC}</b> ${nC === 1 ? 'fout' : 'fouten'} · <b>${words.length}</b> ${words.length === 1 ? 'nieuw woord' : 'nieuwe woorden'}${nNew ? ` · <b>${nNew}</b> nieuw in je plan` : ''}${o.filled ? ` · <b>${o.filled}</b> aangevuld` : ''}</div>
     <div class="small">Elke fout en elk nieuw woord staat bij het plein waar het hoort. Vink uit wat je niet wilt bewaren.</div>
     ${keys.map(card).join('') || '<div class="card soft">Geen fouten en geen nieuwe woorden. Knap!</div>'}
     ${usedOnly.length ? `<div class="card stack" style="gap:2px"><div class="eyebrow">Woorden uit je plan die je al gebruikte</div>${usedOnly.map(q => { const L = planLoc(q); return `<button class="usedrow" data-act="plan-go" data-id="${q}"><span class="loc">${L.arc}·${L.town}·${L.sq}</span><span class="t"><span class="small">${esc(L.sqName)}</span> <span class="nl">${usedBy[q].map(id => esc(LX(id).w)).join(', ')}</span></span><span class="chev">›</span></button>`; }).join('')}</div>` : ''}
@@ -119,7 +120,7 @@ function openProc(o) {
     const pw = pick('pw');
     if (pw.length) {
       let set = S.sets.find(s => s.name === setName); if (!set) { set = {id: uid('s-'), name: setName, ids: []}; S.sets.push(set); }
-      pw.forEach(i => { const w = words[i]; const id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: String(w.w), p: ['n', 'v', 'adj', 'adv'].includes(w.p) ? w.p : 'adv', g: w.p === 'n' && (w.g === 'de' || w.g === 'het') ? w.g : undefined, pl: w.pl || null, dim: w.dim || null, d: w.d || '', s: w.s || '', en: w.en || '', plan: PSQ[w.plan] ? w.plan : null}; set.ids.push(id); S.seen[id] = 1; introduce('w:' + id + ':rec'); });
+      pw.forEach(i => { const w = words[i]; const id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: String(w.w), p: ['n', 'v', 'adj', 'adv'].includes(w.p) ? w.p : 'adv', g: w.p === 'n' && (w.g === 'de' || w.g === 'het') ? w.g : undefined, pl: w.pl || null, dim: w.dim || null, d: w.d || '', s: w.s || '', en: w.en || '', plan: PSQ[w.plan] ? w.plan : null}; if (w.th) S.custom[id].th = w.th; if (w.syn && w.syn.length) S.custom[id].syn = w.syn; if (w.ant && w.ant.length) S.custom[id].ant = w.ant; set.ids.push(id); S.seen[id] = 1; introduce('w:' + id + ':rec'); });
     }
     (o.grammar || []).forEach(g => {
       if (g.newTopic && g.newTopic.title) topicId(topicKey(g.newTopic));
@@ -139,7 +140,7 @@ function mineBlock(id) {
   const m = mineFor(id);
   if (!m.fixes.length && !m.words.length) return '';
   return `<div class="card stack mine" style="gap:8px"><div class="eyebrow">Van jou · uit je gesprekken, teksten en logboek</div>
-    ${m.fixes.map(f => `<div class="corr" style="cursor:default"><span><span class="wrong">${esc(f.wrong)}</span><br><span class="right nl">${esc(f.right)}</span><br><span class="small">${esc(f.why)} · ${esc(f.date)}</span></span></div>`).join('')}
+    ${m.fixes.map(f => `<div class="corr" style="cursor:default"><span><span class="wrong">${esc(f.wrong)}</span><br><span class="right nl">${esc(f.right)}</span><br><span class="small">${esc(f.why)} · ${esc(f.date)}</span></span><button class="link sm" data-act="fix-del" data-id="${f.k}" aria-label="Verwijder deze fout" data-en="Delete this mistake" style="margin-left:auto;color:var(--warn)">Verwijder</button></div>`).join('')}
     ${m.words.length ? `<div class="small">Jouw woorden hier: ${m.words.map(w => `<button class="link" data-act="word" data-id="${w.id}" style="padding:0;min-height:0">${esc(w.w)}</button>`).join(', ')}</div>` : ''}
     <button class="btn line" data-act="mine-practise" data-id="${id}">${m.fixes.length + m.words.length === 1 ? 'Oefen dit' : 'Oefen deze ' + (m.fixes.length + m.words.length) + ' dingen'}</button></div>`;
 }

@@ -72,7 +72,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   blocks.forEach((b, i) => {
     const L = b.split('\n'); const f = Object.fromEntries(L.slice(1, -1).map(l => [l.slice(0, l.indexOf(':')), l.slice(l.indexOf(':') + 1).trim()]));
     const mode = f.modus; const fields = need.all.concat(mode === 'opdracht' ? need.opdracht : []);
-    const good = L[0] === 'EDZ-START v1' && L[L.length - 1] === 'EDZ-EINDE' && fields.every(k => f[k]) && (mode === 'opdracht' || (!f['scène'] && !f.doel)) && /^A2 · Boog \d+ · Stad \d+ \S+ \(u\d+\) · (Plein \d+ \S+|Grote Markt) \(u\d+q\d+\)$/.test(f.niveau) && /^vertaling (ja|nee) · verbeteren (per beurt|op het einde) · beurten \S+$/.test(f.instellingen);
+    const good = L[0] === 'EDZ-START v1' && L[L.length - 1] === 'EDZ-EINDE' && fields.every(k => f[k]) && (mode === 'opdracht' || (!f['scène'] && !f.doel)) && /^A2 · Boog \d+ · Stad \d+ \S+ \(u\d+\) · (Plein \d+ \S+|Grote Markt) \(u\d+q\d+\)$/.test(f.niveau) && /^verbeteren (per beurt|op het einde) · beurten \S+$/.test(f.instellingen) && !/vertaling/.test(b);
     ok(good, `start block ${i}: ${mode}${i > 3 ? ' (' + f.niveau.split(' · ').pop() + ')' : ''}`);
     if (i === 0) console.log(b.replace(/^/gm, '      '));
   });
@@ -83,15 +83,15 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   // ---- the sheet: settings remembered, copy, project link ----
   await p.evaluate(() => { TAB = 'pad'; PAD.lvl = 'arc'; render(); });
   await p.click('[data-act=praten]'); await p.waitForTimeout(150);
-  await p.click('[data-pr=mode][data-v=dagboek]'); await p.click('[data-pr=vertaling][data-v=nee]'); await p.click('[data-pr=beurten][data-v="12–15"]'); await p.click('[data-pr=verbeteren][data-v=einde]');
-  const txt = await p.inputValue('#pr-block');
-  ok(txt.includes('modus: dagboek') && txt.includes('vertaling nee · verbeteren op het einde · beurten 12–15'), 'sheet: mode and settings change the block');
+  await p.click('[data-pr=mode][data-v=dagboek]'); await p.click('[data-pr=beurten][data-v="12–15"]'); await p.click('[data-pr=verbeteren][data-v=einde]');
+  const txt = await p.inputValue('#pr-block'); const noVert = !(await p.$('[data-pr=vertaling]'));
+  ok(txt.includes('modus: dagboek') && txt.includes('instellingen: verbeteren op het einde · beurten 12–15') && !/vertaling/.test(txt) && noVert, 'sheet: mode and settings change the block; no translation option and no vertaling in the block');
   await p.fill('#pr-url', 'geen link'); await p.click('#pr-url-save'); ok(await p.isVisible('#pr-url-err'), 'project link: a bad link is refused');
   await p.fill('#pr-url', 'https://claude.ai/project/abc'); await p.click('#pr-url-save'); await p.waitForTimeout(100);
   ok((await p.getAttribute('#pr-open', 'href')) === 'https://claude.ai/project/abc', 'project link stored, Open Claude links to it');
   if (process.env.SHOTS) await p.screenshot({path: path.join(process.env.SHOTS, 'r3_praten.png')});
   await p.evaluate(() => closeSheet()); await p.waitForTimeout(900); await p.reload(); await p.waitForTimeout(500);
-  ok(await p.evaluate(() => S.settings.praten.mode === 'dagboek' && S.settings.praten.vertaling === false && S.settings.praten.beurten === '12–15' && S.settings.projectUrl.endsWith('/abc')), 'settings remembered after a reload');
+  ok(await p.evaluate(() => S.settings.praten.mode === 'dagboek' && !('vertaling' in S.settings.praten) && S.settings.praten.beurten === '12–15' && S.settings.projectUrl.endsWith('/abc')), 'settings remembered after a reload');
   // Gebruik house opens the sheet in opdracht for that square
   await p.evaluate(() => { closeFeed && FEED && closeFeed(); closeOverlay('welcome'); closeOverlay('tour'); startStep('u7q1', 'gebruik'); }); await p.waitForTimeout(150);
   ok((await p.inputValue('#pr-block')).includes('modus: opdracht') && (await p.inputValue('#pr-block')).includes('(u7q1)'), 'Gebruik house opens the start block in opdracht for its square');
@@ -132,7 +132,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   await q.evaluate(() => { TAB = 'pad'; PAD.lvl = 'arc'; render(); });
   await q.click('[data-act=verslag]'); await q.waitForTimeout(100); await q.fill('#rep-t', fx('mijn-woorden-1.txt')); await q.click('#rep-go'); await q.waitForTimeout(250);
   const sum1 = (await q.textContent('#wi-sum')).replace(/\s+/g, ' ').trim();
-  ok(sum1 === '94 nieuwe woorden · 0 al in de app · 63 naar Algemeen' && !(await q.$('#wi-rej')), 'preview of mijn-woorden-1.txt: ' + sum1);
+  ok(sum1 === '94 nieuwe woorden · 0 al in de app · 0 aangevuld · 63 naar Algemeen' && !(await q.$('#wi-rej')), 'preview of mijn-woorden-1.txt: ' + sum1);
   if (process.env.SHOTS) await q.screenshot({path: path.join(process.env.SHOTS, 'w1_preview.png')});
   await q.click('#wi-go'); await q.waitForTimeout(200);
   const after1 = await q.evaluate(() => { const s = S.sets.find(x => x.name === 'Mijn woorden 1'); const c = Object.values(S.custom);
@@ -140,7 +140,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   console.log('  imported:', JSON.stringify(after1));
   ok(after1.n === 94 && after1.custom === 94 && after1.alg === 63 && after1.plans === 31 && after1.kennen === 'u12q4' && after1.onSquare === 'kennen' && after1.maar === 'conj', 'after import, set "Mijn woorden 1" has 94 words; 31 on their square, 63 in Algemeen');
   ok(after1.inHerhalen === 12 && after1.waiting === 82, 'new words enter Herhalen 12 a day: 12 now, 82 waiting');
-  const woordenMd = await q.evaluate(() => DOCS['Woorden.md']());
+  const woordenMd = await q.evaluate(() => loadDict().then(() => DOCS['Woorden.md']()));
   ok(woordenMd === fs.readFileSync(path.join(__dirname, '..', 'praten-project', 'Woorden.md'), 'utf8'), 'Woorden.md generated after the import is the shared Woorden.md, set included');
   const snap = await q.evaluate(() => JSON.stringify([S.sets, S.custom, S.drip]));
   await q.click('[data-act=verslag]'); await q.waitForTimeout(100); await q.fill('#rep-t', fx('mijn-woorden-1.txt')); await q.click('#rep-go'); await q.waitForTimeout(250);
@@ -210,7 +210,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   await q.setInputFiles('#rep-f', path.join(DIR, 'woorden-broken.txt')); await q.waitForTimeout(300);
   const sum3 = (await q.textContent('#wi-sum')).replace(/\s+/g, ' ').trim(); const rej = (await q.textContent('#wi-rej')).replace(/\s+/g, ' ');
   console.log('  broken block:', sum3, '|', rej);
-  ok(sum3 === '3 nieuwe woorden · 2 al in de app · 1 naar Algemeen' && /3 niet ingelezen/.test(rej) && /zonder zin: ontbreekt: s/.test(rej) && /bureau: zelfstandig naamwoord zonder de\/het/.test(rej) && /Vliegen: staat twee keer/.test(rej), 'broken entries are listed, the rest is ready to import (.txt file picker)');
+  ok(sum3 === '3 nieuwe woorden · 2 al in de app · 0 aangevuld · 1 naar Algemeen · 3 niet ingelezen' && /3 niet ingelezen/.test(rej) && /zonder zin: ontbreekt: s/.test(rej) && /bureau: zelfstandig naamwoord zonder de\/het/.test(rej) && /Vliegen: staat twee keer/.test(rej), 'broken entries are listed, the rest is ready to import (.txt file picker)');
   await q.click('#wi-go'); await q.waitForTimeout(150);
   ok(await q.evaluate(() => { const s = S.sets.find(x => x.name === 'Testset'); const k = Object.values(S.custom).find(l => l.w === 'kraanvogel'); return s.ids.length === 5 && k && k.g === 'de' && k.plan === 'u2q3' && s.ids.includes('tram') && !S.custom.tram; }), 'imported: kraanvogel (de, from "de kraanvogel"), vliegen, onder + linked tram and want, nothing overwritten');
   for (const bad of ['EDZ-WOORDEN v1\n{"set":"x","words":[]}\nEDZ-EINDE', 'EDZ-WOORDEN v1\n{"words":[{"w":"a"}]}\nEDZ-EINDE', 'EDZ-WOORDEN v1\n{kapot\nEDZ-EINDE', 'EDZ-WOORDEN v1\n{"set":"x","words":[null,5,"x",{"w":{}}]}\nEDZ-EINDE']) {
@@ -260,6 +260,61 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   await q.click('[data-act=verslag]'); await q.waitForTimeout(100); await q.fill('#rep-t', fx('valid.txt')); await q.click('#rep-go'); await q.waitForTimeout(250);
   ok(!!(await q.$('#proc #proc-save')) && !(await q.$('#wimport')), 'pasting an EDZ-VERSLAG v1 block still opens the report review');
   await W.close();
+
+  // ---- 2.7 (brief 2): themes for words already in the app, reports with thema, Woorden.md, backup, mistakes ----
+  const T = await openApp(); const t = T.p;
+  await t.evaluate(() => { closeOverlay('welcome'); closeOverlay('tour'); S.coach = {tour: 1, pad: 1, praten: 1, plan: 1, woorden: 1}; render(); });
+  const THEMA = ['thema-oranje-boek.txt', 'thema-quizlet-1.txt', 'thema-quizlet-2.txt', 'thema-quizlet-3.txt', 'thema-doggie.txt'];
+  // Ari's state before: the five sets imported earlier, without a thema
+  for (const f of THEMA) await t.evaluate(txt => { const r = parseWords(txt.replace(/,"thema":"[a-z]+"/g, '')).data; saveWords(r); }, fx(f));
+  const noThemeBefore = await t.evaluate(() => Object.values(S.custom).filter(l => !themeOf(l)).length);
+  // pasting quizlet-1 through the real import screen
+  await t.evaluate(() => { TAB = 'ik'; render(); }); await t.click('[data-act=word-import]'); await t.waitForTimeout(100);
+  await t.fill('#wim-t', fx('thema-quizlet-1.txt')); await t.click('#wim-go'); await t.waitForTimeout(200);
+  const q1 = (await t.textContent('#wi-sum')).replace(/\s+/g, ' ').trim();
+  const lexIn1 = await t.evaluate(txt => parseWords(txt).data.existing.filter(x => !LX(x.id).custom).length, fx('thema-quizlet-1.txt'));
+  console.log('  quizlet-1 preview:', q1, '· app words among them (they keep their app theme):', lexIn1);
+  ok(q1.startsWith('0 nieuwe woorden · 150 al in de app · ' + (150 - lexIn1) + ' aangevuld'), 'thema-quizlet-1: 0 new · 150 existing · every own word without a theme gets one (aangevuld)');
+  await t.click('#wi-go'); await t.waitForTimeout(150);
+  const q1set = await t.evaluate(() => { const set = S.sets.find(x => x.name === 'Import - Quizlet 1'); return {n: set.ids.length, themed: set.ids.filter(id => themeOf(LX(id))).length}; });
+  ok(q1set.n === 150 && q1set.themed === 150, 'after importing: all 150 words of the set have a theme (' + q1set.themed + ')');
+  const again = await t.evaluate(txt => parseWords(txt).data.existing.filter(x => Object.keys(x.fill).length).length, fx('thema-quizlet-1.txt'));
+  ok(again === 0, 'pasting it again: 0 aangevuld');
+  for (const f of THEMA) await t.evaluate(txt => saveWords(parseWords(txt).data), fx(f));
+  const all = await t.evaluate(() => { const ids = [...new Set(S.sets.filter(x => x.name.startsWith('Import - ')).flatMap(x => x.ids))]; const per = S.sets.filter(x => x.name.startsWith('Import - ')).reduce((a, x) => a + x.ids.length, 0);
+    const byTheme = THEMES.reduce((a, th) => a + ids.filter(id => themeOf(LX(id)) === th.id).length, 0); return {per, unique: ids.length, none: ids.filter(id => !themeOf(LX(id))).map(id => LX(id).w), byTheme}; });
+  console.log('  five sets:', JSON.stringify({entries: all.per, uniqueWords: all.unique, withoutTheme: all.none.length, noThemeBefore}));
+  ok(all.per === 678 && all.none.length === 0 && all.byTheme === all.unique, 'after all five files: all 678 entries have a theme, none "Zonder thema", every word shows under one theme');
+  // a theme that is already there stays
+  const keep = await t.evaluate(() => { const l = Object.values(S.custom).find(x => x.w === 'kalk'); const th0 = themeOf(l);
+    saveWords(parseWords('EDZ-WOORDEN v1\n{"v":1,"set":"Test","datum":"2026-10-12","words":[{"w":"kalk","p":"n","g":"de","d":"x","s":"Kalk is wit.","en":"lime","thema":"eten"}]}\nEDZ-EINDE').data); return [th0, themeOf(l)]; });
+  ok(keep[0] === 'wonen' && keep[1] === 'wonen', 'a word that has a theme keeps it when a block brings another thema (' + keep.join(' → ') + ')');
+  // EDZ-VERSLAG: a new word with "thema":"wonen", syn and ant; and a known word gets its empty theme
+  const rep = 'EDZ-VERSLAG v1\n{"v":1,"modus":"onderwerp","datum":"2026-10-12","onderwerp":"Thuis","beurten":6,"samenvatting":"Je vertelde over je huis.","words":[{"w":"vensterbank","p":"n","g":"de","pl":"vensterbanken","dim":"","d":"de plank onder een raam","s":"De plant staat op de vensterbank.","en":"windowsill","plan":null,"thema":"wonen","syn":["vensterblad"]}]}\nEDZ-EINDE';
+  await t.evaluate(r => { importReport(r); }, rep); await t.waitForTimeout(150); await t.click('#proc-save'); await t.waitForTimeout(150);
+  const vb = await t.evaluate(() => { const l = Object.values(S.custom).find(x => x.w === 'vensterbank'); return l && [themeOf(l), relOf(l).syn.join()]; });
+  ok(vb && vb[0] === 'wonen' && vb[1] === 'vensterblad', 'EDZ-VERSLAG: a new word with "thema":"wonen" (and syn) saves them');
+  // Woorden.md
+  await t.evaluate(() => { S.sets.push({id: 'sdel', name: 'Uit de les – week 40', src: 'woorden', ids: [Object.keys(S.custom)[0]]}); deleteSet('sdel'); }); await t.waitForTimeout(80); await t.click('#cf-yes'); await t.waitForTimeout(80);
+  const md = await t.evaluate(() => loadDict().then(() => DOCS['Woorden.md']()));
+  // every entry is "de/het lemma (gloss)" or, in the Woordenboek, "de/het lemma"; a lemma may repeat only as a different part of speech (dat: pronoun and conjunction)
+  const entries = md.split('\n').filter(l => !l.startsWith('#') && /\S/.test(l) && !/^[A-Z]/.test(l)).flatMap(l => l.includes(' (') ? [...l.matchAll(/(?:^|; )((?:de |het )?[^;()\[\]]+?) \(/g)].map(m => m[1]) : l.split('; ')).map(e => e.replace(/^(de|het) /, '').trim());
+  const nP = await t.evaluate(() => { const m = {}; LEX.concat(Object.values(S.custom), DICT).forEach(l => { const k = norm(l.w); (m[k] = m[k] || new Set()).add(l.p); }); return Object.fromEntries(Object.entries(m).map(([k, v]) => [k, v.size])); });
+  const cnt = {}; entries.forEach(e => { cnt[e] = (cnt[e] || 0) + 1; });
+  const dup = Object.keys(cnt).filter(e => cnt[e] > (nP[e.toLowerCase()] || 1));
+  ok(md.startsWith('# Woorden — Elke Dag Zin\n') && /\n## Woordenboek · /.test(md) && !dup.length && /\[(u\d+q\d+|—) · (eten|natuur|lichaam|wonen)\]/.test(md) && !/Uit de les – week 40/.test(md),
+    'Woorden.md: starts with "# Woorden", has a Woordenboek section, no duplicate lemmas' + (dup.length ? ' (' + dup.slice(0, 5).join(', ') + ')' : '') + ', themes in the set sections, a deleted set is gone');
+  // backup summary: plein_nu is never among pleinen_klaar
+  const bk = await t.evaluate(() => { S.sq.u1q1 = {steps: {ontdek: 1, oefen: 100, lees: 100, luister: 100}}; S.sq.u1q2 = {steps: {ontdek: 1, oefen: 100, lees: 100, luister: 100, gebruik: 1}}; S.cur = 'u1q1'; const h = backupHeader(); return h.samenvatting; });
+  ok(!bk.pleinen_klaar.some(x => x.startsWith(bk.plein_nu.split(' ')[0])) && bk.plein_nu.startsWith('u1q1') && bk.pleinen_klaar.some(x => x.startsWith('u1q2')), 'backup summary: u1q1 without Gebruik is not klaar and is plein_nu; u1q2 is klaar (' + bk.plein_nu + ')');
+  // mistakes: a misheard name is not stored; a stored mistake can be deleted
+  const mk = await t.evaluate(() => { const n0 = Object.keys(S.fix).length; addFix({wrong: 'op de meer', right: 'op de Meir', why: 'x'}, 'onderwerp', null); const n1 = Object.keys(S.fix).length;
+    addFix({wrong: 'Ik heb gaan naar de markt.', right: 'Ik ben naar de markt gegaan.', why: 'zijn'}, 'onderwerp', 'u5q3'); const id = Object.keys(S.fix).find(k => S.fix[k].right.startsWith('Ik ben')); return {n0, n1, id, item: !!S.items['c:' + id + ':fix']}; });
+  await t.evaluate(id => deleteFix(id), mk.id); await t.waitForTimeout(80); await t.click('#cf-yes'); await t.waitForTimeout(80);
+  const gone = await t.evaluate(id => !S.fix[id] && !S.items['c:' + id + ':fix'], mk.id);
+  ok(mk.n1 === mk.n0 && mk.item && gone, 'a dictated slip like "op de meer → op de Meir" is not stored; a stored mistake can be deleted (and leaves Herhalen)');
+  await T.close();
+  if (T.errs.length) { console.log('PAGE ERRORS (brief 2)', T.errs); fails.push('page errors (brief 2)'); }
   if (errs.length) { console.log('PAGE ERRORS', errs); fails.push('page errors'); }
   console.log(fails.length ? `FAIL: ${fails.length}` : 'OK: report import and start block');
   process.exit(fails.length ? 1 : 0);

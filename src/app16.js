@@ -101,6 +101,6 @@ function fixEx(key, f) {
   const from = [SRC_NAME[f.src] ? 'uit ' + SRC_NAME[f.src] : '', shortDate(f.date)].filter(Boolean).join(', ');
   return {type: 'type', key, label: 'fix', fixType: t,
     prompt: `<span class="nl fixw" style="font-size:20px">${words.map((w, i) => `<span class="fx${diff.has(i) ? ' d' : ''}">${esc(w)}</span>`).join(' ')}</span>`,
-    sub: `<span class="fixlab" data-en="${labEn}">${lab}</span>${place ? ` · <span class="small">${esc(place)}</span>` : ''}<br><span class="small">Verbeter de zin${from ? ' · ' + esc(from) : ''}.</span>${diff.size ? ` <button class="link sm" type="button" data-act="fix-hint" style="padding-left:0">Hint: wat is er mis? ›</button>` : ''}`,
+    sub: `<span class="fixlab" data-en="${labEn}">${lab}</span>${place ? ` · <span class="small">${esc(place)}</span>` : ''}<br><span class="small">Verbeter de zin${from ? ' · ' + esc(from) : ''}.</span>${diff.size ? ` <button class="link sm" type="button" data-act="fix-hint" style="padding-left:0">Hint: wat is er mis? ›</button>` : ''} <button class="link sm" type="button" data-act="fix-del" data-id="${esc(key.split(':')[1])}" style="padding-left:0;color:var(--warn)" data-en="Not a real mistake? Delete it">Geen echte fout? Verwijder ›</button>`,
     answer: f.right, accept: [norm(f.right)], whole: true, why: esc(f.why || ''), say: f.right};
 }

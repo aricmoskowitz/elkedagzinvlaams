@@ -106,7 +106,7 @@ function personRule(p) {
    migrate() accepts a 1.5 state (v 2) unchanged and adds the 2.0 fields. */
 const LS_KEY = 'edz.v2';
 const LS_OLD = 'goesting.v1';
-const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', vertaling:true, verbeteren:'beurt', beurten:'6–8'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[], drip:{ids:[], day:0}, themes:{}, missions:{}});
+const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', verbeteren:'beurt', beurten:'6–8'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[], drip:{ids:[], day:0}, themes:{}, missions:{}});
 function migrate() {
   if (!S.v || S.v < 2) { S.v = 2; S.sq = S.sq || {}; S.cur = 'u1q1'; S.coach = S.coach || {}; S.settings = Object.assign(blankState().settings, S.settings || {}, {test: true}); delete S.units; }
   if (!SQ[S.cur]) S.cur = 'u1q1';
@@ -118,6 +118,7 @@ function migrate() {
   const def = blankState().settings;
   S.settings = Object.assign({}, def, S.settings || {});
   S.settings.praten = Object.assign({}, def.praten, S.settings.praten || {});
+  delete S.settings.praten.vertaling; // 2.7: translations are off for good
   if (S.settings.talkAudio === undefined) S.settings.talkAudio = true;
   if (S.v < 3) { Object.keys(S.seen).forEach(id => { if (S.seenAt[id] === undefined) S.seenAt[id] = 0; }); S.v = 3; }
 }

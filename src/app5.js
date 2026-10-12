@@ -50,12 +50,13 @@ const stamp = (d = new Date()) => dateKey(d) + ' ' + String(d.getHours()).padSta
 const backupName = (d = new Date()) => 'elkedagzin-backup-' + stamp(d).replace(' ', '-').replace(':', '') + '.json';
 // a short summary at the top, for the Claude Project (the app ignores it when restoring)
 function backupHeader(d = new Date()) {
-  const built = UNITS.filter(u => u.built); const done = built.flatMap(u => squaresOf(u.id)).filter(q => sqComplete(q.id));
+  // 2.7: one rule for both fields: a plein is klaar when every house that has content is gehaald (Ontdek, Oefen, Lees, Luister and Gebruik)
+  const built = UNITS.filter(u => u.built); const all = built.flatMap(u => squaresOf(u.id)); const done = all.filter(q => pleinKlaar(q.id)); const now = all.find(q => !pleinKlaar(q.id));
   const fixes = Object.values(S.fix || {}).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   const days = Object.keys(S.activity || {}).filter(k => (S.activity[k] || {}).n).sort();
   return {app: 'Elke Dag Zin', gemaakt: stamp(d), iso: d.toISOString(), versie: typeof APP_VERSION === 'string' ? APP_VERSION : '',
     samenvatting: {
-      pleinen_klaar: done.map(q => q.id + ' ' + q.name), plein_nu: S.cur && SQ[S.cur] ? S.cur + ' ' + SQ[S.cur].name : '',
+      pleinen_klaar: done.map(q => q.id + ' ' + q.name), plein_nu: now ? now.id + ' ' + now.name : '',
       steden_grote_markt_gehaald: built.filter(u => ((S.markt || {})[u.id] || 0) >= 80).map(u => u.name),
       woorden_in_herhaling: Object.keys(S.items || {}).filter(k => k.startsWith('w:')).length, eigen_woorden: Object.keys(S.custom || {}).length,
       sets: (S.sets || []).map(x => x.name + ' (' + x.ids.length + ')'), fouten_bewaard: fixes.length,
