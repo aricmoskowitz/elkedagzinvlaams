@@ -2,7 +2,8 @@
    One visual language on every level:
    - a building is a piece of work: grey until it is done, in its colour once done
    - a yellow flag on it = gehaald (80% or more); a flag with a white star = 100%
-   - a pennant on a plein's square grows with Ronde 1, 2 and 3 (one star per extra round)
+   - Ronde 2: colourful flags go up across the plein (on the stad map and over its guild houses);
+     Ronde 3: the same flags turn gold, with sparkles
    - bunting over a Grote Markt (and around a town on the Pad) = the Grote Markt is done
    - gold kerbs and sparkles = everything perfect
    Stad map: each plein has its own five guild houses, in the same colours as on the plein.
@@ -56,20 +57,18 @@ const GOLD = '#E0A82E';
 function miniFlag(x, y, top) {
   return `<g transform="translate(${x},${y})" shape-rendering="crispEdges"><rect width="1.4" height="11" fill="#2A2620"/><rect x="1.4" width="8" height="5" fill="${top ? GOLD : '#F2D35B'}" stroke="#2A2620" stroke-width=".8"/>${top ? '<path d="M5.4,0.7 L6.1,2 L7.5,2.1 L6.4,3 L6.8,4.3 L5.4,3.6 L4,4.3 L4.4,3 L3.3,2.1 L4.7,2 Z" fill="#fff"/>' : ''}</g>`;
 }
-// the plein's pennant: Ronde 1 small, Ronde 2 bigger with a star, Ronde 3 biggest with two stars; gold when perfect
-function pennant(x, y, ronde, perfect) {
-  if (!ronde) return ''; const h = 10 + 5 * ronde, w = 7 + 3 * ronde, ph = 5 + 2 * ronde;
-  const star = (cx, cy, r) => `<path d="${Array.from({length: 10}, (_, k) => { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * .45 : r; return (k ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(2) + ',' + (cy + rr * Math.sin(a)).toFixed(2); }).join('')}Z" fill="#fff"/>`;
-  const stars = Array.from({length: ronde - 1}, (_, k) => star(3.6 + k * 4.6, ph / 2, 2.2)).join('');
-  return `<g transform="translate(${x},${y - h})" shape-rendering="crispEdges"><rect width="1.6" height="${h}" fill="#2A2620"/><path d="M1.6,0 h${w} l-3,${ph / 2} l3,${ph / 2} h-${w} z" fill="${perfect ? GOLD : '#C8553D'}" stroke="#2A2620" stroke-width=".9"/><g transform="translate(1.6,0)">${stars}</g></g>`;
-}
 // feestvlaggetjes: a sagging string of small triangles between two points
-function bunting(x1, y1, x2, y2, gold) {
-  const n = Math.max(3, Math.round(Math.hypot(x2 - x1, y2 - y1) / 7)); const cols = gold ? [GOLD, '#F2D35B'] : FACADE;
-  let s = `<path d="M${x1},${y1} Q${(x1 + x2) / 2},${(y1 + y2) / 2 + 7} ${x2},${y2}" fill="none" stroke="#2A2620" stroke-width=".8"/>`;
-  for (let k = 1; k < n; k++) { const t = k / n; const x = (1 - t) ** 2 * x1 + 2 * (1 - t) * t * (x1 + x2) / 2 + t * t * x2, y = (1 - t) ** 2 * y1 + 2 * (1 - t) * t * ((y1 + y2) / 2 + 7) + t * t * y2;
-    s += `<path d="M${x - 2},${y} L${x + 2},${y} L${x},${y + 4} Z" fill="${cols[k % cols.length]}" stroke="#2A2620" stroke-width=".5"/>`; }
-  return `<g aria-hidden="true">${s}</g>`;
+function bunting(x1, y1, x2, y2, gold, z = 1) {
+  const sag = 7 * z, n = Math.max(3, Math.round(Math.hypot(x2 - x1, y2 - y1) / (7 * z))); const cols = gold ? [GOLD, '#F2D35B'] : FACADE;
+  let s = `<path d="M${x1},${y1} Q${(x1 + x2) / 2},${(y1 + y2) / 2 + sag} ${x2},${y2}" fill="none" stroke="#2A2620" stroke-width="${.8 * z}"/>`;
+  for (let k = 1; k < n; k++) { const t = k / n; const x = (1 - t) ** 2 * x1 + 2 * (1 - t) * t * (x1 + x2) / 2 + t * t * x2, y = (1 - t) ** 2 * y1 + 2 * (1 - t) * t * ((y1 + y2) / 2 + sag) + t * t * y2;
+    s += `<path class="bt" d="M${x - 2 * z},${y} L${x + 2 * z},${y} L${x},${y + 4 * z} Z" fill="${cols[k % cols.length]}" stroke="#2A2620" stroke-width="${.5 * z}"/>`; }
+  return `<g class="bunting${gold ? ' gold' : ''}" aria-hidden="true">${s}</g>`;
+}
+// Ronde 2: flags across; Ronde 3: gold flags with sparkles along them
+function roundsFlags(x1, y1, x2, y2, ronde, z = 1) {
+  if (ronde < 2) return ''; const gold = ronde >= 3;
+  return bunting(x1, y1, x2, y2, gold, z) + (gold ? sparkles(0, 0, 1, [.15, .5, .85].map((t, k) => [x1 + (x2 - x1) * t, (y1 + y2) / 2 + 7 * z * (1 - (2 * t - 1) ** 2) - 6 * z, k * .5])) : '');
 }
 // sparkles around a perfect square (they twinkle unless reduced motion); pts overrides where they go
 function sparkles(cx, cy, r, pts) {
@@ -84,16 +83,18 @@ function drawMiniGuild(R, px, py, col, on) {
   R(px + 4, py + 8, 3, 3, win); R(px + 9, py + 8, 3, 3, win); R(px + 6, py + 12, 4, 4, ink);
 }
 
-/* ---------- the legend, under the maps ---------- */
-function progressLegend(level) {
-  const row = (icon, text) => `<div class="lg"><svg viewBox="0 0 22 18" width="22" height="18" aria-hidden="true">${icon}</svg><span>${text}</span></div>`;
+/* ---------- what the flags mean: Ik → Hoe werkt Elke Dag Zin? ---------- */
+function progressLegend() {
+  const row = (icon, text) => `<div class="lg"><svg viewBox="0 0 22 18" width="33" height="27" aria-hidden="true">${icon}</svg><span>${text}</span></div>`;
   const house = (col, on) => `<g shape-rendering="crispEdges"><rect x="4" y="7" width="12" height="10" fill="${on ? col : '#DAD5CC'}" stroke="${on ? '#2A2620' : '#A9A49A'}"/><rect x="7" y="3" width="6" height="4" fill="${on ? col : '#DAD5CC'}" stroke="${on ? '#2A2620' : '#A9A49A'}"/></g>`;
-  return `<details class="legend"><summary data-en="What the flags mean">Wat betekenen de vlaggen?</summary><div class="lgs">
-    ${row(house('#C8553D', false), level === 'pad' ? 'Grijs huis: dit plein is nog niet klaar' : 'Grijs gildehuis: nog niet gedaan')}
-    ${row(house('#C8553D', true) + miniFlag(13, 0, false), level === 'pad' ? 'Huis met vlag: plein klaar' : 'Gekleurd met gele vlag: gehaald (80% of meer)')}
-    ${row(house('#C8553D', true) + miniFlag(13, 0, true), level === 'pad' ? 'Vlag met ster: plein perfect' : 'Vlag met ster: 100%')}
-    ${level === 'pad' ? '' : row(pennant(9, 18, 3, false), 'Wimpel op het plein: groeit met Ronde 1, 2 en 3')}
-    ${row(bunting(1, 6, 21, 6, false), level === 'pad' ? 'Vlaggetjes rond de stad: Grote Markt gehaald' : 'Vlaggetjes: Grote Markt gehaald')}
-    ${row(`<rect x="2" y="5" width="13" height="11" fill="#DDD4C3" stroke="${GOLD}" stroke-width="2"/><path transform="translate(17,5)" d="M0,-4.5 L1.1,-1.1 L4.5,0 L1.1,1.1 L0,4.5 L-1.1,1.1 L-4.5,0 L-1.1,-1.1 Z" fill="#fff" stroke="${GOLD}" stroke-width=".9"/>`, level === 'pad' ? 'Goud en glitter: de hele stad perfect' : 'Goud en glitter: alles 100% en Ronde 3')}
-  </div></details>`;
+  const spark = '<path transform="translate(17,5)" d="M0,-4.5 L1.1,-1.1 L4.5,0 L1.1,1.1 L0,4.5 L-1.1,1.1 L-4.5,0 L-1.1,-1.1 Z" fill="#fff" stroke="#E0A82E" stroke-width=".9"/>';
+  return `<div class="legend"><div class="lgs">
+    ${row(house('#C8553D', false), 'Grijs gildehuis: nog niet gedaan')}
+    ${row(house('#C8553D', true) + miniFlag(13, 0, false), 'In kleur met een gele vlag: gehaald (80% of meer)')}
+    ${row(house('#C8553D', true) + miniFlag(13, 0, true), 'Vlag met een ster: 100%')}
+    ${row(bunting(1, 6, 21, 6, false), 'Vlaggetjes over een plein: Ronde 2 gehaald')}
+    ${row(bunting(1, 6, 15, 6, true) + spark, 'Gouden vlaggetjes met glitter: Ronde 3 gehaald')}
+    ${row(`<rect x="2" y="5" width="13" height="11" fill="#DDD4C3" stroke="#E0A82E" stroke-width="2"/>` + spark, 'Gouden stoeprand: plein perfect (alles 100% en Ronde 3)')}
+    ${row(bunting(1, 6, 21, 6, false) + '<text x="11" y="17" text-anchor="middle" font-size="6" font-weight="700" fill="#2A2620">★</text>', 'Vlaggetjes over de Grote Markt, of rond een stad op het Pad: de Grote Markt gehaald')}
+  </div><div class="small">Op het Pad heeft elke stad drie huizen (één per plein) en een stadhuis voor de Grote Markt. Is alles perfect, ook de opdracht in de stad, dan wordt de hele stad goud.</div></div>`;
 }

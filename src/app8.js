@@ -312,12 +312,12 @@ function townOverlay(u) {
   const qs = squaresOf(u); const nq = nextSquare(); const T = buildTown(u); const tp = townProgress(u);
   const pl = qs.map((q, j) => {
     const [x, y] = sqCenter(TSQ[j]); const st = sqState(q.id); const dim = st === 'locked'; const pp = tp.pleinen[j];
-    // flags on its guild houses, a pennant for the rounds, sparkles when everything is perfect
+    // flags on its guild houses; Ronde 2/3 flags across the square; sparkles when everything is perfect
     const flags = (T.guild[j] || []).map((h, k) => { const lv = houseLevel(q.id, STEPS[k]); return lv ? miniFlag(h.x * TS + 10, h.y * TS - 9, lv === 2) : ''; }).join('');
     const label = `Plein ${q.n}: ${esc(q.name)} · ${pp.done} van 5 gildehuizen${pp.top ? `, ${pp.top} op 100%` : ''}${pp.ronde > 1 ? `, Ronde ${pp.ronde}` : ''}${pp.perfect ? ', perfect' : dim ? ', nog dicht' : ''}`;
     return `<g data-act="square" data-q="${q.id}" role="button" tabindex="0" style="cursor:pointer" aria-label="${label}">
       <rect x="${x - 36}" y="${y - 30}" width="72" height="60" fill="${dim ? 'rgba(255,255,255,.55)' : 'transparent'}"/>
-      ${flags}${pennant(x - 14, y + 12, pp.ronde, pp.perfect)}${pp.perfect ? sparkles(x, y, 30) : ''}
+      ${flags}${roundsFlags(x - 26, y - 16, x + 26, y - 16, pp.ronde)}${pp.perfect ? sparkles(x, y, 30) : ''}
       ${sign(x, j === 0 ? y + 34 : y - 46, q.name, dim)}
       ${st === 'next' || st === 'open' ? arrow(x, j === 0 ? y - 36 : y - 56, st === 'next') : ''}
     </g>`;
@@ -341,10 +341,9 @@ function viewTown(u) {
     <button class="back" data-act="pad-up">‹ Pad</button>
     <div><div class="eyebrow">Boog ${arcOf(u).n} · Stad ${townIndexInArc(u)} · ${esc(arcOf(u).level)}</div><h1>${esc(unit.name)}</h1></div>
     ${goalCard(u)}
-    ${coachTip('town2', 'Rond elk plein staan zijn vijf gildehuizen. Een huis krijgt kleur en een gele vlag als je het gehaald hebt, een vlag met een ster bij 100%. De wimpel op het plein groeit met Ronde 2 en 3. Vlaggetjes op de Grote Markt: de stad is herhaald.')}
+    ${coachTip('town2', 'Rond elk plein staan zijn vijf gildehuizen. Een huis krijgt kleur en een gele vlag als je het gehaald hebt, een vlag met een ster bij 100%. Na Ronde 2 hangen er vlaggetjes over het plein, na Ronde 3 gouden. Wat alles betekent, staat bij Ik → Hoe werkt Elke Dag Zin?')}
     ${sceneHTML('townmap', TGW, TGH, townOverlay(u), 'Plattegrond van ' + unit.name + ': ' + sum.join(', '))}
     <div class="small progsum">${sum.join(' · ')}</div>
-    ${progressLegend('stad')}
     ${locked ? `<div class="card soft stack" style="gap:8px"><div>${esc(unit.name)} is nog dicht. Test je erin: 15 vragen over de hele stad.</div><button class="btn line" data-act="testout" data-qs="${qs.map(q => q.id).join(',')}">Test je in</button></div>` : ''}
     ${missionRow(u)}
     <button class="link" data-act="unit-set" data-u="${u}">Oefen de woorden van ${esc(unit.name)} ›</button>
@@ -382,13 +381,12 @@ function squareOverlay(q) {
       <rect x="${x - 4}" y="0" width="64" height="150" fill="transparent"/>
       ${guildHouse(x, state, i)}
       ${pp.levels[i] ? `<g transform="translate(${x + 44},4) scale(1.5)">${miniFlag(0, 0, pp.levels[i] === 2)}</g>` : ''}
-      ${st === 'oefen' && pp.ronde ? pennant(x + 50, 112, pp.ronde, pp.perfect) : ''}
       ${state === 'next' ? arrow(x + 28, 9, true) : ''}
       ${sign(x + 28, 118, STEP_NAME[st], state === 'later' || state === 'locked')}
     </g>`;
   }).join('');
   const ni = STEPS.indexOf(nx);
-  return h + (pp.perfect ? sparkles(0, 0, 1, STEPS.map((_, i) => [8 + i * 65 + (i % 2 ? 50 : 8), i % 2 ? 26 : 56, i * .3])) : '') + heroG(8 + ni * 65 + 28, 186);
+  return h + roundsFlags(10, 40, 324, 40, pp.ronde, 2) + (pp.perfect ? sparkles(0, 0, 1, STEPS.map((_, i) => [8 + i * 65 + (i % 2 ? 50 : 8), i % 2 ? 26 : 70, i * .3])) : '') + heroG(8 + ni * 65 + 28, 186);
 }
 function viewSquare(q) {
   const sq = SQ[q]; const unit = UNIT[sq.u]; const open = sqOpen(q);

@@ -315,9 +315,9 @@ a.btn{text-decoration:none;text-align:center;box-sizing:border-box}
 .goal .gv{font-weight:500}
 .goal .can .gv{font-size:18px;line-height:1.3}
 .progsum{margin-top:-6px}
-.legend summary{cursor:pointer;color:var(--go);font-size:14px;font-weight:500;min-height:32px;display:flex;align-items:center}
-.legend .lgs{display:grid;gap:6px;padding:4px 0 6px}
-.legend .lg{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink2)}
+.legend{display:grid;gap:10px;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px}
+.legend .lgs{display:grid;gap:8px}
+.legend .lg{display:flex;align-items:center;gap:12px;font-size:15px}
 .legend svg{flex:none}
 .mission{display:flex;align-items:flex-start;gap:12px}
 .mbox{flex:none;width:32px;height:32px;border-radius:8px;border:1.5px solid var(--go);background:var(--bg);color:#fff;font-size:17px;font-weight:700;cursor:pointer}

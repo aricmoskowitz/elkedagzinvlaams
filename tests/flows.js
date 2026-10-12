@@ -163,6 +163,49 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(/geen back-up/.test(await M2.p.textContent('#mig-out')), 'a wrong file on the welcome screen gets a clear message');
   errs.push(...M.errs, ...M2.errs); await M.close(); await M2.close();
 
+  // ---- 2.4: progress you can see ----
+  const G = await openApp({wait: 400}); const g = G.p;
+  await g.evaluate(() => { closeOverlay('welcome'); closeOverlay('tour'); S.coach = {tour: 1, pad: 1, town: 1, town2: 1, square: 1, markt: 1}; S.settings.test = false; render(); });
+  const lv = await g.evaluate(() => {
+    const all = (q, sc, r) => { sqstate(q).steps = {ontdek: 1, oefen: sc, lees: sc, luister: sc, gebruik: 1}; sqstate(q).rounds = {oefen: r}; };
+    all('u1q1', 100, 3); sqstate('u1q2').steps = {ontdek: 1, oefen: 90, lees: 67, luister: 85}; sqstate('u1q2').rounds = {oefen: 2};
+    sqstate('u1q3').steps = {ontdek: 1, oefen: 85, luister: 'test'}; sqstate('u1q3').rounds = {oefen: 3}; S.markt = {u1: 90};
+    const a = pleinProgress('u1q1'), b = pleinProgress('u1q2'), c = pleinProgress('u1q3');
+    return {a: [a.done, a.top, a.ronde, a.perfect], b: [b.done, b.top, b.ronde, b.perfect, b.levels.join('')], c: [c.done, c.ronde, c.perfect, c.levels.join('')], t: townProgress('u1')}; });
+  ok(JSON.stringify(lv.a) === '[5,5,3,true]' && JSON.stringify(lv.b) === '[4,1,2,false,"21110"]' && JSON.stringify(lv.c) === '[3,3,false,"21010"]', 'progress per guild house: 100% → star, 80–99% and test-out → gehaald; rounds and "perfect" per plein');
+  ok(lv.t.complete === 3 && lv.t.perfectPleinen === 1 && lv.t.marktDone && !lv.t.perfect, 'progress per town: pleinen klaar, perfect pleinen, Grote Markt, not yet perfect');
+  await g.evaluate(() => { TAB = 'pad'; PAD.lvl = 'town'; PAD.u = 'u1'; render(); }); await g.waitForTimeout(300);
+  const tm = await g.evaluate(() => { const svg = $('#townmap svg'); const pl = j => svg.querySelector(`[data-q="u1q${j}"]`);
+    const stars = el => el.innerHTML.split('M5.4,0.7').length - 1, flags = el => el.innerHTML.split('width="1.4" height="11"').length - 1;
+    return {f: [1, 2, 3].map(j => flags(pl(j))), s: [1, 2, 3].map(j => stars(pl(j))), b: [1, 2, 3].map(j => { const x = pl(j).querySelector('.bunting'); return x ? (x.classList.contains('gold') ? 'gold' : 'colour') : '-'; }),
+      sp: [1, 2, 3].map(j => pl(j).querySelectorAll('.sparkle').length), markt: !!svg.querySelector('[data-act=markt] .bunting'), legend: !!$('#main .legend'), goal: $$('#main .goal .gr').length, marktline: !!$('#main .marktline'), mbox: !!$('#main .mbox') }; });
+  ok(tm.f.join() === '5,4,3' && tm.s.join() === '5,1,1', 'stad map: one flag per guild house done, a star on each 100% house (' + tm.f + ' / ' + tm.s + ')');
+  ok(tm.b.join() === 'gold,colour,gold' && tm.sp[0] >= 2 && tm.sp[1] === 0 && tm.sp[2] === 1 && tm.markt, 'stad map: Ronde 2 colourful flags, Ronde 3 gold flags with sparkles, perfect plein shines, Grote Markt bunting');
+  ok(!tm.legend && tm.goal === 3 && !tm.marktline && tm.mbox, 'stad page: goal card with three rows, no legend, no Grote Markt line, the opdracht box');
+  if (SHOTS) await g.screenshot({path: path.join(SHOTS, '19_stad_progress.png'), fullPage: true});
+  const pv = await g.evaluate(() => { PAD.lvl = 'sq'; PAD.q = 'u1q2'; render(); const b = $('#sqmap svg .bunting'); const r2 = b && !b.classList.contains('gold');
+    PAD.q = 'u1q1'; render(); const b3 = $('#sqmap svg .bunting.gold'); return {r2, r3: !!b3, sp: $$('#sqmap svg .sparkle').length}; });
+  ok(pv.r2 && pv.r3 && pv.sp >= 2, 'plein: Ronde 2 flags across the guild houses, Ronde 3 gold with sparkles');
+  // the opdracht: one per town, the same box on the stad page and the Grote Markt
+  await g.evaluate(() => { PAD.lvl = 'town'; PAD.u = 'u1'; render(); }); await g.click('#main .mbox'); await g.waitForTimeout(100);
+  const ms = await g.evaluate(() => { const on1 = S.missions.u1; PAD.lvl = 'markt'; PAD.u = 'u1'; render(); const onMarkt = $('#main .mbox').getAttribute('aria-checked');
+    missionToggle('u2'); const both = !!S.missions.u1 && !!S.missions.u2;
+    S.mission = {[String(weekStartDay() - 7)]: 'u3'}; S.missions = {}; migrate(); return {on1: !!on1, onMarkt, both, migrated: !!S.missions.u3}; });
+  ok(ms.on1 && ms.onMarkt === 'true' && ms.both && ms.migrated, 'opdracht: checked on the stad page shows on the Grote Markt; each town keeps its own; older weekly entries move to their town');
+  // the Pad: three plein houses and a town hall per town
+  const pad = await g.evaluate(() => { S.missions = {}; TAB = 'pad'; PAD.lvl = 'arc'; render(); const hs = worldHouses(); const r = worldRoles(0);
+    const grey = h => hs.find(x => x.x === h.x && x.y === h.y).grey;
+    const before = {pleinen: r.pleinen.map(grey), hall: grey(r.hall), bunting: !!$('#world [data-u="u1"] .bunting')};
+    ['u2q1', 'u2q2', 'u2q3'].forEach(q => { sqstate(q).steps = {ontdek: 1, oefen: 100, lees: 100, luister: 100, gebruik: 1}; sqstate(q).rounds = {oefen: 3}; }); S.markt.u2 = 100; S.missions.u2 = '2026-10-05'; S.settings.test = true; render();
+    return {before, perfect: townProgress('u2').perfect, gold: !!$('#world [data-u="u2"] .bunting.gold'), sparkle: !!$('#world [data-u="u2"] .sparkle'), roles: WORLD.spots.map((_, i) => !!worldRoles(i).hall && worldRoles(i).pleinen.length === 3).every(Boolean)}; });
+  ok(pad.roles && pad.before.pleinen.every(x => !x) && !pad.before.hall && pad.before.bunting, 'Pad: every town has a town hall and three plein houses; done pleinen and Grote Markt in colour, with bunting');
+  ok(pad.perfect && pad.gold && pad.sparkle, 'Pad: a perfect town turns gold and sparkles');
+  if (SHOTS) await g.screenshot({path: path.join(SHOTS, '20_pad_progress.png')});
+  // what the flags mean: in Ik → Hoe werkt Elke Dag Zin?
+  await g.evaluate(() => { TAB = 'ik'; render(); openHelp(); }); await g.waitForTimeout(100);
+  ok(await g.evaluate(() => $$('#help .legend .lg').length === 7 && /Ronde 2/.test($('#help .legend').textContent) && /Ronde 3/.test($('#help .legend').textContent)), 'Ik → Hoe werkt Elke Dag Zin? explains the flags');
+  errs.push(...G.errs); await G.close();
+
   // ---- Home Screen app: manifest, icons, service worker, offline, update toast ----
   const A = await openApp({sw: true, wait: 300});
   const P = A.p;
