@@ -118,13 +118,21 @@ function feedPlan() {
   const glances = [{kind: 'gv', l: verbs[0]}, {kind: 'gf', s: sents[0]}, {kind: 'gn', l: nouns[0]}].filter(g => g.l || g.s);
   const xs = shuffle(EXTRAS.filter(x => !FEED.usedX.has(x.title))).slice(0, 2); xs.forEach(x => FEED.usedX.add(x.title));
   if (FEED.usedX.size >= EXTRAS.length) FEED.usedX.clear();
-  const pattern = ['q', 'q', 'w', 'q', 'x', 'q', 'g', 'q', 'l', 'n', 'q', 'q', 'x', 'q', 'g', 'w', 'q', 'l', 'n', 'q'];
-  const out = []; let qi = 0, xi = 0, gi = 0, li = 0, ni = 0;
+  // 2.2: conjugation in a sentence, synonym/antonym and definition cards for words Ari has met
+  const met = shuffle(metWords());
+  const cj = shuffle(Object.keys(S.items).filter(k => /^w:.*:conj$/.test(k) && keyValid(k) && conjSentences(LX(k.split(':')[1])).length)).slice(0, 2);
+  const rs = met.filter(l => { const r = relOf(l); return r.syn.length || r.ant.length; }).slice(0, 2);
+  const ds = met.filter(l => l.d && !rs.includes(l)).slice(0, 2);
+  const pattern = ['q', 'q', 'w', 'r', 'q', 'x', 'c', 'q', 'g', 'd', 'q', 'l', 'n', 'q', 'r', 'q', 'x', 'c', 'q', 'g', 'w', 'd', 'q', 'l', 'n', 'q'];
+  const out = []; let qi = 0, xi = 0, gi = 0, li = 0, ni = 0, ci = 0, ri = 0, di = 0;
   const gl = shuffle(glances);
   pattern.forEach(p => {
     if (p === 'q' && qs[qi]) out.push({kind: 'q', key: qs[qi++]});
     else if (p === 'w' && qs[qi]) { const id = qs[qi++].split(':')[1]; out.push({kind: 'w', l: LX(id)}); }
     else if (p === 'x' && xs[xi]) out.push({kind: 'x', x: xs[xi++]});
+    else if (p === 'c' && cj[ci]) out.push({kind: 'q', key: cj[ci++]});
+    else if (p === 'r' && rs[ri]) out.push({kind: 'r', l: rs[ri++]});
+    else if (p === 'd' && ds[di]) out.push({kind: 'd', l: ds[di++]});
     else if (p === 'g' && gl[gi]) out.push(gl[gi++]);
     else if (p === 'l' && sents[1 + li]) out.push({kind: 'l', s: sents[1 + li++]});
     else if (p === 'n' && newL[ni]) out.push({kind: 'n', l: newL[ni++]});
@@ -145,15 +153,15 @@ function feedAppend() {
 }
 function fcardHTML(c) {
   const hint = '<div class="fhint">veeg omhoog</div>';
-  if (c.kind === 'q') {
-    const ex = c.ex = makeEx(c.key, 'feed');
+  if (c.kind === 'q' || c.kind === 'r' || c.kind === 'd') {
+    const ex = c.ex = c.kind === 'r' ? relEx(c.l) : c.kind === 'd' ? defEx(c.l) : makeEx(c.key, 'feed');
     if (ex.type === 'gen') return `<div class="fin"><div class="kind">De of het?</div><div class="nl" style="font-size:40px;text-align:center">${esc(ex.lex.w)}</div>${ex.sub ? `<div class="nl" style="font-size:17px;text-align:center">${ex.sub}</div>` : ''}<div class="dehet"><button class="d" data-act="fans" data-fid="${c.fid}" data-v="de">de</button><button class="h" data-act="fans" data-fid="${c.fid}" data-v="het">het</button></div><div class="ffb"></div></div>`;
     return `<div class="fin"><div class="kind">${DAYWORD[ex.label] || 'Kies'}</div><div class="ex-prompt" style="font-size:21px">${ex.prompt}</div>${ex.sub ? `<div class="ex-sub">${ex.sub}</div>` : ''}<div class="opts">${ex.options.map(o => `<button class="opt" data-act="fans" data-fid="${c.fid}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div><div class="ffb"></div></div>`;
   }
   if (c.kind === 'w' || c.kind === 'n') {
     const l = c.l; const isNew = c.kind === 'n';
     return `<div class="fin"><div class="kind">${isNew ? 'Nieuw woord' : 'Ken je dit woord?'}</div><div class="spread"><div class="wc-word">${wordHTML(l)}</div>${speakBtn((l.g ? l.g + ' ' : '') + l.w)}</div>${l.s ? `<div class="nl" style="font-size:18px">${highlight(l.s, l.w)}</div>` : ''}
-      <div class="fback" ${isNew ? '' : 'hidden'}><div class="nl" style="font-size:17px">${esc(l.d)}</div>${l.pl ? `<div class="small">mv: de ${esc(l.pl)}${l.dim ? ' · het ' + esc(l.dim) : ''}</div>` : ''}<button class="en-hidden" data-act="reveal-en" data-en-text="${esc(l.en)}" style="margin-top:8px">Toon Engels</button></div>
+      <div class="fback" ${isNew ? '' : 'hidden'}><div class="nl" style="font-size:17px">${esc(l.d)}</div>${relHTML(l)}${l.pl ? `<div class="small">mv: de ${esc(l.pl)}${l.dim ? ' · het ' + esc(l.dim) : ''}</div>` : ''}<button class="en-hidden" data-act="reveal-en" data-en-text="${esc(l.en)}" style="margin-top:8px">Toon Engels</button></div>
       ${isNew ? '' : `<button class="btn line fshow" data-act="freveal" data-fid="${c.fid}">Toon betekenis</button><div class="grid2 fgrade" hidden><button class="btn line" data-act="fknew" data-fid="${c.fid}" data-ok="0">Nog niet</button><button class="btn" data-act="fknew" data-fid="${c.fid}" data-ok="1">Wist ik</button></div>`}</div>`;
   }
   if (c.kind === 'x') {

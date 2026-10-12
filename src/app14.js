@@ -343,11 +343,13 @@ function parseWords(text) {
     const k = wordKey(w, p);
     if (seen.has(k)) { out.rejected.push({nr, w, why: 'staat twee keer in de lijst'}); return; } seen.add(k);
     if (ix.has(k)) { out.existing.push({w, id: ix.get(k)}); return; }
-    out.fresh.push({w, p, g: p === 'n' ? g : undefined, pl: p === 'n' ? str(x.pl, 60) || null : null, dim: p === 'n' ? str(x.dim, 60) || null : null, d: str(x.d, 200), s: str(x.s, 200), en: str(x.en, 120), plan: planId(x.plan), th: themeId(x.thema)});
+    out.fresh.push({w, p, g: p === 'n' ? g : undefined, pl: p === 'n' ? str(x.pl, 60) || null : null, dim: p === 'n' ? str(x.dim, 60) || null : null, d: str(x.d, 200), s: str(x.s, 200), en: str(x.en, 120), plan: planId(x.plan), th: themeId(x.thema), syn: relList(x.syn), ant: relList(x.ant)});
   });
   if (d.words.length > 200) out.rejected.push({nr: 201, w: '…', why: `alleen de eerste 200 woorden (${d.words.length} in de lijst)`});
   return {data: out};
 }
+// "syn" / "ant": a list or a comma-separated string
+const relList = v => (Array.isArray(v) ? v : typeof v === 'string' ? v.split(',') : []).map(x => str(x, 60)).filter(Boolean).slice(0, 6);
 // "thema": a theme id or its Dutch name; anything else is ignored
 const themeId = t => typeof t !== 'string' ? '' : THEME[t.trim().toLowerCase()] ? t.trim().toLowerCase() : (THEMES.find(x => norm(x.name) === norm(t)) || {}).id || '';
 const findSet = name => (S.sets || []).find(x => norm(x.name) === norm(name));
@@ -394,7 +396,7 @@ function saveWords(r) {
   const ix = wordIndex(); let added = 0, linked = 0;
   r.fresh.forEach(x => {
     let id = ix.get(wordKey(x.w, x.p)); // pasted twice before saving: still one word
-    if (!id) { id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: x.w, p: x.p, g: x.g, pl: x.pl, dim: x.dim, d: x.d, s: x.s, en: x.en, plan: x.plan, src: 'woorden', date: r.datum}; if (x.th) S.custom[id].th = x.th; ix.set(wordKey(x.w, x.p), id); S.drip.ids.push(id); added++; }
+    if (!id) { id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: x.w, p: x.p, g: x.g, pl: x.pl, dim: x.dim, d: x.d, s: x.s, en: x.en, plan: x.plan, src: 'woorden', date: r.datum}; if (x.th) S.custom[id].th = x.th; if (x.syn.length) S.custom[id].syn = x.syn; if (x.ant.length) S.custom[id].ant = x.ant; ix.set(wordKey(x.w, x.p), id); S.drip.ids.push(id); added++; }
     if (!set.ids.includes(id)) set.ids.push(id);
   });
   r.existing.forEach(x => { if (!set.ids.includes(x.id)) { set.ids.push(x.id); linked++; } });

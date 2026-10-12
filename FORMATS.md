@@ -123,6 +123,7 @@ EDZ-EINDE
 | `words[]` | yes | 1–200 entries, same fields as `words[]` in EDZ-VERSLAG, plus an optional `thema` |
 
 - **`thema` (optional, per word):** one of `eten`, `winkelen`, `onderweg`, `stad`, `wonen`, `weer`, `natuur`, `werk`, `mensen`, `tijd`, `gevoel`, `lichaam`, `taal`, `vrij`, `beschrijven`, `basis` (or its Dutch name, e.g. "Natuur en dieren"). Without it the app uses its own tag for that lemma, or leaves the word "Zonder thema".
+- **`syn` and `ant` (optional, per word):** synonyms and antonyms, as a list (`["vrolijk","opgewekt"]`) or comma-separated text. Only where a good one exists, in Belgian Dutch. They show on the word card and feed the synonym and antonym cards in Scroll.
 
 - **`p` values:** `n`, `v`, `adj`, `adv`, and in this block only also `pron`, `conj` and `prep`. EDZ-VERSLAG v1 stays unchanged.
 - **Non-noun fields:** `g`, `pl` and `dim` may be missing for non-nouns.

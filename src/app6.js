@@ -70,6 +70,7 @@ document.addEventListener('click', e => {
     case 'theme-pick': themePicker(d.id); break;
     case 'theme-set': setTheme(d.id, d.t); break;
     case 'word-import': openWordImport(); break;
+    case 'fix-hint': { const w = $('#ses-body .fixw'); if (w) w.classList.add('hint'); el.remove(); break; }
     case 'card-grade': cardGrade(d.ok === '1'); break;
     case 'cards-again': startCards(shuffle(CARDS.unknown), {mode: CARDS.mode, dir: CARDS.dir, name: CARDS.name}); break;
     case 'word-add': closeSheet(); quickAdd(d.w); break;

@@ -130,6 +130,7 @@ function wordsBlock(id) {
     if (l.p === 'n') { o.g = l.g; if (l.pl) o.pl = l.pl; if (l.dim) o.dim = l.dim; }
     Object.assign(o, {d: l.d || '', s: l.s || '', en: l.en || '', plan: (l.custom ? l.plan : SQ_OF_WORD[l.id]) || null});
     const t = themeOf(l); if (t) o.thema = t;
+    const r = relOf(l); if (r.syn.length) o.syn = r.syn; if (r.ant.length) o.ant = r.ant;
     return JSON.stringify(o);
   });
   const head = JSON.stringify({v: 1, set: set.name, datum: dateKey(), bron: 'Elke Dag Zin'}).slice(0, -1);

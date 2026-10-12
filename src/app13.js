@@ -127,7 +127,7 @@ function wordCardHTML(l, opts = {}) {
   return `<div class="stack">
     <div class="spread"><div><div class="eyebrow">${POS[l.p] || ''}${l.custom ? ' · mijn woord' : ''}</div><div class="wc-word">${wordHTML(l)}</div></div>${speakBtn((l.g ? l.g + ' ' : '') + l.w)}</div>
     ${wordFacts(l)}
-    <div><div class="eyebrow">Betekenis</div><div class="nl" style="font-size:18px;line-height:1.45">${esc(l.d || '—')}</div></div>
+    <div><div class="eyebrow">Betekenis</div><div class="nl" style="font-size:18px;line-height:1.45">${esc(l.d || '—')}</div>${relHTML(l)}</div>
     ${s ? `<div><div class="eyebrow">Voorbeeld</div>${s}</div>` : ''}
     ${l.v ? `<details class="more"><summary>Alle vervoegingen</summary>${conjTable(l)}</details>` : ''}
     ${!l.v && l.why ? `<div class="why small">${l.why}</div>` : ''}
