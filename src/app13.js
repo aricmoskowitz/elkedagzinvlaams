@@ -45,8 +45,8 @@ function quickAdd(w) {
   const sets = S.sets;
   const s = openSheet(`<div class="stack">
     <div class="eyebrow">Nieuw woord</div><div class="wc-word">${esc(w)}</div>
-    <div class="small">Dit woord staat nog niet in je woorden. Voeg het toe aan <b>Mijn woorden</b>${sets.length ? ' of aan een set' : ''}; vul de kaart nu of later aan.</div>
-    <label class="f">Zet ook in set<select id="qa-set"><option value="">Alleen Mijn woorden</option>${sets.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label>
+    <div class="small">Dit woord staat nog niet in je woorden. Voeg het toe aan <b>je eigen woorden</b>${sets.length ? ' of aan een set' : ''}; vul de kaart nu of later aan.</div>
+    <label class="f">Zet ook in set<select id="qa-set"><option value="">Geen set (alleen bij je eigen woorden)</option>${sets.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label>
     <button class="btn block" id="qa-go">Vul de kaart in</button>
   </div>`);
   s.querySelector('#qa-go').onclick = () => { const set = s.querySelector('#qa-set').value; closeSheet(); wordForm(set || null, w); };
@@ -63,7 +63,7 @@ function wordForm(setId, prefill) {
     <label class="f">Uitleg in het Nederlands<textarea id="nw-d" rows="2" lang="nl"></textarea></label>
     <label class="f">Voorbeeldzin<input id="nw-s" type="text" lang="nl"></label>
     <label class="f">Engels<input id="nw-en" type="text"></label>
-    <label class="f">Set<select id="nw-set"><option value="">Alleen Mijn woorden</option>${S.sets.map(x => `<option value="${x.id}" ${x.id === setId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
+    <label class="f">Set<select id="nw-set"><option value="">Geen set (alleen bij je eigen woorden)</option>${S.sets.map(x => `<option value="${x.id}" ${x.id === setId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
     <button class="btn block" type="submit">Bewaar</button>
   </form>`);
   s.querySelector('#nw-p').onchange = e => { s.querySelector('#nw-noun').hidden = e.target.value !== 'n'; };
@@ -132,6 +132,7 @@ function wordCardHTML(l, opts = {}) {
     ${l.v ? `<details class="more"><summary>Alle vervoegingen</summary>${conjTable(l)}</details>` : ''}
     ${!l.v && l.why ? `<div class="why small">${l.why}</div>` : ''}
     ${l.note ? `<div class="why small" style="border-left:3px solid var(--line);padding-left:10px">${l.note}</div>` : ''}
+    ${opts.actions === false ? '' : themeLine(l)}
     <div><button class="en-hidden" data-act="reveal-en" data-en-text="${esc(l.en || '')}">Toon Engels</button></div>
     ${opts.actions === false ? '' : `${inSets.length ? `<div class="small">In: ${inSets.map(x => esc(x.name)).join(', ')}</div>` : ''}<div class="row wrap"><button class="btn line" data-act="add-to-set" data-id="${esc(l.id)}">+ Aan een set</button></div>`}
   </div>`;
@@ -140,39 +141,8 @@ function addToSetSheet(wordId) {
   openSheet(`<div class="stack"><h2>Aan welke set?</h2>${S.sets.map(s => `<button class="btn line block" data-act="set-add" data-set="${s.id}" data-id="${esc(wordId)}" data-close="1" ${s.ids.includes(wordId) ? 'disabled' : ''}>${esc(s.name)}${s.ids.includes(wordId) ? ' · zit erin' : ''}</button>`).join('') || '<div class="small">Je hebt nog geen eigen sets.</div>'}<button class="btn block" data-act="set-new-with" data-id="${esc(wordId)}">+ Nieuwe set</button></div>`);
 }
 
-/* ---------- WOORDEN tab ---------- */
-let WSEG = 'woorden';
+/* ---------- WOORDEN tab: see app15 ---------- */
 const allWords = () => LEX.concat(Object.values(S.custom || {}));
-function viewWoorden() {
-  const segs = [['woorden', 'Woorden', 'Words'], ['werkwoorden', 'Werkwoorden', 'Verbs'], ['sets', 'Sets', 'Word sets']];
-  let body = '';
-  if (WSEG === 'woorden') body = `<input type="search" id="wsearch" placeholder="Zoek een woord of betekenis" aria-label="Zoek een woord" value="${esc(WQ)}"><div class="row wrap">${[['alle', 'alle'], ['de', 'de'], ['het', 'het'], ['adj', 'bijv. nw.'], ['eigen', 'mijn woorden']].map(f => `<button class="chip${WF === f[0] ? ' on' : ''}" data-act="wfilter" data-f="${f[0]}">${f[1]}</button>`).join('')}</div><div id="wlist">${wordList()}</div>`;
-  else if (WSEG === 'werkwoorden') body = `<div class="small">ik · wij (nu) · ik (verleden) · voltooid deelwoord</div><div class="list">${allWords().filter(l => l.v).map(l => { const f = vForms(l); return `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${esc(l.w)}</span><span class="d"><span class="verbword">${esc(f.ik)} · ${esc(f.pl)} · ${esc(f.im[0])} · ${esc(f.sep + f.pp)}</span></span></div>`; }).join('')}</div>`;
-  else {
-    const unitSets = UNITS.filter(u => u.built).map(u => getSet('unit-' + u.id)).concat([getSet('alg')]);
-    const mine = Object.keys(S.custom || {});
-    body = `<div class="eyebrow">Mijn sets</div><div>${[{id: 'mine', name: 'Mijn woorden', ids: mine, own: true}].concat(S.sets.map(s => ({...s, own: true}))).map(setRow).join('')}</div>
-      <div class="grid2"><button class="btn line" data-act="set-new">Nieuwe set</button><button class="btn line" data-act="word-new">Nieuw woord</button></div>
-      <div class="eyebrow" style="margin-top:8px">Per stad</div><div>${unitSets.map(setRow).join('')}</div>`;
-  }
-  return `<div class="stack">
-    <div class="spread"><h1 data-en="Words">Woorden</h1><button class="btn" data-act="cards" style="min-height:42px;padding:8px 16px">Kaarten</button></div>
-    ${coachTip('woorden', 'Al je woorden: zoek, tik voor alle vormen en zet ze in een set. Met Kaarten oefen je ze: veeg naar rechts als je het weet, naar links als je het nog niet weet.')}
-    <div class="row wrap">${segs.map(s => `<button class="chip${WSEG === s[0] ? ' on' : ''}" data-act="wseg" data-seg="${s[0]}" data-en="${s[2]}">${s[1]}</button>`).join('')}</div>
-    ${body}
-  </div>`;
-}
-function setRow(s) {
-  const wait = s.own ? setWaiting(s) : 0;
-  return `<div class="tapline" style="cursor:default;flex-wrap:wrap;row-gap:8px"><div class="t" style="flex:1 1 150px"><div class="nl" style="font-size:18px">${esc(s.name)}</div><div class="small">${s.ids.length} woorden${s.bron ? ' · ' + esc(s.bron) : ''}${wait ? ` · <span data-en="${wait} not yet in Herhalen">${wait} wachten</span>` : ''}</div></div><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="set-review" data-id="${s.id}" data-en="Review this set" ${s.ids.length ? '' : 'disabled'}>Herhaal</button><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="cards" data-set="${s.id}" ${s.ids.length ? '' : 'disabled'}>Kaarten</button>${s.own && s.id !== 'mine' ? `<button class="iconbtn" data-act="set-edit" data-id="${s.id}" aria-label="Bewerk set" style="color:var(--go)">✎</button>` : ''}</div>`;
-}
-function wordList() {
-  const q = norm(WQ);
-  const res = allWords().filter(l => (WF === 'alle' || (WF === 'adj' ? l.p === 'adj' : WF === 'eigen' ? l.custom : l.g === WF)) && (!q || norm(l.w).includes(q) || norm(l.d || '').includes(q) || norm(l.en || '').includes(q)));
-  if (!res.length) return `<div class="small" style="padding:12px 0">Geen woorden gevonden. ${WQ ? `<button class="link" data-act="word-add" data-w="${esc(WQ)}">Voeg “${esc(WQ)}” toe ›</button>` : ''}</div>`;
-  return `<div class="list">${res.map(l => `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">${esc(l.d || '')}</span></div>`).join('')}</div>`;
-}
-
 /* ---------- FLASHCARDS: simple or full, swipe right = I know it ---------- */
 const MODAL_EN = new Set(['can', 'may', 'must', 'shall', 'will', 'should']);
 function enBase(l) {
@@ -199,7 +169,7 @@ function verbPair(l) {
 }
 let CARDS = null;
 function deckOptions() {
-  const own = [{id: 'mine', name: 'Mijn woorden', ids: Object.keys(S.custom || {})}].concat(S.sets);
+  const own = [{id: 'mine', name: 'Alle eigen woorden', ids: Object.keys(S.custom || {})}].concat(S.sets);
   const units = UNITS.filter(u => u.built).map(u => getSet('unit-' + u.id));
   return [{id: 'seen', name: 'Woorden die ik al zag', ids: Object.keys(S.seen || {}).filter(id => LX(id))},
     {id: 'weak', name: 'Moeilijke woorden', ids: allWords().filter(l => { const it = S.items['w:' + l.id + ':rec']; return it && (it.l > 0 || it.e < 2.4); }).map(l => l.id)},
@@ -209,6 +179,7 @@ function deckOptions() {
 }
 function openCards(setId) {
   const decks = deckOptions(); const pre = S.settings.cards || {mode: 'simple', dir: 'nl', n: 20};
+  if (setId && !decks.some(d => d.id === setId)) { const g = getSet(setId); if (g) decks.unshift(g); } // a group of the Woorden tab
   const s = openSheet(`<div class="stack">
     <h2>Kaarten</h2>
     <label class="f">Welke woorden?<select id="cd-deck">${decks.map(d => `<option value="${d.id}" ${d.id === (setId || 'seen') ? 'selected' : ''} ${d.ids.length ? '' : 'disabled'}>${esc(d.name)} (${d.ids.length})</option>`).join('')}</select></label>

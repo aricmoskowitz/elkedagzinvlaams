@@ -150,10 +150,60 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   // the next day 12 more; drilling the set releases them at once
   const drip = await q.evaluate(() => { S.drip.day = today() - 1; const a = dripRelease(); const w = S.drip.ids.length; reviewSet(S.sets.find(x => x.name === 'Mijn woorden 1').id); const k = SES.keys.length; const intro = SES.steps.filter(x => x.intro).length; closeSession(); return {a, w, after: S.drip.ids.length, k, intro}; });
   ok(drip.a === 12 && drip.w === 70 && drip.k === 15 && drip.after < 70 && drip.intro > 0, `next day 12 more (70 waiting); "Herhaal" on the set drills 15 and pulls waiting words in (${drip.after} left)`);
-  // the set in Woorden → Sets
-  await q.click('#tabs [data-tab=woorden]'); await q.click('[data-act=wseg][data-seg=sets]'); await q.waitForTimeout(150);
-  ok(await q.evaluate(() => { const row = [...document.querySelectorAll('.tapline')].find(r => r.textContent.includes('Mijn woorden 1')); return !!row && /94 woorden · eigen lijst · \d+ wachten/.test(row.textContent) && !!row.querySelector('[data-act=set-review]'); }), 'Woorden → Sets shows "Mijn woorden 1" with Herhaal');
+  // ---- 2.1: the Woorden tab by Soort · Stad · Thema · Set ----
+  await q.click('#tabs [data-tab=woorden]'); await q.waitForTimeout(150);
+  ok(!(await q.$('#main .btn:not(.line)')) && !(await q.$('[data-act=wseg]')) && !(await q.$('[data-act=wfilter]')), 'Woorden tab: no filled-green button, no old segments or filter chips');
+  const views = await q.evaluate(() => { const n = allWords().length; const out = {n};
+    ['soort', 'stad', 'thema', 'set'].forEach(v => { const gs = groupDefs(v); out[v] = gs.map(g => g.name + ':' + g.ids.length); out[v + 'Sum'] = gs.reduce((a, g) => a + g.ids.length, 0); });
+    out.untagged = allWords().filter(l => !themeOf(l)).map(l => l.w); return out; });
+  console.log('  views:', JSON.stringify({soort: views.soort, thema: views.thema, set: views.set, stad: views.stad.length + ' groups'}));
+  ok(views.soortSum === views.n && views.stadSum === views.n && views.thema.length >= 15 && views.untagged.length === 0, `every word is in exactly one group per view (${views.n} words), and every word has a theme`);
+  ok(views.stad.some(x => x.startsWith('Algemeen:')) && views.stad.some(x => /^Kennenplein|^Hemhaarhof/.test(x)) && views.set.some(x => x.startsWith('Mijn woorden 1:94')), 'Stad follows the curriculum (built and planned towns, Algemeen); Set lists your sets');
+  await q.click('[data-act=wview][data-v=soort]'); await q.click('[data-act=wgroup][data-id="g:soort:n"]'); await q.waitForTimeout(100);
+  const nn = await q.evaluate(() => $$('#wlist .wbody .li').length); await q.click('[data-act=wng][data-g=het]'); await q.waitForTimeout(100);
+  ok(await q.evaluate(n => { const rows = $$('#wlist .wbody .li'); return rows.length < n && rows.every(r => r.querySelector('.art.het')); }, nn), 'opening the nouns shows them, and de/het filters only inside that group');
+  if (process.env.SHOTS) await q.screenshot({path: path.join(process.env.SHOTS, 'w3_soort.png')});
+  await q.click('[data-act=wview][data-v=thema]'); await q.waitForTimeout(100);
+  if (process.env.SHOTS) await q.screenshot({path: path.join(process.env.SHOTS, 'w4_thema.png')});
+  await q.click('[data-act=set-review][data-id="g:thema:eten"]'); await q.waitForTimeout(150);
+  ok(await q.evaluate(() => SES && SES.keys.length > 0 && SES.keys.every(k => themeOf(LX(k.split(':')[1])) === 'eten')), 'Herhaal on the theme "Eten en drinken" drills only those words');
+  await q.evaluate(() => closeSession());
+  await q.click('[data-act=wview][data-v=set]'); await q.waitForTimeout(100);
+  ok(await q.evaluate(() => { const g = [...document.querySelectorAll('.wgroup')].find(r => r.textContent.includes('Mijn woorden 1')); return !!g && /94 woorden · eigen lijst · 2026-10-12 · \d+ wachten/.test(g.textContent) && !!g.querySelector('[data-act=set-review]') && !!g.querySelector('.btn.line[data-act=cards]'); }), 'Set view shows "Mijn woorden 1" with Herhaal and Kaarten (both outlined)');
   if (process.env.SHOTS) await q.screenshot({path: path.join(process.env.SHOTS, 'w2_sets.png')});
+  // the set page: rename, export, re-import
+  const setId = await q.evaluate(() => S.sets.find(x => x.name === 'Mijn woorden 1').id);
+  await q.click(`[data-act=set-edit][data-id="${setId}"]`); await q.waitForTimeout(150);
+  if (process.env.SHOTS) await q.screenshot({path: path.join(process.env.SHOTS, 'w5_setpage.png')});
+  await q.evaluate(() => { S.sets.push({id: 's-andere', name: 'Andere set', ids: []}); }); await q.click('[data-act=set-rename]'); await q.waitForTimeout(100); await q.fill('#rn-name', 'andere SET'); await q.click('#rn-form button[type=submit]'); await q.waitForTimeout(100);
+  ok(/al een set met die naam/.test(await q.textContent('#rn-err')), 'rename: a name that is already used is refused');
+  await q.fill('#rn-name', 'Woorden oktober 2026'); await q.click('#rn-form button[type=submit]'); await q.waitForTimeout(150);
+  ok(await q.evaluate(id => S.sets.find(x => x.id === id).name === 'Woorden oktober 2026' && document.querySelector('#sp-name').textContent === 'Woorden oktober 2026', setId) && /## Set · Woorden oktober 2026 · eigen lijst/.test(await q.evaluate(() => DOCS['Woorden.md']())), 'rename a set; Woorden.md follows the new name');
+  await q.click('[data-act=set-export]'); await q.waitForTimeout(100);
+  const block = await q.inputValue('#ex-w'); await q.evaluate(() => closeSheet());
+  const parsed = await q.evaluate(t => { const r = parseWords(t); return r.data ? {n: r.data.fresh.length, e: r.data.existing.length, rej: r.data.rejected.length, set: r.data.set} : r; }, block);
+  ok(block.startsWith('EDZ-WOORDEN v1\n{"v":1,"set":"Woorden oktober 2026"') && block.trim().endsWith('EDZ-EINDE') && parsed.n === 0 && parsed.e === 94 && parsed.rej === 0, 'Deel als woordenlijst gives a valid EDZ-WOORDEN v1 block with all 94 words');
+  // import under Ik, with a new name for the set
+  await q.evaluate(() => closeOverlay('setpage')); await q.click('#tabs [data-tab=ik]'); await q.waitForTimeout(100);
+  ok(await q.evaluate(() => { const b = document.querySelector('[data-act=word-import]'); const bk = [...document.querySelectorAll('.eyebrow')].find(e => e.textContent === 'Back-up'); return !!b && !!bk && b.closest('.stack').nextElementSibling === bk.closest('.stack'); }), 'Ik: "Importeer woordenlijst" sits right above Back-up');
+  await q.click('[data-act=word-import]'); await q.waitForTimeout(100); await q.fill('#wim-t', block); await q.click('#wim-go'); await q.waitForTimeout(200);
+  ok(await q.evaluate(() => $('#wi-name').value === 'Woorden oktober 2026' && !!$('input[name="wi-mode"][value=add]:checked')), 'same name as an existing set: preview offers "voeg toe" (default) or a new set');
+  await q.fill('#wi-name', 'Week 41'); await q.waitForTimeout(50);
+  if (process.env.SHOTS) await q.screenshot({path: path.join(process.env.SHOTS, 'w6_import_name.png')});
+  await q.click('#wi-go'); await q.waitForTimeout(150);
+  const w41 = await q.evaluate(() => { const s = S.sets.find(x => x.name === 'Week 41'); return {n: s && s.ids.length, custom: Object.keys(S.custom).length}; });
+  ok(w41.n === 94 && w41.custom === after1.custom, 'import under a new name: set "Week 41" links the same 94 words, no new copies');
+  // a word list with themes; a word's theme can be changed on its card
+  await q.evaluate(() => importWords('EDZ-WOORDEN v1\n{"v":1,"set":"Dieren","datum":"2026-10-12","words":[{"w":"egel","p":"n","g":"de","d":"een klein dier met stekels","s":"In de tuin woont een egel.","en":"hedgehog","plan":null,"thema":"Natuur en dieren"},{"w":"spin","p":"n","g":"de","d":"een klein dier met acht poten","s":"Er zit een spin in de hoek.","en":"spider","plan":null,"thema":"onzin"}]}\nEDZ-EINDE'));
+  await q.click('#wi-go'); await q.waitForTimeout(100);
+  ok(await q.evaluate(() => { const c = Object.values(S.custom); return themeOf(c.find(l => l.w === 'egel')) === 'natuur' && themeOf(c.find(l => l.w === 'spin')) === ''; }), '"thema" in a word list is read (by name or id); an unknown theme leaves the word "Zonder thema"');
+  await q.evaluate(() => showWord('tram')); await q.click('[data-act=theme-pick]'); await q.waitForTimeout(100); await q.click('[data-act=theme-set][data-t=stad]'); await q.waitForTimeout(100);
+  ok(await q.evaluate(() => S.themes.tram === 'stad' && groupDefs('thema').find(g => g.key === 'g:thema:stad').ids.includes('tram') && document.querySelector('#sheetback .wc-word') !== null), 'change a word\'s theme on its card');
+  await q.evaluate(() => closeSheet());
+  // delete a set: words stay
+  await q.evaluate(() => { TAB = 'woorden'; render(); openSetPage(S.sets.find(x => x.name === 'Week 41').id); }); await q.click('#setpage [data-act=set-delete]'); await q.waitForTimeout(100);
+  await q.evaluate(() => { [...document.querySelectorAll('#sheetback button')].find(x => x.textContent.trim() === 'Verwijder').click(); }); await q.waitForTimeout(100);
+  ok(await q.evaluate(() => !S.sets.some(x => x.name === 'Week 41') && Object.values(S.custom).some(l => l.w === 'kennen') && !document.querySelector('#setpage')), 'delete a set: the set goes, its words stay');
   ok(await q.evaluate(() => { const l = Object.values(S.custom).find(x => x.w === 'breed'); showWord(l.id); const t = document.querySelector('.facts').textContent; closeSheet(); return t.includes('breder'); }), 'word card of breed shows breder');
   // 6. a block with broken entries imports the rest and lists the broken ones (smart quotes, article in w, file picker)
   await q.evaluate(() => { TAB = 'pad'; render(); }); await q.click('[data-act=verslag]'); await q.waitForTimeout(100);

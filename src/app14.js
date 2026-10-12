@@ -1,8 +1,9 @@
 /* ===== VERSION 2.0: Home Screen app (service worker + update toast) ===== */
 function registerSW() {
   if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
-  let reloading = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (reloading) return; reloading = true; location.reload(); });
+  // reload only when a new version replaces the running one, not when the first worker takes over
+  let reloading = false; const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (reloading || !hadController) return; reloading = true; location.reload(); });
   navigator.serviceWorker.register('sw.js').then(reg => {
     const offer = w => { if (w && navigator.serviceWorker.controller) updateToast(w); };
     if (reg.waiting) offer(reg.waiting);
@@ -294,7 +295,7 @@ function migrated() {
   openOverlay('welcome', `<span style="flex:1"></span><button class="iconbtn" data-act="overlay-close" data-id="welcome" aria-label="Sluiten">✕</button>`, `<div class="stack">
     <div class="eyebrow">Back-up teruggezet</div><h1>Je voortgang is hier</h1>
     <div class="grid2">${migrationSummary().map(([n, l]) => `<div><div class="big-num">${n}</div><div class="small">${l}</div></div>`).join('')}</div>
-    <div class="card soft stack" style="gap:4px"><b>Kijk even na</b><div class="small">· Pad toont je steden en pleinen<br>· Woorden → Sets → Mijn woorden toont je eigen woorden<br>· Naslag toont je correcties op hun plein</div></div>
+    <div class="card soft stack" style="gap:4px"><b>Kijk even na</b><div class="small">· Pad toont je steden en pleinen<br>· Woorden → Set → Alle eigen woorden toont je eigen woorden<br>· Naslag toont je correcties op hun plein</div></div>
     <div class="small">Upload daarna de nieuwe <b>Woorden.md</b> naar je Claude Project: daar staan nu ook je eigen woorden in.</div>
     <button class="btn block" data-act="docs">Documenten voor Claude</button>
     <button class="btn line block" data-act="overlay-close" data-id="welcome">Naar het pad</button>
@@ -326,8 +327,7 @@ function parseWords(text) {
   const raw = body.slice(a, b + 1); let d = null;
   try { d = JSON.parse(raw); } catch (err) { try { d = JSON.parse(raw.replace(/[“”„‟″]/g, '"').replace(/[‘’‚‛′]/g, "'")); } catch (err2) { d = null; } }
   if (!d || typeof d !== 'object' || Array.isArray(d)) return {error: 'De woordenlijst is geen geldige JSON.', hint: 'Vraag Claude: ‘geef de woordenlijst opnieuw als geldige JSON’.'};
-  const set = str(d.set, 80);
-  if (!set) return {error: 'De woordenlijst heeft geen naam (set).', hint: 'Elke lijst heeft een naam nodig, bv. "set":"Mijn woorden 1".'};
+  const set = str(d.set, 80) || 'Geïmporteerd ' + dateKey(); // Ari names it in the preview
   if (!Array.isArray(d.words) || !d.words.length) return {error: 'De woordenlijst heeft geen woorden.', hint: 'Het veld "words" moet 1 tot 200 woorden bevatten.'};
   const ix = wordIndex(); const seen = new Set();
   const out = {set, datum: /^\d{4}-\d\d-\d\d$/.test(d.datum) ? d.datum : dateKey(), bron: str(d.bron, 120), fresh: [], existing: [], rejected: []};
@@ -343,11 +343,13 @@ function parseWords(text) {
     const k = wordKey(w, p);
     if (seen.has(k)) { out.rejected.push({nr, w, why: 'staat twee keer in de lijst'}); return; } seen.add(k);
     if (ix.has(k)) { out.existing.push({w, id: ix.get(k)}); return; }
-    out.fresh.push({w, p, g: p === 'n' ? g : undefined, pl: p === 'n' ? str(x.pl, 60) || null : null, dim: p === 'n' ? str(x.dim, 60) || null : null, d: str(x.d, 200), s: str(x.s, 200), en: str(x.en, 120), plan: planId(x.plan)});
+    out.fresh.push({w, p, g: p === 'n' ? g : undefined, pl: p === 'n' ? str(x.pl, 60) || null : null, dim: p === 'n' ? str(x.dim, 60) || null : null, d: str(x.d, 200), s: str(x.s, 200), en: str(x.en, 120), plan: planId(x.plan), th: themeId(x.thema)});
   });
   if (d.words.length > 200) out.rejected.push({nr: 201, w: '…', why: `alleen de eerste 200 woorden (${d.words.length} in de lijst)`});
   return {data: out};
 }
+// "thema": a theme id or its Dutch name; anything else is ignored
+const themeId = t => typeof t !== 'string' ? '' : THEME[t.trim().toLowerCase()] ? t.trim().toLowerCase() : (THEMES.find(x => norm(x.name) === norm(t)) || {}).id || '';
 const findSet = name => (S.sets || []).find(x => norm(x.name) === norm(name));
 function importWords(text) {
   let res; try { res = parseWords(text); } catch (e) { res = {error: 'Deze woordenlijst kon ik niet lezen.'}; }
@@ -355,18 +357,35 @@ function importWords(text) {
   closeSheet(); previewWords(res.data); return {ok: true, data: res.data};
 }
 function previewWords(r) {
-  const set = findSet(r.set); const inSet = set ? r.existing.filter(x => set.ids.includes(x.id)).length : 0;
   const alg = r.fresh.filter(x => !x.plan).length;
-  const ov = openOverlay('wimport', `<button class="iconbtn" data-act="overlay-close" data-id="wimport" aria-label="Sluiten">✕</button><span class="small">Woordenlijst</span>`, `<div class="stack">
-    <div class="eyebrow">${set ? 'Bestaande set bijwerken' : 'Nieuwe set'}${r.bron ? ' · ' + esc(r.bron) : ''}</div>
-    <h1>${esc(r.set)}</h1>
+  const ov = openOverlay('wimport', `<button class="iconbtn" data-act="overlay-close" data-id="wimport" aria-label="Sluiten">✕</button><span class="small">Woordenlijst${r.bron ? ' · ' + esc(r.bron) : ''}</span>`, `<div class="stack">
+    <label class="f" for="wi-name">Naam van de set<input id="wi-name" type="text" value="${esc(r.set)}" maxlength="80" autocomplete="off"></label>
+    <div id="wi-same"></div>
     <div class="procsum" id="wi-sum"><b>${r.fresh.length}</b> ${r.fresh.length === 1 ? 'nieuw woord' : 'nieuwe woorden'} · <b>${r.existing.length}</b> al in de app · <b>${alg}</b> naar Algemeen</div>
-    <div class="small">Nieuwe woorden komen in de set en op hun plein (of in Algemeen). Woorden die al in de app staan, worden aan de set gekoppeld; hun kaart blijft zoals ze is.${set && inSet ? ` ${inSet} ${inSet === 1 ? 'woord zit' : 'woorden zitten'} al in deze set.` : ''} Nieuwe woorden komen ${DRIP_PER_DAY} per dag in Herhalen; oefen de set om ze sneller te krijgen.</div>
+    <div class="small">Nieuwe woorden komen in de set en op hun plein (of in Algemeen). Woorden die al in de app staan, worden aan de set gekoppeld; hun kaart blijft zoals ze is. Nieuwe woorden komen ${DRIP_PER_DAY} per dag in Herhalen; oefen de set om ze sneller te krijgen.</div>
     ${r.rejected.length ? `<div class="card soft stack" style="gap:4px" id="wi-rej"><b>${r.rejected.length} niet ingelezen</b>${r.rejected.map(x => `<div class="small">${x.nr}. <b class="nl">${esc(x.w)}</b>: ${esc(x.why)}</div>`).join('')}</div>` : ''}
     ${r.fresh.length ? `<details class="card"><summary class="small" style="cursor:pointer">Toon de nieuwe woorden</summary><div class="small" style="margin-top:8px">${r.fresh.map(x => `${x.g ? `<span class="${x.g}">${x.g}</span> ` : ''}<b class="nl">${esc(x.w)}</b> · ${esc(x.plan ? placeLine(x.plan).replace(/^\S+ · /, '') : 'Algemeen')}`).join('<br>')}</div></details>` : ''}
+    <div id="wi-err" class="small" style="color:var(--warn)" hidden>Geef de set een naam.</div>
     <div class="grid2"><button class="btn line" type="button" data-act="overlay-close" data-id="wimport">Annuleer</button><button class="btn" type="button" id="wi-go" ${r.fresh.length || r.existing.length ? '' : 'disabled'}>Importeer</button></div>
   </div>`);
-  $('#wi-go', ov).onclick = () => { const n = saveWords(r); closeOverlay('wimport'); render(); toast(n.added || n.linked ? `${r.set}: ${n.added} nieuw, ${n.linked} gekoppeld` : 'Niets nieuws: alles stond al in de set'); };
+  const name = $('#wi-name', ov);
+  // the same name as an existing set: add to it (default) or make a new one
+  const same = () => {
+    const set = findSet(name.value.trim()); const box = $('#wi-same', ov);
+    if (!set) { box.innerHTML = '<div class="small">Een nieuwe set.</div>'; return; }
+    const inSet = r.existing.filter(x => set.ids.includes(x.id)).length;
+    box.innerHTML = `<div class="card soft stack" style="gap:6px"><div class="small">Er is al een set <b>${esc(set.name)}</b> (${plural(set.ids.length, 'woord', 'woorden')}${inSet ? `; ${inSet} van deze woorden zitten er al in` : ''}).</div>
+      <label class="small"><input type="radio" name="wi-mode" value="add" checked> Voeg toe aan die set</label>
+      <label class="small"><input type="radio" name="wi-mode" value="new"> Maak een nieuwe set: <b>${esc(uniqueSetName(name.value.trim()))}</b></label></div>`;
+  };
+  name.oninput = same; same();
+  $('#wi-go', ov).onclick = () => {
+    const v = name.value.trim().replace(/\s+/g, ' '); if (!v) { $('#wi-err', ov).hidden = false; return; }
+    const mode = ($('input[name="wi-mode"]:checked', ov) || {}).value;
+    r.set = mode === 'new' ? uniqueSetName(v) : (findSet(v) || {}).name || v;
+    const n = saveWords(r); closeOverlay('wimport'); render();
+    toast(n.added || n.linked ? `${r.set}: ${n.added} nieuw, ${n.linked} gekoppeld` : 'Niets nieuws: alles stond al in de set');
+  };
 }
 function saveWords(r) {
   let set = findSet(r.set);
@@ -375,7 +394,7 @@ function saveWords(r) {
   const ix = wordIndex(); let added = 0, linked = 0;
   r.fresh.forEach(x => {
     let id = ix.get(wordKey(x.w, x.p)); // pasted twice before saving: still one word
-    if (!id) { id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: x.w, p: x.p, g: x.g, pl: x.pl, dim: x.dim, d: x.d, s: x.s, en: x.en, plan: x.plan, src: 'woorden', date: r.datum}; ix.set(wordKey(x.w, x.p), id); S.drip.ids.push(id); added++; }
+    if (!id) { id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: x.w, p: x.p, g: x.g, pl: x.pl, dim: x.dim, d: x.d, s: x.s, en: x.en, plan: x.plan, src: 'woorden', date: r.datum}; if (x.th) S.custom[id].th = x.th; ix.set(wordKey(x.w, x.p), id); S.drip.ids.push(id); added++; }
     if (!set.ids.includes(id)) set.ids.push(id);
   });
   r.existing.forEach(x => { if (!set.ids.includes(x.id)) { set.ids.push(x.id); linked++; } });

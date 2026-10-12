@@ -60,13 +60,19 @@ document.addEventListener('click', e => {
     case 'mission': { const wk = String(weekStartDay()); S.mission[wk] = S.mission[wk] === d.u ? null : d.u; Store.mark('state'); render(); if (S.mission[wk]) toast('Goed gedaan. Amai!'); break; }
     case 'town': goTown(d.u); break;
     case 'naslag': NASLAG = d.seg; render(); break;
-    case 'wseg': WSEG = d.seg; render(); break;
-    case 'cards': openCards(d.set); break;
-    case 'set-review': reviewSet(d.id); break;
+    case 'cards': closeOverlay('setpage'); openCards(d.set); break;
+    case 'set-review': closeOverlay('setpage'); reviewSet(d.id); break;
+    case 'wview': S.settings.wview = d.v; Store.mark('state'); render(); break;
+    case 'wgroup': if (WOPEN.has(d.id)) WOPEN.delete(d.id); else WOPEN.add(d.id); render(); break;
+    case 'wng': WNG = d.g; render(); break;
+    case 'set-rename': renameSet(d.id); break;
+    case 'set-export': exportSet(d.id); break;
+    case 'theme-pick': themePicker(d.id); break;
+    case 'theme-set': setTheme(d.id, d.t); break;
+    case 'word-import': openWordImport(); break;
     case 'card-grade': cardGrade(d.ok === '1'); break;
     case 'cards-again': startCards(shuffle(CARDS.unknown), {mode: CARDS.mode, dir: CARDS.dir, name: CARDS.name}); break;
     case 'word-add': closeSheet(); quickAdd(d.w); break;
-    case 'wfilter': WF = d.f; render(); break;
     case 'word': showWord(d.id); break;
     case 'lesson-ro': openLesson(d.q, true); break;
     case 'lesson-done': closeOverlay('lesson'); startStep(d.q, 'oefen'); break;
@@ -85,8 +91,8 @@ document.addEventListener('click', e => {
     case 'reveal-en': el.textContent = d.enText || '—'; el.style.borderStyle = 'solid'; el.style.color = 'var(--ink)'; break;
     case 'add-to-set': addToSetSheet(d.id); break;
     case 'set-add': { const set = S.sets.find(s => s.id === d.set); if (set && !set.ids.includes(d.id)) { set.ids.push(d.id); Store.mark('words'); toast('Toegevoegd aan ' + set.name); } if (d.close) closeSheet(); else setEditor(d.set); render(); break; }
-    case 'set-remove': { const set = S.sets.find(s => s.id === d.set); if (set) { set.ids = set.ids.filter(x => x !== d.id); Store.mark('words'); setEditor(d.set); render(); } break; }
-    case 'set-delete': confirmBox('Deze set verwijderen? De woorden blijven bewaard.', 'Verwijder', () => { S.sets = S.sets.filter(s => s.id !== d.id); Store.mark('words'); render(); }); break;
+    case 'set-remove': { const set = S.sets.find(s => s.id === d.set); if (set) { set.ids = set.ids.filter(x => x !== d.id); Store.mark('words'); openSetPage(d.set); render(); } break; }
+    case 'set-delete': deleteSet(d.id); break;
     case 'set-new': newSet(); break;
     case 'set-new-with': newSet(d.id); break;
     case 'set-edit': setEditor(d.id); break;
