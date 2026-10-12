@@ -304,9 +304,11 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   const dup = Object.keys(cnt).filter(e => cnt[e] > (nP[e.toLowerCase()] || 1));
   ok(md.startsWith('# Woorden — Elke Dag Zin\n') && /\n## Woordenboek · /.test(md) && !dup.length && /\[(u\d+q\d+|—) · (eten|natuur|lichaam|wonen)\]/.test(md) && !/Uit de les – week 40/.test(md),
     'Woorden.md: starts with "# Woorden", has a Woordenboek section, no duplicate lemmas' + (dup.length ? ' (' + dup.slice(0, 5).join(', ') + ')' : '') + ', themes in the set sections, a deleted set is gone');
-  // backup summary: plein_nu is never among pleinen_klaar
-  const bk = await t.evaluate(() => { S.sq.u1q1 = {steps: {ontdek: 1, oefen: 100, lees: 100, luister: 100}}; S.sq.u1q2 = {steps: {ontdek: 1, oefen: 100, lees: 100, luister: 100, gebruik: 1}}; S.cur = 'u1q1'; const h = backupHeader(); return h.samenvatting; });
-  ok(!bk.pleinen_klaar.some(x => x.startsWith(bk.plein_nu.split(' ')[0])) && bk.plein_nu.startsWith('u1q1') && bk.pleinen_klaar.some(x => x.startsWith('u1q2')), 'backup summary: u1q1 without Gebruik is not klaar and is plein_nu; u1q2 is klaar (' + bk.plein_nu + ')');
+  // backup summary: plein_nu is always S.cur; klaar = the app's own rule (Ontdek, Oefen, Luister gehaald or tested out), Lees and Gebruik not needed
+  const bk = await t.evaluate(() => { S.sq = {u1q1: {steps: {ontdek: 1, oefen: 100, luister: 90}}, u1q2: {steps: {ontdek: 1, oefen: 'test', luister: 'test'}}, u1q3: {steps: {ontdek: 1, oefen: 100, lees: 100, gebruik: 1}}}; S.cur = 'u2q1';
+    const h = backupHeader().samenvatting; return {h, same: Object.keys(S.sq).every(q => pleinKlaar(q) === sqComplete(q))}; });
+  const ids = bk.h.pleinen_klaar.map(x => x.split(' ')[0]);
+  ok(bk.h.plein_nu.startsWith('u2q1 ') && ids.join() === 'u1q1,u1q2' && bk.same, 'backup summary: plein_nu is S.cur (' + bk.h.plein_nu + '); klaar without Lees or Gebruik, a test-out counts, a plein without Luister is not klaar (' + ids.join() + ')');
   // mistakes: a misheard name is not stored; a stored mistake can be deleted
   const mk = await t.evaluate(() => { const n0 = Object.keys(S.fix).length; addFix({wrong: 'op de meer', right: 'op de Meir', why: 'x'}, 'onderwerp', null); const n1 = Object.keys(S.fix).length;
     addFix({wrong: 'Ik heb gaan naar de markt.', right: 'Ik ben naar de markt gegaan.', why: 'zijn'}, 'onderwerp', 'u5q3'); const id = Object.keys(S.fix).find(k => S.fix[k].right.startsWith('Ik ben')); return {n0, n1, id, item: !!S.items['c:' + id + ':fix']}; });

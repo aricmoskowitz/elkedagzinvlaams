@@ -50,8 +50,9 @@ const stamp = (d = new Date()) => dateKey(d) + ' ' + String(d.getHours()).padSta
 const backupName = (d = new Date()) => 'elkedagzin-backup-' + stamp(d).replace(' ', '-').replace(':', '') + '.json';
 // a short summary at the top, for the Claude Project (the app ignores it when restoring)
 function backupHeader(d = new Date()) {
-  // 2.7: one rule for both fields: a plein is klaar when every house that has content is gehaald (Ontdek, Oefen, Lees, Luister and Gebruik)
-  const built = UNITS.filter(u => u.built); const all = built.flatMap(u => squaresOf(u.id)); const done = all.filter(q => pleinKlaar(q.id)); const now = all.find(q => !pleinKlaar(q.id));
+  // 2.7: pleinen_klaar uses the app's own rule (pleinKlaar = sqComplete: Ontdek, Oefen and Luister gehaald or tested out);
+  // plein_nu is the square the app is on (S.cur), the one the map and Praten start from
+  const built = UNITS.filter(u => u.built); const all = built.flatMap(u => squaresOf(u.id)); const done = all.filter(q => pleinKlaar(q.id)); const now = SQ[S.cur];
   const fixes = Object.values(S.fix || {}).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   const days = Object.keys(S.activity || {}).filter(k => (S.activity[k] || {}).n).sort();
   return {app: 'Elke Dag Zin', gemaakt: stamp(d), iso: d.toISOString(), versie: typeof APP_VERSION === 'string' ? APP_VERSION : '',

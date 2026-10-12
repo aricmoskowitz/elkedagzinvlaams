@@ -1,7 +1,7 @@
 /* ===== VERSION 2.7: themes for old words, no translations, cleaner exports (brief 2) =====
    - importing a word that is already in the app fills its empty fields (thema, syn, ant, g, pl, dim), never overwrites
    - EDZ-VERSLAG words carry thema, syn and ant like EDZ-WOORDEN
-   - the backup summary uses one rule for "klaar"
+   - the backup summary uses the app's own rule for "klaar" (sqComplete) and S.cur for plein_nu
    - a stored mistake can be deleted; corrections that only differ in a misheard name are not stored */
 
 /* ---------- fill only empty fields ---------- */
@@ -27,8 +27,11 @@ function applyFill(id, f) {
   Store.mark('words'); return 1;
 }
 
-/* ---------- "klaar" for the backup summary: every house that has content is gehaald ---------- */
-const pleinKlaar = q => STEPS.filter(st => stepAvail(q, st)).every(st => houseLevel(q, st) > 0);
+/* ---------- "klaar" for the backup summary: the app's own rule ---------- */
+// a plein is klaar when the houses the app counts for progress are gehaald: Ontdek, Oefen and Luister (BUILT_STEPS),
+// or a test-out. The same rule (sqComplete) opens the next plein and colours the plein's house on the Pad.
+// Lees and Gebruik are extra: they add flags and stars, but a plein without them is still klaar.
+const pleinKlaar = q => sqComplete(q);
 
 /* ---------- mistakes ---------- */
 // a correction whose only differences are names (a capital in the middle of the right sentence) was misheard, not wrong:
