@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "08646007eb";</script>
+<script>const APP_VERSION = "451fc0104a";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -2933,8 +2933,9 @@ const stamp = (d = new Date()) => dateKey(d) + ' ' + String(d.getHours()).padSta
 const backupName = (d = new Date()) => 'elkedagzin-backup-' + stamp(d).replace(' ', '-').replace(':', '') + '.json';
 // a short summary at the top, for the Claude Project (the app ignores it when restoring)
 function backupHeader(d = new Date()) {
-  // 2.7: one rule for both fields: a plein is klaar when every house that has content is gehaald (Ontdek, Oefen, Lees, Luister and Gebruik)
-  const built = UNITS.filter(u => u.built); const all = built.flatMap(u => squaresOf(u.id)); const done = all.filter(q => pleinKlaar(q.id)); const now = all.find(q => !pleinKlaar(q.id));
+  // 2.7: pleinen_klaar uses the app's own rule (pleinKlaar = sqComplete: Ontdek, Oefen and Luister gehaald or tested out);
+  // plein_nu is the square the app is on (S.cur), the one the map and Praten start from
+  const built = UNITS.filter(u => u.built); const all = built.flatMap(u => squaresOf(u.id)); const done = all.filter(q => pleinKlaar(q.id)); const now = SQ[S.cur];
   const fixes = Object.values(S.fix || {}).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   const days = Object.keys(S.activity || {}).filter(k => (S.activity[k] || {}).n).sort();
   return {app: 'Elke Dag Zin', gemaakt: stamp(d), iso: d.toISOString(), versie: typeof APP_VERSION === 'string' ? APP_VERSION : '',
@@ -4859,7 +4860,7 @@ setTimeout(() => { loadDict().catch(() => {}); }, 2500);
 /* ===== VERSION 2.7: themes for old words, no translations, cleaner exports (brief 2) =====
    - importing a word that is already in the app fills its empty fields (thema, syn, ant, g, pl, dim), never overwrites
    - EDZ-VERSLAG words carry thema, syn and ant like EDZ-WOORDEN
-   - the backup summary uses one rule for "klaar"
+   - the backup summary uses the app's own rule for "klaar" (sqComplete) and S.cur for plein_nu
    - a stored mistake can be deleted; corrections that only differ in a misheard name are not stored */
 
 /* ---------- fill only empty fields ---------- */
@@ -4885,8 +4886,11 @@ function applyFill(id, f) {
   Store.mark('words'); return 1;
 }
 
-/* ---------- "klaar" for the backup summary: every house that has content is gehaald ---------- */
-const pleinKlaar = q => STEPS.filter(st => stepAvail(q, st)).every(st => houseLevel(q, st) > 0);
+/* ---------- "klaar" for the backup summary: the app's own rule ---------- */
+// a plein is klaar when the houses the app counts for progress are gehaald: Ontdek, Oefen and Luister (BUILT_STEPS),
+// or a test-out. The same rule (sqComplete) opens the next plein and colours the plein's house on the Pad.
+// Lees and Gebruik are extra: they add flags and stars, but a plein without them is still klaar.
+const pleinKlaar = q => sqComplete(q);
 
 /* ---------- mistakes ---------- */
 // a correction whose only differences are names (a capital in the middle of the right sentence) was misheard, not wrong:
