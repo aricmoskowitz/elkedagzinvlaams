@@ -62,12 +62,16 @@ const {openApp} = require('./page');
     // Scroll Luister: three different meanings to choose from, one of them right
     let nl = 0;
     SENT.forEach(s => { nl++; const o = lisOptions(s); if (o.length !== 3 || !o.includes(s.en) || new Set(o.map(norm)).size !== 3) bad.push(s.id + ' listen options ' + o); });
-    // map names: no sign covers a house, the flag row above a house, or another sign (Pad and every town map)
-    const signBad = (g, list, where) => { const rs = list.map(x => x.r);
-      rs.forEach((r, i) => { const hit = signCost(g.map(row => row.map(t => t === 'house' ? 'house' : 'grass')), r, rs.filter((_, k) => k !== i));
-        if (hit > 0) bad.push(where + ': a name covers a house, a flag or another name (' + hit + ')'); }); };
-    signBad(WORLD ? WORLD.g : (buildWorld(), WORLD.g), worldSigns(), 'Pad');
-    [0, 100].forEach(m => UNITS.filter(u => u.built).forEach(u => { S.markt = S.markt || {}; S.markt[u.id] = m; const t = townSigns(u.id); signBad(buildTown(u.id).g, [...t, t.markt], u.id + ' map (Grote Markt ' + m + '%)'); }));
+    // map names: no name covers a house, the flag row above a house, a road or another name (it may stand on a square),
+    // and each stays close to its own square (Pad and every town map)
+    const signBad = (g, list, centres, where) => { const rs = list.map(x => x.r), as = list.map(x => x.a); const G = g.map(row => row.map(t => ['house', 'road'].includes(t) ? t : 'grass'));
+      rs.forEach((r, i) => { const others = rs.concat(as).filter((_, k) => k !== i && k !== i + rs.length);
+        const hit = signCost(G, r, others) + signCost(G, as[i], others); // the name and the arrow on top of it
+        if (hit > 0) bad.push(where + ': a name or its arrow covers a house, a flag, a road or another name (' + hit + ')');
+        const [cx, cy, hp] = centres[i]; const gx = Math.max(0, r[0] - (cx + hp), (cx - hp) - (r[0] + r[2])), gy = Math.max(0, r[1] - (cy + hp), (cy - hp) - (r[1] + r[3]));
+        if (Math.hypot(gx, gy) > 16) bad.push(where + ': a name stands ' + Math.round(Math.hypot(gx, gy)) + ' px from the edge of its square'); }); };
+    signBad(WORLD ? WORLD.g : (buildWorld(), WORLD.g), worldSigns(), UNITS.map((u, i) => townPx(i).concat(40)), 'Pad'); // on the Pad a town is its square plus the ring of houses and bunting
+    [0, 100].forEach(m => UNITS.filter(u => u.built).forEach(u => { S.markt = S.markt || {}; S.markt[u.id] = m; const t = townSigns(u.id); signBad(buildTown(u.id).g, [...t, t.markt], TSQ.map(q => sqCenter(q).concat(q.h * TS)), u.id + ' map (Grote Markt ' + m + '%)'); }));
     // underline means "tap for the word card" only: the subject is bold, verbs are gold
     if (/<u>/.test(frameHTML(SENT[0]))) bad.push('frameHTML underlines the subject');
     // synonym/antonym/definition cards for Ari's own words too (an own pronoun like iemand once had a single choice)
