@@ -7,6 +7,8 @@
    The file loads a few seconds after start (never while the app opens) and the service worker keeps it offline. */
 
 let DICT = null, DICT_IX = null, DICT_P = null;
+// names at the start of a sentence in the app's texts: they need no card (tests/validate.js)
+const WB_NAMES = ['sarah', 'lies', 'tom', 'karim', 'maria', 'emma', 'pieter', 'nadia', 'rubens', 'antwerpen', 'gent', 'brussel', 'zurenborg', 'berchem', 'meir', 'schelde', 'seef'];
 function loadDict() {
   if (DICT) return Promise.resolve(DICT);
   if (!DICT_P) DICT_P = fetch('woordenboek.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(list => {
