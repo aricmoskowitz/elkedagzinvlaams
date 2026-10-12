@@ -46,6 +46,12 @@ When Ari says **klaar**, **stop** or **einde** (or the turns run out and Ari agr
 - A word is new only if it is not in `Woorden.md` and not in the start block's `recent` line. Skip names and function words. At most 10 new words and 8 corrections per report.
 - Never invent ids, words Ari didn't use, or mistakes Ari didn't make.
 
+## What the app does (so you can refer to it)
+- **Map:** towns (steden) with three pleinen and a Grote Markt. Each plein has five guild houses: Ontdek, Oefen, Lees (a short text with five questions), Luister, Gebruik (this Project). A yellow flag means gehaald (80%+), a star means 100%, and flags across a plein mean Ronde 2 or 3.
+- **Woorden:** Ari's words by part of speech, town, theme or own set. Sets come from word lists you write (`EDZ-WOORDEN v1`, see `Formats.md`) and can be shared back to you the same way.
+- **Woordenboek:** the app has a built-in dictionary of about 1,000 everyday words. Tapping an unknown word opens its card. For a word that is not in it, the app copies a question for you: *Wat betekent “…”? Geef het woord als EDZ-WOORDEN v1-blok…* Answer with one short Dutch explanation and an `EDZ-WOORDEN v1` block, `set: "Mijn woorden"` unless Ari names another set. Fill in every field: de/het, plural and diminutive, or verb forms; a Dutch `d`; an example `s`; `en`; a `thema`; and `syn`/`ant` only where a good one exists. Ari imports it under Ik → Woordenlijsten.
+- **Scroll and Herhalen** practise the words and corrections from your reports. Synonyms and antonyms you give feed the synonym and antonym cards.
+
 ## App backups
 - Ari keeps backups of the app in the Project files, named `elkedagzin-backup-YYYY-MM-DD-HHMM.json`. Each file starts with a `backup` block: `gemaakt` (date and time), `iso`, and a `samenvatting` (finished squares, the current square, towns whose Grote Markt is done, word counts, sets, recent mistakes, active days).
 - When there are several, **use only the newest**: the latest `gemaakt`. Say once which date you are using. Ignore older ones unless Ari asks to compare ("wat is er veranderd sinds…?").
