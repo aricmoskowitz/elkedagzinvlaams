@@ -23,6 +23,22 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   const docFile = n => { const t = fs.readFileSync(path.join(require('./page').ROOT, 'praten-project', n), 'utf8'); return n === 'Woorden.md' ? t.split('\n## Set ·')[0].replace(/\n*$/, '\n') : t; };
   for (const n of Object.keys(docs)) ok(docs[n] === docFile(n), `${n} generated from the app matches praten-project/${n}`);
 
+  // the maps: no road crosses another, none runs over a square, every road meets a square at the middle of a side
+  const mp = await p.evaluate(() => {
+    const check = (roads, sqs) => { const inSq = (x, y, m) => sqs.some(q => { const [cx, cy] = sqCenter(q); return Math.abs(x - cx) < q.h * TS - m && Math.abs(y - cy) < q.h * TS - m; });
+      const own = roads.map(pts => new Set(pts.filter(([x, y]) => !sqs.some(q => { const [cx, cy] = sqCenter(q); return Math.abs(x - cx) < q.h * TS + 8 && Math.abs(y - cy) < q.h * TS + 8; })).map(([x, y]) => Math.round(x / 4) + ',' + Math.round(y / 4))));
+      let cross = 0; for (let i = 0; i < own.length; i++) for (let j = i + 1; j < own.length; j++) cross += [...own[i]].filter(k => own[j].has(k)).length;
+      return {cross, over: roads.reduce((a, pts) => a + pts.filter(([x, y]) => inSq(x, y, 2)).length, 0)}; };
+    if (!WORLD) buildWorld(); const w = check(WORLD.roads, WORLD.squares);
+    const towns = UNITS.filter(u => u.built).map(u => { const t = buildTown(u.id); return check(t.roads, t.squares); });
+    const ends = WROADS.every((r, k) => { const a = WORLD.roads[k][0], b = WORLD.roads[k][WORLD.roads[k].length - 1], A = sqSide(WSQ[r.from], r.out), B = sqSide(WSQ[r.to], r.in); return Math.hypot(a[0] - A[0], a[1] - A[1]) < 1 && Math.hypot(b[0] - B[0], b[1] - B[1]) < 1; });
+    return {w, towns, ends, kinds: [...new Set(WROADS.map(r => r.kind))].sort().join(',')}; });
+  ok(mp.w.cross === 0 && mp.w.over === 0 && mp.towns.every(t => t.cross === 0 && t.over === 0) && mp.ends, 'maps: no road crosses another or runs over a square; roads meet squares at the middle of a side');
+  ok(mp.kinds === 'L,curve,line', 'world map mixes straight roads, 90° turns and curves');
+  const rideT = await p.evaluate(async () => { PAD.lvl = 'arc'; render(); await new Promise(r => setTimeout(r, 100)); const t0 = performance.now(); const seen = new Set();
+    const pr = ride(WORLD.legs[3].slice()); const iv = setInterval(() => seen.add(/scale\(-/.test($('#hero').getAttribute('transform')) ? 'left' : 'right'), 50); await pr; clearInterval(iv); return {ms: Math.round(performance.now() - t0), seen: [...seen].sort().join(',')}; });
+  ok(rideT.seen.includes('left') && rideT.ms < 1800, `the cyclist faces left when riding left, and rides a road in ${rideT.ms} ms`);
+
   // reload: opens in Scroll by default, state saved in edz.v2 (800 ms debounce, flushed on pagehide)
   await p.waitForTimeout(900);
   ok(await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('edz.v2') || 'null'); return !!(s && s.v === 3 && s.coach.tour); }), 'state saved in localStorage edz.v2 with v 3');
