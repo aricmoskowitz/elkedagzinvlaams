@@ -1,0 +1,152 @@
+[
+ {
+  "w": "stad",
+  "p": "n",
+  "g": "de",
+  "pl": "steden",
+  "dim": "stadje",
+  "d": "een grote plaats met veel straten en huizen",
+  "s": "Antwerpen is een mooie stad.",
+  "en": "city, town",
+  "plan": "u1q1"
+ },
+ {
+  "w": "dag",
+  "p": "n",
+  "g": "de",
+  "pl": "dagen",
+  "dim": "dagje",
+  "d": "een periode van vierentwintig uur",
+  "s": "Vandaag is een mooie dag.",
+  "en": "day",
+  "plan": "u1q2"
+ },
+ {
+  "w": "weg",
+  "p": "n",
+  "g": "de",
+  "pl": "wegen",
+  "dim": "weggetje",
+  "d": "een straat, of de route naar een plek",
+  "s": "Mag ik u de weg vragen?",
+  "en": "way, road",
+  "plan": "u1q3"
+ },
+ {
+  "w": "café",
+  "p": "n",
+  "g": "het",
+  "pl": "cafés",
+  "dim": "cafeetje",
+  "d": "een plek waar je iets gaat drinken",
+  "s": "We drinken een koffie in het café.",
+  "en": "café, pub",
+  "plan": "u4q2"
+ },
+ {
+  "w": "week",
+  "p": "n",
+  "g": "de",
+  "pl": "weken",
+  "dim": "weekje",
+  "d": "zeven dagen",
+  "s": "Vorige week heb ik veel gewerkt.",
+  "en": "week",
+  "plan": "u5q1"
+ },
+ {
+  "w": "goed",
+  "p": "adj",
+  "d": "zoals het moet; niet slecht",
+  "s": "Ik vind het een goed idee.",
+  "en": "good",
+  "plan": "u7q1"
+ },
+ {
+  "w": "leuk",
+  "p": "adj",
+  "d": "fijn, plezant",
+  "s": "Ik vind Antwerpen leuk omdat er veel te doen is.",
+  "en": "nice, fun",
+  "plan": "u7q1"
+ },
+ {
+  "w": "buur",
+  "p": "n",
+  "g": "de",
+  "pl": "buren",
+  "dim": "",
+  "d": "iemand die naast je woont",
+  "s": "Ik denk dat de buren op vakantie zijn.",
+  "en": "neighbour",
+  "plan": "u7q2"
+ },
+ {
+  "w": "buurvrouw",
+  "p": "n",
+  "g": "de",
+  "pl": "buurvrouwen",
+  "dim": "",
+  "d": "een vrouw die naast je woont",
+  "s": "Ik weet niet of de buurvrouw thuis is.",
+  "en": "(female) neighbour",
+  "plan": "u7q2"
+ },
+ {
+  "w": "warm",
+  "p": "adj",
+  "d": "met een hoge temperatuur",
+  "s": "Als het warm is, fiets ik naar het werk.",
+  "en": "warm",
+  "plan": "u7q3"
+ },
+ {
+  "w": "koud",
+  "p": "adj",
+  "d": "met een lage temperatuur",
+  "s": "Toen het koud was, bleef ik thuis.",
+  "en": "cold",
+  "plan": "u7q3"
+ },
+ {
+  "w": "les",
+  "p": "n",
+  "g": "de",
+  "pl": "lessen",
+  "dim": "lesje",
+  "d": "een uur waarin je iets leert",
+  "s": "Vanavond heb ik les Nederlands.",
+  "en": "lesson, class",
+  "plan": null
+ },
+ {
+  "w": "taal",
+  "p": "n",
+  "g": "de",
+  "pl": "talen",
+  "dim": "taaltje",
+  "d": "wat mensen spreken, zoals Nederlands of Engels",
+  "s": "Nederlands is een mooie taal.",
+  "en": "language",
+  "plan": null
+ },
+ {
+  "w": "Nederlands",
+  "p": "n",
+  "g": "het",
+  "pl": "",
+  "dim": "",
+  "d": "de taal van Vlaanderen en Nederland",
+  "s": "Hoe zeg je dat in het Nederlands?",
+  "en": "Dutch (language)",
+  "plan": null
+ },
+ {
+  "w": "leren",
+  "p": "v",
+  "d": "iets nieuws te weten komen of kunnen",
+  "s": "Ik leer elke dag Nederlands.",
+  "en": "to learn",
+  "plan": null
+ }
+]

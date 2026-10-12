@@ -1,11 +1,12 @@
 # Formats — what moves between the app and the Project
 
-Two blocks travel by copy and paste:
+Three blocks travel by copy and paste:
 
 - **EDZ-START v1** goes app → Project, to start a session.
 - **EDZ-VERSLAG v1** goes Project → app, at the end of a session.
+- **EDZ-WOORDEN v1** goes Project → app, to add a named word set.
 
-Both start and end with a marker line so the app finds them even inside other text. This file is shared by the Project and by the app's code. Change it only together, and raise the version number when you do (`v2`).
+All three start and end with a marker line so the app finds them even inside other text. This file is shared by the Project and by the app's code. Change it only together, and raise the version number when you do (`v2`).
 
 ---
 
@@ -98,3 +99,36 @@ When Ari uploads a photo (class handout, whiteboard, textbook page, a sign, a me
 6. **End with EDZ-VERSLAG v1:** `modus: "foto"`, `bron`, `tekst` (the transcription, up to about 1,500 characters), `words`, `goed` (grammar points seen) and `corrections` (only for Ari's writing).
 
 Several photos in one session are fine: write one report that covers them all.
+
+---
+
+## 4. EDZ-WOORDEN v1 (Project → app)
+
+A named word set: Ari's own list, the words of a class, a text. Ari pastes it into the same box as a report (*Verslag plakken*), or picks a `.txt` file there. Between the markers there must be exactly one JSON object.
+
+```
+EDZ-WOORDEN v1
+{"v":1,"set":"Mijn woorden 1","datum":"2026-10-12","bron":"eigen lijst","words":[
+{"w":"rand","p":"n","g":"de","pl":"randen","dim":"randje","d":"de buitenkant of het einde van iets","s":"We wonen aan de rand van de stad.","en":"edge, rim; outskirts","plan":"u13q1"},
+{"w":"kennen","p":"v","d":"weten wie iemand is, of iets goed kennen","s":"Ken jij mijn buurvrouw?","en":"to know (be familiar with)","plan":"u12q4"}]}
+EDZ-EINDE
+```
+
+| Field | Required | Meaning |
+|---|---|---|
+| `v` | yes | always `1` |
+| `set` | yes | set name; importing the same name again updates that set |
+| `datum` | yes | `YYYY-MM-DD` |
+| `bron` | no | where the words came from ("eigen lijst", "les 12 oktober") |
+| `words[]` | yes | 1–200 entries, same fields as `words[]` in EDZ-VERSLAG |
+
+- **`p` values:** `n`, `v`, `adj`, `adv`, and in this block only also `pron`, `conj` and `prep`. EDZ-VERSLAG v1 stays unchanged.
+- **Non-noun fields:** `g`, `pl` and `dim` may be missing for non-nouns.
+- **Required per word:** `w`, `d`, `s`, `en`, and for a noun `g` (`de`/`het`).
+
+**What the app does.**
+- Same normalising as reports: smart quotes become straight quotes, code fences and text outside the markers are ignored.
+- It shows a preview first: the set name, how many words are new, how many are already in the app, how many go to *Algemeen* (`plan` null or not a square id from `Curriculum.md`), and every rejected entry with its reason. Then *Importeer* or *Annuleer*.
+- Words are matched on lemma (`w`, case-insensitive) plus `p`. A word already in the app is linked into the set and its card is not overwritten. Pasting the same block twice adds nothing.
+- A new word belongs to the set and to its `plan` square (or *Algemeen*). New words enter the review queue 12 a day; drilling the set brings them in at once.
+- A bad entry (missing `w`, `d`, `s` or `en`; a noun without a valid `g`; an unknown `p`; the same word twice) is skipped and listed. It never blocks the rest.

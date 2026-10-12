@@ -19,7 +19,9 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
 
   // Documenten voor Claude: the generator writes exactly praten-project/*.md (no own words yet)
   const docs = await p.evaluate(() => Object.fromEntries(Object.keys(DOCS).map(n => [n, DOCS[n]()])));
-  for (const n of Object.keys(docs)) ok(docs[n] === fs.readFileSync(path.join(require('./page').ROOT, 'praten-project', n), 'utf8'), `${n} generated from the app matches praten-project/${n}`);
+  // Woorden.md in the repo also lists the imported set "Mijn woorden 1" (report.js checks that part)
+  const docFile = n => { const t = fs.readFileSync(path.join(require('./page').ROOT, 'praten-project', n), 'utf8'); return n === 'Woorden.md' ? t.split('\n## Set ·')[0].replace(/\n*$/, '\n') : t; };
+  for (const n of Object.keys(docs)) ok(docs[n] === docFile(n), `${n} generated from the app matches praten-project/${n}`);
 
   // reload: opens in Scroll by default, state saved in edz.v2 (800 ms debounce, flushed on pagehide)
   await p.waitForTimeout(900);

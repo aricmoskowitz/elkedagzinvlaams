@@ -52,11 +52,13 @@ const PLAN_ROWS = [
   ['u12', 'a2', 'Hemhaarhof', 'Voornaamwoorden', 'Object and possessive pronouns', 'Familie en vrienden', 'Family and friends', 'Ik kan over de mensen in mijn leven praten.', 'I can talk about the people in my life.', [
     ['Zieplein', 'Hem, haar, ze, het', 'Object pronouns', 'Ik zie hem. Ik bel haar. For things: de-word → hem, het-word → het.'],
     ['Familieplein', 'Mijn, zijn, haar, hun', 'Possessives', 'mijn, jouw/je, uw, zijn, haar, ons/onze, jullie, hun; ons for het-words, onze for de-words.'],
-    ['Vanmijplein', 'Die van mij', 'Mine, yours', 'Is dat jouw fiets? Nee, die van mij is rood. Ook: de mijne (formeler).']]],
+    ['Vanmijplein', 'Die van mij', 'Mine, yours', 'Is dat jouw fiets? Nee, die van mij is rood. Ook: de mijne (formeler).'],
+    ['Kennenplein', 'Weten of kennen', 'Weten or kennen', 'Weten for facts and clauses: Ik weet dat de halte dichtbij is. Ik weet waar hij woont. Kennen for people, places and things you are familiar with: Ik ken haar. Ken je Antwerpen? Ik ken dat liedje.']]],
   ['u13', 'a2', 'Buurtbrug', 'Voorzetsels', 'Prepositions of place and time', 'Wonen in mijn buurt', 'Living in my neighbourhood', 'Ik kan zeggen waar iets is en wanneer iets gebeurt.', 'I can say where something is and when it happens.', [
     ['Hoekplein', 'In, op, aan, bij', 'Place', 'in de stad, op de Meir, aan de Schelde, bij de bakker.'],
     ['Richtingplein', 'Naar, uit, van, door', 'Direction', 'Ik ga naar huis. Ik kom uit Gent. We fietsen door het park.'],
-    ['Sindsplein', 'Om, sinds, tot, voor, over', 'Time', 'om acht uur, sinds 2024, tot vrijdag, twee jaar geleden, over een uur.']]],
+    ['Sindsplein', 'Om, sinds, tot, voor, over', 'Time', 'om acht uur, sinds 2024, tot vrijdag, twee jaar geleden, over een uur.'],
+    ['Hangplein', 'Staan, liggen, zitten, hangen', 'Position verbs', 'Dutch says how something is placed: de fiets staat in de gang, het boek ligt op tafel, de sleutel zit in mijn zak, de foto hangt aan de muur. Putting something somewhere: zetten (staan), leggen (liggen), stoppen (zitten), hangen.']]],
   ['u14', 'a2', 'Nietdok', 'Ontkenning', 'Negation', 'Problemen en klachten', 'Problems and complaints', 'Ik kan beleefd zeggen wat niet klopt.', 'I can politely say what is wrong.', [
     ['Geenplein', 'Niet of geen', 'Niet or geen', 'geen replaces een or no article before a noun; niet for everything else.'],
     ['Plaatsplein', 'Waar staat niet?', 'Where niet goes', 'niet goes before the part it negates, and after the object: Ik zie hem niet.'],

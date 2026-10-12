@@ -155,18 +155,24 @@ function openReport() {
   closeSheet();
   const s = openSheet(`<div class="stack">
     <h2 data-en="Paste report">Verslag plakken</h2>
-    <div class="small">Kopieer in Claude het hele verslag, van <b>EDZ-VERSLAG v1</b> tot <b>EDZ-EINDE</b>. Tekst errond mag mee.</div>
+    <div class="small">Kopieer in Claude het hele verslag, van <b>EDZ-VERSLAG v1</b> tot <b>EDZ-EINDE</b>. Tekst errond mag mee. Een woordenlijst (<b>EDZ-WOORDEN v1</b>) plak je ook hier.</div>
     <textarea id="rep-t" rows="9" aria-label="Verslag" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="EDZ-VERSLAG v1&#10;{…}&#10;EDZ-EINDE"></textarea>
     <div id="rep-err" role="alert"></div>
     <div class="grid2"><button class="btn line" type="button" id="rep-paste">Plak</button><button class="btn" type="button" id="rep-go">Verwerk</button></div>
+    <button class="link sm" type="button" id="rep-file">Of kies een .txt-bestand ›</button><input type="file" id="rep-f" accept=".txt,text/plain" hidden>
   </div>`);
   const ta = $('#rep-t', s);
   $('#rep-paste', s).onclick = async () => { try { const t = await navigator.clipboard.readText(); if (t) ta.value = t; else toast('Het klembord is leeg'); } catch (e) { ta.focus(); toast('Houd het vak ingedrukt en kies Plak'); } };
-  $('#rep-go', s).onclick = () => {
-    const res = importReport(ta.value);
+  const go = () => {
+    const res = whichBlock(ta.value) === 'woorden' ? importWords(ta.value) : importReport(ta.value);
     if (res.error) $('#rep-err', s).innerHTML = `<div class="fb no"><b>${esc(res.error)}</b>${res.hint ? `<div class="small">${esc(res.hint)}</div>` : ''}</div>`;
   };
+  $('#rep-go', s).onclick = go;
+  $('#rep-file', s).onclick = () => $('#rep-f', s).click();
+  $('#rep-f', s).onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { ta.value = String(r.result || ''); go(); }; r.onerror = () => toast('Het bestand kon niet gelezen worden'); r.readAsText(f); };
 }
+// the first marker in the text decides: a report or a word list
+function whichBlock(text) { const a = String(text || '').indexOf('EDZ-VERSLAG v1'), b = String(text || '').indexOf('EDZ-WOORDEN v1'); return b >= 0 && (a < 0 || b < a) ? 'woorden' : 'verslag'; }
 function importReport(text) {
   let res; try { res = parseReport(text); } catch (e) { res = {error: 'Dit verslag kon ik niet lezen.', hint: ASK_JSON + '.'}; }
   if (res.error) return res;
@@ -209,7 +215,12 @@ const DOCS = {
     const out = ['# Woorden — Elke Dag Zin', '', 'Every word the app already teaches, by square. A word is **new** for a report only if it is not in this list (other forms of these words, like plurals or conjugations, are not new).', ''];
     const wl = l => `${l.p === 'n' && l.g ? l.g + ' ' : ''}${l.w} (${l.en || l.d || ''})`;
     SQUARES.forEach(q => out.push(`## ${q.id} · ${UNIT[q.u].name} · ${q.name}`, q.words.map(LX).filter(Boolean).map(wl).join('; '), ''));
-    const own = Object.values(S.custom || {});
+    out.push('## Algemeen · basiswoorden zonder plein', "Known words that belong to no single square. They live in the app's *Algemeen* group.", ALGEMEEN_WORDS.map(LX).map(wl).join('; '), '');
+    const sets = (S.sets || []).filter(x => x.src === 'woorden' && x.ids.length); const inSets = new Set(sets.flatMap(x => x.ids));
+    const sqOf = l => l.custom ? l.plan : SQ_OF_WORD[l.id];
+    const longDate = d => { const [y, m, dd] = String(d || '').split('-').map(Number); return y && m ? `${dd} ${MONTHS[m - 1]} ${y}` : ''; };
+    sets.forEach(x => out.push(`## Set · ${x.name}${x.bron ? ' · ' + x.bron : ''}${x.datum ? ' (' + longDate(x.datum) + ')' : ''}`, 'Taught in their own set. The id after each word is its square in the curriculum (— = Algemeen).', x.ids.map(LX).filter(Boolean).map(l => `${wl(l)} [${sqOf(l) || '—'}]`).join('; '), ''));
+    const own = Object.values(S.custom || {}).filter(l => !inSets.has(l.id));
     if (own.length) out.push('## Eigen woorden', 'Words Ari added from reports or by hand. They are not new either.', own.map(l => wl(l) + (l.plan ? ' · ' + l.plan : '')).join('; '), '');
     return out.join('\n').replace(/\n+$/, '\n');
   },
@@ -289,3 +300,110 @@ function migrated() {
     <button class="btn line block" data-act="overlay-close" data-id="welcome">Naar het pad</button>
   </div>`);
 }
+
+/* ===== EDZ-WOORDEN v1: a named word set from the Project or Ari's own list (FORMATS.md §4) =====
+   Same paste box and normalising as the report. Words are matched on lemma + part of speech:
+   a word already in the app is linked into the set and never overwritten. New words enter
+   Herhalen a few a day (S.drip), or straight away when Ari drills the set. */
+const WORD_P = ['n', 'v', 'adj', 'adv', 'pron', 'conj', 'prep'];
+const DRIP_PER_DAY = 12;
+const wordKey = (w, p) => norm(w) + '|' + p;
+function wordIndex() {
+  const ix = new Map();
+  LEX.forEach(l => { const k = wordKey(l.w, l.p); if (!ix.has(k)) ix.set(k, l.id); });
+  Object.values(S.custom || {}).forEach(l => { const k = wordKey(l.w, l.p); if (!ix.has(k)) ix.set(k, l.id); });
+  return ix;
+}
+function parseWords(text) {
+  text = String(text || '').replace(/\r\n?/g, '\n');
+  const i = text.indexOf('EDZ-WOORDEN v1');
+  if (i < 0) return {error: 'Ik vind geen woordenlijst in deze tekst.', hint: 'Kopieer het hele blok, van EDZ-WOORDEN v1 tot EDZ-EINDE.'};
+  let body = text.slice(i + 'EDZ-WOORDEN v1'.length);
+  const e = body.indexOf('EDZ-EINDE'); if (e >= 0) body = body.slice(0, e);
+  body = body.replace(/^\s*```[a-z]*\s*$/gim, '');
+  const a = body.indexOf('{'), b = body.lastIndexOf('}');
+  if (a < 0 || b < a) return {error: 'De woordenlijst is leeg of niet volledig.', hint: 'Kopieer het hele blok, tot en met EDZ-EINDE.'};
+  const raw = body.slice(a, b + 1); let d = null;
+  try { d = JSON.parse(raw); } catch (err) { try { d = JSON.parse(raw.replace(/[“”„‟″]/g, '"').replace(/[‘’‚‛′]/g, "'")); } catch (err2) { d = null; } }
+  if (!d || typeof d !== 'object' || Array.isArray(d)) return {error: 'De woordenlijst is geen geldige JSON.', hint: 'Vraag Claude: ‘geef de woordenlijst opnieuw als geldige JSON’.'};
+  const set = str(d.set, 80);
+  if (!set) return {error: 'De woordenlijst heeft geen naam (set).', hint: 'Elke lijst heeft een naam nodig, bv. "set":"Mijn woorden 1".'};
+  if (!Array.isArray(d.words) || !d.words.length) return {error: 'De woordenlijst heeft geen woorden.', hint: 'Het veld "words" moet 1 tot 200 woorden bevatten.'};
+  const ix = wordIndex(); const seen = new Set();
+  const out = {set, datum: /^\d{4}-\d\d-\d\d$/.test(d.datum) ? d.datum : dateKey(), bron: str(d.bron, 120), fresh: [], existing: [], rejected: []};
+  d.words.slice(0, 200).forEach((x, n) => {
+    const nr = n + 1;
+    if (!x || typeof x !== 'object') { out.rejected.push({nr, w: '?', why: 'geen woord'}); return; }
+    let w = str(x.w, 60), g = x.g, p = typeof x.p === 'string' ? x.p.trim().toLowerCase() : '';
+    const art = w.match(/^(de|het)\s+(.+)$/i); if (art) { w = art[2]; g = g || art[1].toLowerCase(); p = p || 'n'; }
+    const miss = ['d', 's', 'en'].filter(k => !str(x[k])); if (!w) miss.unshift('w');
+    if (miss.length) { out.rejected.push({nr, w: w || '?', why: 'ontbreekt: ' + miss.join(', ')}); return; }
+    if (!WORD_P.includes(p)) { out.rejected.push({nr, w, why: p ? `onbekende woordsoort "${p}"` : 'woordsoort (p) ontbreekt'}); return; }
+    if (p === 'n' && g !== 'de' && g !== 'het') { out.rejected.push({nr, w, why: 'zelfstandig naamwoord zonder de/het'}); return; }
+    const k = wordKey(w, p);
+    if (seen.has(k)) { out.rejected.push({nr, w, why: 'staat twee keer in de lijst'}); return; } seen.add(k);
+    if (ix.has(k)) { out.existing.push({w, id: ix.get(k)}); return; }
+    out.fresh.push({w, p, g: p === 'n' ? g : undefined, pl: p === 'n' ? str(x.pl, 60) || null : null, dim: p === 'n' ? str(x.dim, 60) || null : null, d: str(x.d, 200), s: str(x.s, 200), en: str(x.en, 120), plan: planId(x.plan)});
+  });
+  if (d.words.length > 200) out.rejected.push({nr: 201, w: '…', why: `alleen de eerste 200 woorden (${d.words.length} in de lijst)`});
+  return {data: out};
+}
+const findSet = name => (S.sets || []).find(x => norm(x.name) === norm(name));
+function importWords(text) {
+  let res; try { res = parseWords(text); } catch (e) { res = {error: 'Deze woordenlijst kon ik niet lezen.'}; }
+  if (res.error) return res;
+  closeSheet(); previewWords(res.data); return {ok: true, data: res.data};
+}
+function previewWords(r) {
+  const set = findSet(r.set); const inSet = set ? r.existing.filter(x => set.ids.includes(x.id)).length : 0;
+  const alg = r.fresh.filter(x => !x.plan).length;
+  const ov = openOverlay('wimport', `<button class="iconbtn" data-act="overlay-close" data-id="wimport" aria-label="Sluiten">✕</button><span class="small">Woordenlijst</span>`, `<div class="stack">
+    <div class="eyebrow">${set ? 'Bestaande set bijwerken' : 'Nieuwe set'}${r.bron ? ' · ' + esc(r.bron) : ''}</div>
+    <h1>${esc(r.set)}</h1>
+    <div class="procsum" id="wi-sum"><b>${r.fresh.length}</b> ${r.fresh.length === 1 ? 'nieuw woord' : 'nieuwe woorden'} · <b>${r.existing.length}</b> al in de app · <b>${alg}</b> naar Algemeen</div>
+    <div class="small">Nieuwe woorden komen in de set en op hun plein (of in Algemeen). Woorden die al in de app staan, worden aan de set gekoppeld; hun kaart blijft zoals ze is.${set && inSet ? ` ${inSet} ${inSet === 1 ? 'woord zit' : 'woorden zitten'} al in deze set.` : ''} Nieuwe woorden komen ${DRIP_PER_DAY} per dag in Herhalen; oefen de set om ze sneller te krijgen.</div>
+    ${r.rejected.length ? `<div class="card soft stack" style="gap:4px" id="wi-rej"><b>${r.rejected.length} niet ingelezen</b>${r.rejected.map(x => `<div class="small">${x.nr}. <b class="nl">${esc(x.w)}</b>: ${esc(x.why)}</div>`).join('')}</div>` : ''}
+    ${r.fresh.length ? `<details class="card"><summary class="small" style="cursor:pointer">Toon de nieuwe woorden</summary><div class="small" style="margin-top:8px">${r.fresh.map(x => `${x.g ? `<span class="${x.g}">${x.g}</span> ` : ''}<b class="nl">${esc(x.w)}</b> · ${esc(x.plan ? placeLine(x.plan).replace(/^\S+ · /, '') : 'Algemeen')}`).join('<br>')}</div></details>` : ''}
+    <div class="grid2"><button class="btn line" type="button" data-act="overlay-close" data-id="wimport">Annuleer</button><button class="btn" type="button" id="wi-go" ${r.fresh.length || r.existing.length ? '' : 'disabled'}>Importeer</button></div>
+  </div>`);
+  $('#wi-go', ov).onclick = () => { const n = saveWords(r); closeOverlay('wimport'); render(); toast(n.added || n.linked ? `${r.set}: ${n.added} nieuw, ${n.linked} gekoppeld` : 'Niets nieuws: alles stond al in de set'); };
+}
+function saveWords(r) {
+  let set = findSet(r.set);
+  if (!set) { set = {id: uid('s-'), name: r.set, ids: []}; S.sets.push(set); }
+  Object.assign(set, {src: 'woorden', bron: r.bron || set.bron || '', datum: r.datum});
+  const ix = wordIndex(); let added = 0, linked = 0;
+  r.fresh.forEach(x => {
+    let id = ix.get(wordKey(x.w, x.p)); // pasted twice before saving: still one word
+    if (!id) { id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: x.w, p: x.p, g: x.g, pl: x.pl, dim: x.dim, d: x.d, s: x.s, en: x.en, plan: x.plan, src: 'woorden', date: r.datum}; ix.set(wordKey(x.w, x.p), id); S.drip.ids.push(id); added++; }
+    if (!set.ids.includes(id)) set.ids.push(id);
+  });
+  r.existing.forEach(x => { if (!set.ids.includes(x.id)) { set.ids.push(x.id); linked++; } });
+  dripRelease(true);
+  Store.mark('words', 'items', 'state');
+  return {added, linked};
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && dripRelease()) render(); });
+// a few new words a day into Herhalen; drilling a set releases its words at once
+function dripRelease(sameDay) {
+  const D = S.drip; if (!D || !D.ids.length) return 0;
+  D.ids = D.ids.filter(id => LX(id) && !S.items['w:' + id + ':rec']);
+  if (D.day === today() && !sameDay) return 0;
+  const room = D.day === today() ? Math.max(0, DRIP_PER_DAY - (D.n || 0)) : DRIP_PER_DAY;
+  const now = D.ids.splice(0, room);
+  now.forEach(id => { introduce('w:' + id + ':rec'); S.seen[id] = 1; });
+  D.n = (D.day === today() ? D.n || 0 : 0) + now.length; D.day = today();
+  if (now.length) Store.mark('items', 'state');
+  return now.length;
+}
+// Herhaal: one set on its own (due words first, then words not yet in Herhalen)
+function reviewSet(id) {
+  const set = getSet(id); if (!set) return;
+  const ws = set.ids.map(LX).filter(Boolean); if (!ws.length) { toast('Deze set is leeg'); return; }
+  const due = ws.filter(l => isDue('w:' + l.id + ':rec')), fresh = ws.filter(l => !S.items['w:' + l.id + ':rec']), rest = ws.filter(l => S.items['w:' + l.id + ':rec'] && !isDue('w:' + l.id + ':rec'));
+  const d = shuffle(due); const pick = uniq(d.slice(0, 10).concat(fresh.slice(0, 15 - Math.min(10, d.length)), d.slice(10), shuffle(rest))).slice(0, 15);
+  const keys = pick.map(l => 'w:' + l.id + (l.g && S.items['w:' + l.id + ':rec'] && Math.random() < .3 ? ':gen' : ':rec'));
+  keys.forEach(k => introduce(k)); S.drip.ids = S.drip.ids.filter(x => !pick.some(l => l.id === x));
+  closeSheet(); toast('Herhaal: ' + set.name); startSession({keys, intros: true});
+}
+function setWaiting(set) { const ids = new Set(S.drip.ids); return set.ids.filter(id => ids.has(id)).length; }

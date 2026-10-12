@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "d0fb654670";</script>
+<script>const APP_VERSION = "0a69142157";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -410,7 +410,7 @@ const LEX = [
 {id:'mossel',u:3,w:'mossel',p:'n',g:'de',pl:'mosselen',dim:'mosseltje',d:'een zwart schelpdier uit de zee',en:'mussel',s:'De mosselen zijn vers.',se:'The mussels are fresh.'},
 {id:'vlees',u:3,w:'vlees',p:'n',g:'het',pl:null,dim:null,d:'eten van een dier, zoals van een koe of varken',en:'meat',s:'Het vlees is te zout.',se:'The meat is too salty.'},
 {id:'koekje',u:3,w:'koekje',p:'n',g:'het',pl:'koekjes',dim:null,d:'een klein, droog en zoet baksel',en:'biscuit',s:'Bij de koffie krijg je een koekje.',se:'With coffee you get a biscuit.',why:'Another <i>-je</i> word, so <i>het</i>.',note:'In België krijg je bij je koffie vaak een speculoosje.'},
-{id:'huis',u:3,w:'huis',p:'n',g:'het',pl:'huizen',dim:'huisje',d:'een gebouw waar mensen wonen',en:'house',s:'Het huisje naast het frietkot is heel oud.',se:'The little house next to the chip shop is very old.'},
+{id:'huis',u:6,w:'huis',p:'n',g:'het',pl:'huizen',dim:'huisje',d:'een gebouw waar mensen wonen',en:'house',s:'Het huisje naast het frietkot is heel oud.',se:'The little house next to the chip shop is very old.'},
 {id:'lekker',u:3,w:'lekker',p:'adj',d:'met een goede smaak',en:'tasty',s:'De saus is lekker.',se:'The sauce is tasty.'},
 {id:'bestellen',u:3,w:'bestellen',p:'v',d:'vragen om eten of iets anders te krijgen',en:'to order',s:'Ik bestel een pak frieten.',se:'I order a portion of fries.',v:{t:'w',st:'bestel',im:['bestelde','bestelden'],pp:'besteld',aux:'h'},why:'Verbs starting with <i>be-</i>, <i>ge-</i>, <i>ver-</i> get no extra <i>ge-</i>: <i>besteld</i>, not <i>gebesteld</i>.'},
 {id:'eten',u:3,w:'eten',p:'v',d:'voedsel in je mond nemen en doorslikken',en:'to eat',s:'Het meisje eet een wafel.',se:'The girl is eating a waffle.',v:{t:'s',st:'eet',im:['at','aten'],pp:'gegeten',aux:'h',fam:'e – a – e'}},
@@ -531,19 +531,19 @@ const UNITS = [
 const SQUARES = [
 {id:'u1q1',u:'u1',n:1,name:'Stationsplein',title:'Het werkwoord op plaats 2',en:'The verb in slot 2',
  rule:'In a Dutch main clause the conjugated verb (<i>de persoonsvorm</i>) always sits in <b>slot 2</b>. Here the subject takes slot 1.',ex:['u1s1','u1s4','u1s18'],
- words:['tram','station','halte','hoek','straat','nemen','zijn','wonen','zoeken','dichtbij'],sents:['u1s1','u1s4','u1s10','u1s15','u1s18','u1s19']},
+ words:['tram','station','halte','hoek','straat','stad','nemen','zijn','wonen','zoeken','dichtbij'],sents:['u1s1','u1s4','u1s10','u1s15','u1s18','u1s19']},
 {id:'u1q2',u:'u1',n:2,name:'Tramplein',title:'Inversie',en:'Inversion',
  rule:'Put a time or a place in slot 1 and the verb <b>still</b> stays in slot 2. The subject moves to just after the verb: <i>Morgen neem <u>ik</u> de tram.</i>',ex:['u1s2','u1s17','u1s13'],
- words:['morgen','vandaag','vaak','plein','kathedraal','brug','fietsen','zien','komen','werk'],sents:['u1s2','u1s6','u1s8','u1s11','u1s13','u1s17','u1s20']},
+ words:['morgen','vandaag','dag','vaak','plein','kathedraal','brug','fietsen','zien','komen','werk'],sents:['u1s2','u1s6','u1s8','u1s11','u1s13','u1s17','u1s20']},
 {id:'u1q3',u:'u1',n:3,name:'Vragenmarkt',title:'Vragen en bevelen',en:'Questions and commands',
  rule:'Yes/no questions and commands leave slot 1 empty, so the verb comes first. Question words (<i>waar, hoe</i>) take slot 1. When <i>jij/je</i> follows the verb, the verb drops its <i>-t</i>: <i>neem jij?</i>',ex:['u1s7','u1s3','u1s5'],
- words:['waar','hoe','ver','gaan','rechtdoor','fiets','links','rechts'],sents:['u1s3','u1s5','u1s7','u1s9','u1s12','u1s14','u1s16']},
+ words:['waar','hoe','ver','gaan','weg','rechtdoor','fiets','links','rechts'],sents:['u1s3','u1s5','u1s7','u1s9','u1s12','u1s14','u1s16']},
 {id:'u2q1',u:'u2',n:1,name:'Plantenmarkt',title:'Het voorvoegsel achteraan',en:'The prefix goes to the end',
  rule:'Separable verbs split in a main clause: the conjugated part goes to slot 2 and the small prefix goes to the <b>end</b>: <i>Ik <u>neem</u> de plant <u>mee</u>.</i>',ex:['u2s1','u2s3','u2s5'],
- words:['plant','bloem','pot','cactus','zak','stekje','meenemen','uitkiezen','afrekenen','kosten','duur','goedkoop'],sents:['u2s1','u2s3','u2s4','u2s5','u2s14','u2s15','u2s18']},
+ words:['plant','bloem','pot','cactus','zak','stekje','verkoper','meenemen','uitkiezen','afrekenen','kosten','duur','goedkoop'],sents:['u2s1','u2s3','u2s4','u2s5','u2s14','u2s15','u2s18']},
 {id:'u2q2',u:'u2',n:2,name:'Theaterplein',title:'Voorvoegsel en inversie',en:'Prefix and inversion',
  rule:'The two rules combine: something in slot 1, the verb in slot 2, the subject right after it, and the prefix still at the end: <i>Aan de Groenplaats <u>stap</u> ik <u>uit</u>.</i>',ex:['u2s8','u2s7','u2s12'],
- words:['verkoper','opbellen','uitstappen','aankomen','opstaan','vroeg'],sents:['u2s6','u2s7','u2s8','u2s9','u2s12','u2s16']},
+ words:['opbellen','uitstappen','aankomen','opstaan','vroeg'],sents:['u2s6','u2s7','u2s8','u2s9','u2s12','u2s16']},
 {id:'u2q3',u:'u2',n:3,name:'Zondagsplein',title:'Samen of apart',en:'Together or apart',
  rule:'After another verb (like <i>wil</i>) the infinitive stays in one piece at the end: <i>Ik wil de plant <u>meenemen</u>.</i> The prefix only splits off when the verb itself is in slot 2.',ex:['u2s10','u2s11','u2s13'],
  words:['zondag','altijd','terugkomen','ophalen','markt','vogel','prijs'],sents:['u2s2','u2s10','u2s11','u2s13','u2s17']},
@@ -552,7 +552,7 @@ const SQUARES = [
  words:['friet','frietkot','pak','mayonaise','saus','koffie','bier','stoofvlees','vlees','lekker','bestellen','eten'],sents:['u3s1','u3s2','u3s3','u3s7','u3s8','u3s9','u3s18']},
 {id:'u3q2',u:'u3',n:2,name:'Terras',title:'Verkleinwoorden',en:'Diminutives',
  rule:'Every diminutive in <i>-je</i> is <b style="color:var(--het)">het</b>, whatever the original word: <i>de pint → het pintje</i>. That is why even <i>het meisje</i> (the girl) is <i>het</i>.',ex:['u3s4','u3s5','u3s6'],
- words:['broodje','meisje','wafel','pint','terras','koekje','huis','vork','drinken','hebben','krijgen'],sents:['u3s4','u3s5','u3s6','u3s14','u3s16','u3s19','u3s20']},
+ words:['broodje','meisje','wafel','pint','terras','koekje','vork','drinken','hebben','krijgen'],sents:['u3s4','u3s5','u3s6','u3s14','u3s16','u3s19','u3s20']},
 {id:'u3q3',u:'u3',n:3,name:'Vismarkt',title:'Meervoud',en:'Plurals',
  rule:'Every plural takes <b style="color:var(--de)">de</b>, even when the singular is a <i>het</i>-word: <i>het broodje → de broodjes</i>.',ex:['u3s13','u3s12','u3s17'],
  words:['soep','ei','appel','mes','bord','mossel','liggen'],sents:['u3s10','u3s11','u3s12','u3s13','u3s15','u3s17']},
@@ -739,13 +739,13 @@ SQUARES.push(
  words:['willen','kunnen','brood','taart','bakker','kopen','betalen','kaart','graag'],sents:['u4s1','u4s2','u4s3','u4s4','u4s5','u4s6']},
 {id:'u4q2',u:'u4',n:2,name:'Koffieplein',title:'Mag ik…?',en:'May I…?',
  rule:'Ask politely with <i>mogen</i>: <i>Mag ik de rekening?</i> The modal comes first in a question. Often the second verb is left out because it is obvious (<i>Mag ik een koffie?</i> = may I <i>have</i> a coffee).',ex:['u4s7','u4s8','u4s11'],
- words:['mogen','glas','thee','melk','suiker','rekening','tafel','alstublieft'],sents:['u4s7','u4s8','u4s9','u4s10','u4s11','u4s12']},
+ words:['mogen','cafe','glas','thee','melk','suiker','rekening','tafel','alstublieft'],sents:['u4s7','u4s8','u4s9','u4s10','u4s11','u4s12']},
 {id:'u4q3',u:'u4',n:3,name:'Havenkaai',title:'Moeten en zullen',en:'Must and shall',
  rule:'<i>moeten</i> (must) and <i>zullen</i> (will, shall) work the same way: modal in slot 2, infinitive at the end. <i>Zullen we…?</i> makes a suggestion.',ex:['u4s13','u4s14','u4s15'],
  words:['moeten','zullen','vertrekken','wachten','boot','haven','straks','samen'],sents:['u4s13','u4s14','u4s15','u4s16','u4s17','u4s18']},
 {id:'u5q1',u:'u5',n:1,name:'Boekenplein',title:'Hebben + ge…t / ge…d',en:'Have + weak participle',
  rule:'The present perfect is <i>hebben</i> in slot 2 and a participle at the <b>end</b>: <i>Ik <u>heb</u> gisteren <u>gewerkt</u>.</i> Weak verbs: <i>ge</i> + stem + <i>t</i> or <i>d</i>. The stem ends in a letter of <b>’t kofschip</b> (t, k, f, s, ch, p)? Then <i>-t</i> (<i>gewerkt</i>); otherwise <i>-d</i> (<i>gespeeld</i>).',ex:['u5s1','u5s2','u5s4'],
- words:['gisteren','weekend','werken','spelen','koken','wandelen','maken','vorig'],sents:['u5s1','u5s2','u5s3','u5s4','u5s5','u5s6']},
+ words:['gisteren','weekend','week','werken','spelen','koken','wandelen','maken','vorig'],sents:['u5s1','u5s2','u5s3','u5s4','u5s5','u5s6']},
 {id:'u5q2',u:'u5',n:2,name:'Museumplein',title:'Sterke deelwoorden',en:'Strong participles',
  rule:'Strong verbs change their vowel and end in <i>-en</i>: <i>lezen → gelezen, schrijven → geschreven, kijken → gekeken, zien → gezien</i>. Learn them in families (<i>ij – ee – e</i>).',ex:['u5s7','u5s9','u5s12'],
  words:['lezen','schrijven','kijken','museum','boek','schilderij','film'],sents:['u5s7','u5s8','u5s9','u5s10','u5s11','u5s12']},
@@ -754,7 +754,7 @@ SQUARES.push(
  words:['blijven','thuis','trein','zee','vakantie','vriend','reizen'],sents:['u5s13','u5s14','u5s15','u5s16','u5s17','u5s18']},
 {id:'u6q1',u:'u6',n:1,name:'Gevelplein',title:'De en het + -e',en:'The + -e',
  rule:'Before a noun, after <i>de, het, die, dit, deze, dat</i>, the adjective <b>always</b> gets <i>-e</i>: <i>de oude kerk, het oude huis</i>. Watch the spelling: <i>groot → grote</i>.',ex:['u6s1','u6s2','u6s5'],
- words:['oud','nieuw','groot','klein','mooi','gebouw','kerk','deur','toren'],sents:['u6s1','u6s2','u6s3','u6s4','u6s5','u6s6']},
+ words:['oud','nieuw','groot','klein','mooi','huis','gebouw','kerk','deur','toren'],sents:['u6s1','u6s2','u6s3','u6s4','u6s5','u6s6']},
 {id:'u6q2',u:'u6',n:2,name:'Dakenplein',title:'Een + het-woord',en:'A + het-word',
  rule:'The one exception: <i>een</i> (or no article) + a singular <i>het</i>-word, and the adjective stays bare: <i>een oud huis, een hoog dak</i>. With a <i>de</i>-word it still gets <i>-e</i>: <i>een rode deur</i>.',ex:['u6s7','u6s10','u6s9'],
  words:['hoog','smal','rood','wit','gevel','dak','raam','tuin'],sents:['u6s7','u6s8','u6s9','u6s10','u6s11']},
@@ -844,13 +844,13 @@ SENT.push(
 SQUARES.push(
 {id:'u7q1',u:'u7',n:1,name:'Omdatplein',title:'Omdat en want',en:'Omdat and want',
  rule:'Both give a reason. After <i>omdat</i> the conjugated verb goes to the <b>end</b>: <i>…omdat het <u>regent</u></i>. After <i>want</i> the order stays normal: <i>…want het <u>regent</u></i>, <i>…want het <u>is</u> zaterdag</i>.',ex:['u7s1','u7s2','u7s4'],
- words:['omdat','want','waarom','regenen','moe','druk','mening','vinden'],sents:['u7s1','u7s2','u7s3','u7s4','u7s5','u7s6','u7s7','u7s8']},
+ words:['omdat','want','waarom','goed','leuk','moe','druk','mening','vinden'],sents:['u7s1','u7s2','u7s3','u7s4','u7s5','u7s6','u7s7','u7s8']},
 {id:'u7q2',u:'u7',n:2,name:'Denkplein',title:'Dat, of en vraagwoorden',en:'Dat, of and question words',
  rule:'<i>Ik weet / denk / hoop / vraag</i> + a clause with <i>dat</i>, <i>of</i> or a question word (<i>waar, wat, hoeveel</i>): the conjugated verb goes to the <b>end</b> of that clause. <i>Ik weet dat de halte dichtbij <u>is</u>.</i> <i>Weet u waar de Meir <u>is</u>?</i>',ex:['u7s9','u7s11','u7s13'],
- words:['weten','denken','vragen','begrijpen','zeggen','hopen','zeker','buurt'],sents:['u7s9','u7s10','u7s11','u7s12','u7s13','u7s14','u7s15','u7s16']},
+ words:['weten','denken','vragen','begrijpen','zeggen','hopen','zeker','buurt','buur','buurvrouw'],sents:['u7s9','u7s10','u7s11','u7s12','u7s13','u7s14','u7s15','u7s16']},
 {id:'u7q3',u:'u7',n:3,name:'Alsplein',title:'Als, wanneer, toen',en:'When and if clauses',
  rule:'In an <i>als / wanneer / toen</i>-clause the verb goes to the end. When that clause comes <b>first</b>, it fills slot 1, so the main clause starts with its verb: <i>Als het <u>regent</u>, <u>neem</u> ik de tram.</i> <i>Toen</i> is for one time in the past.',ex:['u7s17','u7s20','u7s21'],
- words:['als','wanneer','toen','zon','weer','paraplu','vrij','schijnen'],sents:['u7s17','u7s18','u7s19','u7s20','u7s21','u7s22','u7s23','u7s24']},
+ words:['als','wanneer','toen','zon','weer','regenen','warm','koud','paraplu','vrij','schijnen'],sents:['u7s17','u7s18','u7s19','u7s20','u7s21','u7s22','u7s23','u7s24']},
 );
 GRAM.u7 = {title:'Bijzinnen', en:'Subordinate clauses', body:[], why:'A subordinate clause is a sentence inside a sentence. Dutch marks it by sending the conjugated verb to the end, so you hear where the clause stops: <i>…dat het museum vandaag open <u>is</u>.</i> Only <i>want, maar, en, of</i> (“or”) and <i>dus</i> keep normal order. And when a whole clause stands in slot 1, the main verb still has to be second: <i>Als het regent, neem ik…</i>', ex:['u7s1']};
 Object.assign(UNITS.find(x => x.id === 'u7'), {built: true, theme: 'Meningen en het weer', themeEn: 'Opinions and the weather',
@@ -987,11 +987,13 @@ const PLAN_ROWS = [
   ['u12', 'a2', 'Hemhaarhof', 'Voornaamwoorden', 'Object and possessive pronouns', 'Familie en vrienden', 'Family and friends', 'Ik kan over de mensen in mijn leven praten.', 'I can talk about the people in my life.', [
     ['Zieplein', 'Hem, haar, ze, het', 'Object pronouns', 'Ik zie hem. Ik bel haar. For things: de-word → hem, het-word → het.'],
     ['Familieplein', 'Mijn, zijn, haar, hun', 'Possessives', 'mijn, jouw/je, uw, zijn, haar, ons/onze, jullie, hun; ons for het-words, onze for de-words.'],
-    ['Vanmijplein', 'Die van mij', 'Mine, yours', 'Is dat jouw fiets? Nee, die van mij is rood. Ook: de mijne (formeler).']]],
+    ['Vanmijplein', 'Die van mij', 'Mine, yours', 'Is dat jouw fiets? Nee, die van mij is rood. Ook: de mijne (formeler).'],
+    ['Kennenplein', 'Weten of kennen', 'Weten or kennen', 'Weten for facts and clauses: Ik weet dat de halte dichtbij is. Ik weet waar hij woont. Kennen for people, places and things you are familiar with: Ik ken haar. Ken je Antwerpen? Ik ken dat liedje.']]],
   ['u13', 'a2', 'Buurtbrug', 'Voorzetsels', 'Prepositions of place and time', 'Wonen in mijn buurt', 'Living in my neighbourhood', 'Ik kan zeggen waar iets is en wanneer iets gebeurt.', 'I can say where something is and when it happens.', [
     ['Hoekplein', 'In, op, aan, bij', 'Place', 'in de stad, op de Meir, aan de Schelde, bij de bakker.'],
     ['Richtingplein', 'Naar, uit, van, door', 'Direction', 'Ik ga naar huis. Ik kom uit Gent. We fietsen door het park.'],
-    ['Sindsplein', 'Om, sinds, tot, voor, over', 'Time', 'om acht uur, sinds 2024, tot vrijdag, twee jaar geleden, over een uur.']]],
+    ['Sindsplein', 'Om, sinds, tot, voor, over', 'Time', 'om acht uur, sinds 2024, tot vrijdag, twee jaar geleden, over een uur.'],
+    ['Hangplein', 'Staan, liggen, zitten, hangen', 'Position verbs', 'Dutch says how something is placed: de fiets staat in de gang, het boek ligt op tafel, de sleutel zit in mijn zak, de foto hangt aan de muur. Putting something somewhere: zetten (staan), leggen (liggen), stoppen (zitten), hangen.']]],
   ['u14', 'a2', 'Nietdok', 'Ontkenning', 'Negation', 'Problemen en klachten', 'Problems and complaints', 'Ik kan beleefd zeggen wat niet klopt.', 'I can politely say what is wrong.', [
     ['Geenplein', 'Niet of geen', 'Niet or geen', 'geen replaces een or no article before a noun; niet for everything else.'],
     ['Plaatsplein', 'Waar staat niet?', 'Where niet goes', 'niet goes before the part it negates, and after the object: Ik zie hem niet.'],
@@ -1239,6 +1241,32 @@ Object.entries({
   'sc-free': 'vertel 3 dingen over je dag en stel 1 vraag terug',
 }).forEach(([id, doel]) => { const sc = SCENARIOS.find(s => s.id === id); if (sc) sc.doel = doel; });
 
+/* ===== 2026-10-12: gap words, Algemeen words, more parts of speech =====
+   Basic words Ari already uses that the plan did not list, so reports kept
+   flagging them as new. New ids only. The square words live in SQUARES;
+   the four Algemeen words (u: 0) belong to no square. */
+Object.assign(POS, {pron: 'vnw', conj: 'vw', prep: 'vz'});
+Object.assign(POS_EN, {pron: 'pronoun', conj: 'conjunction', prep: 'preposition'});
+LEX.push(
+{id:'stad',u:1,w:'stad',p:'n',g:'de',pl:'steden',dim:'stadje',d:'een grote plaats met veel straten en huizen',en:'city, town',s:'Antwerpen is een mooie stad.',se:'Antwerp is a beautiful city.'},
+{id:'dag',u:1,w:'dag',p:'n',g:'de',pl:'dagen',dim:'dagje',d:'een periode van vierentwintig uur',en:'day',s:'Vandaag is een mooie dag.',se:'Today is a beautiful day.'},
+{id:'weg',u:1,w:'weg',p:'n',g:'de',pl:'wegen',dim:'weggetje',d:'een straat, of de route naar een plek',en:'way, road',s:'Mag ik u de weg vragen?',se:'May I ask you the way?'},
+{id:'cafe',u:4,w:'café',p:'n',g:'het',pl:'cafés',dim:'cafeetje',d:'een plek waar je iets gaat drinken',en:'café, pub',s:'We drinken een koffie in het café.',se:'We have a coffee in the café.',why:'Many words borrowed from French are <i>het</i>: het café, het station.'},
+{id:'week',u:5,w:'week',p:'n',g:'de',pl:'weken',dim:'weekje',d:'zeven dagen',en:'week',s:'Vorige week heb ik veel gewerkt.',se:'Last week I worked a lot.'},
+{id:'goed',u:7,w:'goed',p:'adj',e:'goede',d:'zoals het moet; niet slecht',en:'good',s:'Ik vind het een goed idee.',se:'I think it is a good idea.'},
+{id:'leuk',u:7,w:'leuk',p:'adj',e:'leuke',d:'fijn, plezant',en:'nice, fun',s:'Ik vind Antwerpen leuk omdat er veel te doen is.',se:'I like Antwerp because there is a lot to do.'},
+{id:'buur',u:7,w:'buur',p:'n',g:'de',pl:'buren',dim:null,d:'iemand die naast je woont',en:'neighbour',s:'Ik denk dat de buren op vakantie zijn.',se:'I think the neighbours are on holiday.'},
+{id:'buurvrouw',u:7,w:'buurvrouw',p:'n',g:'de',pl:'buurvrouwen',dim:null,d:'een vrouw die naast je woont',en:'(female) neighbour',s:'Ik weet niet of de buurvrouw thuis is.',se:'I don’t know whether the neighbour is home.',why:'Words for people are almost always <i>de</i>.'},
+{id:'warm',u:7,w:'warm',p:'adj',e:'warme',d:'met een hoge temperatuur',en:'warm',s:'Als het warm is, fiets ik naar het werk.',se:'When it is warm, I cycle to work.'},
+{id:'koud',u:7,w:'koud',p:'adj',e:'koude',d:'met een lage temperatuur',en:'cold',s:'Toen het koud was, bleef ik thuis.',se:'When it was cold, I stayed at home.'},
+{id:'les',u:0,w:'les',p:'n',g:'de',pl:'lessen',dim:'lesje',d:'een uur waarin je iets leert',en:'lesson, class',s:'Vanavond heb ik les Nederlands.',se:'Tonight I have Dutch class.'},
+{id:'taal',u:0,w:'taal',p:'n',g:'de',pl:'talen',dim:'taaltje',d:'wat mensen spreken, zoals Nederlands of Engels',en:'language',s:'Nederlands is een mooie taal.',se:'Dutch is a beautiful language.'},
+{id:'nederlands',u:0,w:'Nederlands',p:'n',g:'het',pl:null,dim:null,d:'de taal van Vlaanderen en Nederland',en:'Dutch (language)',s:'Hoe zeg je dat in het Nederlands?',se:'How do you say that in Dutch?',why:'Names of languages are <i>het</i>: het Nederlands, het Engels, het Frans.'},
+{id:'leren',u:0,w:'leren',p:'v',d:'iets nieuws te weten komen of kunnen',en:'to learn',s:'Ik leer elke dag Nederlands.',se:'I learn Dutch every day.',v:{t:'w',st:'leer',im:['leerde','leerden'],pp:'geleerd',aux:'h'}},
+);
+// words that belong to no square: the app's Algemeen group
+const ALGEMEEN_WORDS = LEX.filter(l => !l.u).map(l => l.id);
+
 /* ===== UTIL ===== */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1337,11 +1365,12 @@ function personRule(p) {
    migrate() accepts a 1.5 state (v 2) unchanged and adds the 2.0 fields. */
 const LS_KEY = 'edz.v2';
 const LS_OLD = 'goesting.v1';
-const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', vertaling:true, verbeteren:'beurt', beurten:'6–8'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[]});
+const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', vertaling:true, verbeteren:'beurt', beurten:'6–8'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[], drip:{ids:[], day:0}});
 function migrate() {
   if (!S.v || S.v < 2) { S.v = 2; S.sq = S.sq || {}; S.cur = 'u1q1'; S.coach = S.coach || {}; S.settings = Object.assign(blankState().settings, S.settings || {}, {test: true}); delete S.units; }
   if (!SQ[S.cur]) S.cur = 'u1q1';
   ['log', 'talks', 'extras', 'imports', 'sets'].forEach(k => { if (!Array.isArray(S[k])) S[k] = []; });
+  if (!S.drip || !Array.isArray(S.drip.ids)) S.drip = {ids: [], day: 0};
   ['fix', 'sic', 'seenAt', 'items', 'sq', 'seen', 'activity', 'custom', 'coach', 'mission'].forEach(k => { if (!S[k] || typeof S[k] !== 'object') S[k] = {}; });
   const def = blankState().settings;
   S.settings = Object.assign({}, def, S.settings || {});
@@ -1539,6 +1568,8 @@ function distractorsFor(l, surf) {
   if (l.p === 'n') { if (l.pl && s === l.pl.toLowerCase()) field = 'pl'; else if (l.dim && s === l.dim.toLowerCase()) field = 'dim'; }
   const same = shuffle(pool.filter(x => x.u === l.u && x[field])).concat(shuffle(pool.filter(x => x.u !== l.u && x[field])));
   const out = []; for (const x of same) { const v = x[field].toLowerCase(); if (v !== s && !out.includes(v)) out.push(v); if (out.length === 3) break; }
+  // rare parts of speech (an own pronoun or conjunction): fill up with other words
+  if (out.length < 3) for (const x of shuffle(LEX.filter(x => x.id !== l.id))) { const v = x.w.toLowerCase(); if (v !== s && !out.includes(v)) out.push(v); if (out.length === 3) break; }
   return out;
 }
 function clozeWhy(l, surf) {
@@ -2569,6 +2600,8 @@ function viewPad() {
 /* ===== WORD SETS ===== */
 function getSet(id) {
   if (id.startsWith('unit-')) { const u = UNIT[id.slice(5)]; return {id, name: u.name, ids: lexOfUnit(u.n).map(l => l.id), unit: true}; }
+  if (id === 'alg') return {id, name: 'Algemeen · basiswoorden', ids: ALGEMEEN_WORDS.slice(), unit: true};
+  if (id === 'mine') return {id, name: 'Mijn woorden', ids: Object.keys(S.custom || {})};
   return S.sets.find(s => s.id === id);
 }
 let FLASH = null;
@@ -2816,7 +2849,9 @@ function openHelp() {
    Claude Project (Elke Dag Zin · Praten) and come back as a pasted report.
    Old talks and log entries stay readable in Toen en nu. */
 function weekNo(d = new Date()) { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return Math.ceil(((t - y0) / 864e5 + 1) / 7); }
-const uid = p => p + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
+// time + a counter, so ids made in the same millisecond (a word list of 94) never collide
+let UIDN = 0;
+const uid = p => p + Date.now().toString(36) + (UIDN++).toString(36) + Math.floor(Math.random() * 1e4).toString(36);
 
 /* ---------- old talks (history) ---------- */
 function viewTalkHistory(id) {
@@ -3242,10 +3277,25 @@ function adjForms(l) {
   const w = l.w.toLowerCase();
   if (w in CMP) return CMP[w];
   if (l.p !== 'adj') return null;
-  const e = l.e || w + 'e';
+  const e = l.e || adjE(w);
   const cmp = w.endsWith('r') ? w + 'der' : e + 'r';
   const sup = w.endsWith('s') ? w + 't' : w + 'st';
   return [cmp, sup];
+}
+// the -e form of an adjective by the spelling rules (content words give it as l.e):
+// a long vowel in a closed syllable loses one letter (breed → brede, zwaar → zware),
+// f/s after a long vowel become v/z (lief → lieve, boos → boze),
+// a short stressed vowel doubles the consonant (wit → witte); -ig, -lijk, -isch stay (vriendelijke)
+function adjE(w) {
+  w = String(w).toLowerCase();
+  if (/(ig|lijk|isch|en|er|el)$/.test(w) && w.length > 4) return w + 'e';
+  let m = w.match(/^(.*?)(aa|ee|oo|uu)([^aeiou])$/);
+  if (m) { const c = {f: 'v', s: 'z'}[m[3]] || m[3]; return m[1] + m[2][0] + c + 'e'; }
+  m = w.match(/^(.*[^aeiou])(ie|eu|oe|ei|ij|ui|ou|au)([fs])$/);
+  if (m) return m[1] + m[2] + (m[3] === 'f' ? 'v' : 'z') + 'e';
+  m = w.match(/^([^aeiou]*)([aeiou])([bdfgklmnprst])$/);
+  if (m) return w + m[3] + 'e';
+  return w + 'e';
 }
 const presPart = l => l.w === 'zijn' ? 'zijnde' : l.w + 'd';
 function verbFacts(l) {
@@ -3290,7 +3340,7 @@ function viewWoorden() {
   if (WSEG === 'woorden') body = `<input type="search" id="wsearch" placeholder="Zoek een woord of betekenis" aria-label="Zoek een woord" value="${esc(WQ)}"><div class="row wrap">${[['alle', 'alle'], ['de', 'de'], ['het', 'het'], ['adj', 'bijv. nw.'], ['eigen', 'mijn woorden']].map(f => `<button class="chip${WF === f[0] ? ' on' : ''}" data-act="wfilter" data-f="${f[0]}">${f[1]}</button>`).join('')}</div><div id="wlist">${wordList()}</div>`;
   else if (WSEG === 'werkwoorden') body = `<div class="small">ik · wij (nu) · ik (verleden) · voltooid deelwoord</div><div class="list">${allWords().filter(l => l.v).map(l => { const f = vForms(l); return `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${esc(l.w)}</span><span class="d"><span class="verbword">${esc(f.ik)} · ${esc(f.pl)} · ${esc(f.im[0])} · ${esc(f.sep + f.pp)}</span></span></div>`; }).join('')}</div>`;
   else {
-    const unitSets = UNITS.filter(u => u.built).map(u => getSet('unit-' + u.id));
+    const unitSets = UNITS.filter(u => u.built).map(u => getSet('unit-' + u.id)).concat([getSet('alg')]);
     const mine = Object.keys(S.custom || {});
     body = `<div class="eyebrow">Mijn sets</div><div>${[{id: 'mine', name: 'Mijn woorden', ids: mine, own: true}].concat(S.sets.map(s => ({...s, own: true}))).map(setRow).join('')}</div>
       <div class="grid2"><button class="btn line" data-act="set-new">Nieuwe set</button><button class="btn line" data-act="word-new">Nieuw woord</button></div>
@@ -3304,7 +3354,8 @@ function viewWoorden() {
   </div>`;
 }
 function setRow(s) {
-  return `<div class="tapline" style="cursor:default"><div class="t"><div class="nl" style="font-size:18px">${esc(s.name)}</div><div class="small">${s.ids.length} woorden</div></div><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="cards" data-set="${s.id}" ${s.ids.length ? '' : 'disabled'}>Kaarten</button>${s.own && s.id !== 'mine' ? `<button class="iconbtn" data-act="set-edit" data-id="${s.id}" aria-label="Bewerk set" style="color:var(--go)">✎</button>` : ''}</div>`;
+  const wait = s.own ? setWaiting(s) : 0;
+  return `<div class="tapline" style="cursor:default;flex-wrap:wrap;row-gap:8px"><div class="t" style="flex:1 1 150px"><div class="nl" style="font-size:18px">${esc(s.name)}</div><div class="small">${s.ids.length} woorden${s.bron ? ' · ' + esc(s.bron) : ''}${wait ? ` · <span data-en="${wait} not yet in Herhalen">${wait} wachten</span>` : ''}</div></div><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="set-review" data-id="${s.id}" data-en="Review this set" ${s.ids.length ? '' : 'disabled'}>Herhaal</button><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="cards" data-set="${s.id}" ${s.ids.length ? '' : 'disabled'}>Kaarten</button>${s.own && s.id !== 'mine' ? `<button class="iconbtn" data-act="set-edit" data-id="${s.id}" aria-label="Bewerk set" style="color:var(--go)">✎</button>` : ''}</div>`;
 }
 function wordList() {
   const q = norm(WQ);
@@ -3345,7 +3396,7 @@ function deckOptions() {
     {id: 'weak', name: 'Moeilijke woorden', ids: allWords().filter(l => { const it = S.items['w:' + l.id + ':rec']; return it && (it.l > 0 || it.e < 2.4); }).map(l => l.id)},
     {id: 'verbs', name: 'Alle werkwoorden', ids: allWords().filter(l => l.v).map(l => l.id)},
     {id: 'nouns', name: 'Alle zelfstandige naamwoorden', ids: allWords().filter(l => l.p === 'n').map(l => l.id)},
-    {id: 'adjs', name: 'Alle bijvoeglijke naamwoorden', ids: allWords().filter(l => l.p === 'adj').map(l => l.id)}].concat(own, units);
+    {id: 'adjs', name: 'Alle bijvoeglijke naamwoorden', ids: allWords().filter(l => l.p === 'adj').map(l => l.id)}].concat(own, units, [getSet('alg')]);
 }
 function openCards(setId) {
   const decks = deckOptions(); const pre = S.settings.cards || {mode: 'simple', dir: 'nl', n: 20};
@@ -3654,18 +3705,24 @@ function openReport() {
   closeSheet();
   const s = openSheet(`<div class="stack">
     <h2 data-en="Paste report">Verslag plakken</h2>
-    <div class="small">Kopieer in Claude het hele verslag, van <b>EDZ-VERSLAG v1</b> tot <b>EDZ-EINDE</b>. Tekst errond mag mee.</div>
+    <div class="small">Kopieer in Claude het hele verslag, van <b>EDZ-VERSLAG v1</b> tot <b>EDZ-EINDE</b>. Tekst errond mag mee. Een woordenlijst (<b>EDZ-WOORDEN v1</b>) plak je ook hier.</div>
     <textarea id="rep-t" rows="9" aria-label="Verslag" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="EDZ-VERSLAG v1&#10;{…}&#10;EDZ-EINDE"></textarea>
     <div id="rep-err" role="alert"></div>
     <div class="grid2"><button class="btn line" type="button" id="rep-paste">Plak</button><button class="btn" type="button" id="rep-go">Verwerk</button></div>
+    <button class="link sm" type="button" id="rep-file">Of kies een .txt-bestand ›</button><input type="file" id="rep-f" accept=".txt,text/plain" hidden>
   </div>`);
   const ta = $('#rep-t', s);
   $('#rep-paste', s).onclick = async () => { try { const t = await navigator.clipboard.readText(); if (t) ta.value = t; else toast('Het klembord is leeg'); } catch (e) { ta.focus(); toast('Houd het vak ingedrukt en kies Plak'); } };
-  $('#rep-go', s).onclick = () => {
-    const res = importReport(ta.value);
+  const go = () => {
+    const res = whichBlock(ta.value) === 'woorden' ? importWords(ta.value) : importReport(ta.value);
     if (res.error) $('#rep-err', s).innerHTML = `<div class="fb no"><b>${esc(res.error)}</b>${res.hint ? `<div class="small">${esc(res.hint)}</div>` : ''}</div>`;
   };
+  $('#rep-go', s).onclick = go;
+  $('#rep-file', s).onclick = () => $('#rep-f', s).click();
+  $('#rep-f', s).onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { ta.value = String(r.result || ''); go(); }; r.onerror = () => toast('Het bestand kon niet gelezen worden'); r.readAsText(f); };
 }
+// the first marker in the text decides: a report or a word list
+function whichBlock(text) { const a = String(text || '').indexOf('EDZ-VERSLAG v1'), b = String(text || '').indexOf('EDZ-WOORDEN v1'); return b >= 0 && (a < 0 || b < a) ? 'woorden' : 'verslag'; }
 function importReport(text) {
   let res; try { res = parseReport(text); } catch (e) { res = {error: 'Dit verslag kon ik niet lezen.', hint: ASK_JSON + '.'}; }
   if (res.error) return res;
@@ -3708,7 +3765,12 @@ const DOCS = {
     const out = ['# Woorden — Elke Dag Zin', '', 'Every word the app already teaches, by square. A word is **new** for a report only if it is not in this list (other forms of these words, like plurals or conjugations, are not new).', ''];
     const wl = l => `${l.p === 'n' && l.g ? l.g + ' ' : ''}${l.w} (${l.en || l.d || ''})`;
     SQUARES.forEach(q => out.push(`## ${q.id} · ${UNIT[q.u].name} · ${q.name}`, q.words.map(LX).filter(Boolean).map(wl).join('; '), ''));
-    const own = Object.values(S.custom || {});
+    out.push('## Algemeen · basiswoorden zonder plein', "Known words that belong to no single square. They live in the app's *Algemeen* group.", ALGEMEEN_WORDS.map(LX).map(wl).join('; '), '');
+    const sets = (S.sets || []).filter(x => x.src === 'woorden' && x.ids.length); const inSets = new Set(sets.flatMap(x => x.ids));
+    const sqOf = l => l.custom ? l.plan : SQ_OF_WORD[l.id];
+    const longDate = d => { const [y, m, dd] = String(d || '').split('-').map(Number); return y && m ? `${dd} ${MONTHS[m - 1]} ${y}` : ''; };
+    sets.forEach(x => out.push(`## Set · ${x.name}${x.bron ? ' · ' + x.bron : ''}${x.datum ? ' (' + longDate(x.datum) + ')' : ''}`, 'Taught in their own set. The id after each word is its square in the curriculum (— = Algemeen).', x.ids.map(LX).filter(Boolean).map(l => `${wl(l)} [${sqOf(l) || '—'}]`).join('; '), ''));
+    const own = Object.values(S.custom || {}).filter(l => !inSets.has(l.id));
     if (own.length) out.push('## Eigen woorden', 'Words Ari added from reports or by hand. They are not new either.', own.map(l => wl(l) + (l.plan ? ' · ' + l.plan : '')).join('; '), '');
     return out.join('\n').replace(/\n+$/, '\n');
   },
@@ -3789,6 +3851,113 @@ function migrated() {
   </div>`);
 }
 
+/* ===== EDZ-WOORDEN v1: a named word set from the Project or Ari's own list (FORMATS.md §4) =====
+   Same paste box and normalising as the report. Words are matched on lemma + part of speech:
+   a word already in the app is linked into the set and never overwritten. New words enter
+   Herhalen a few a day (S.drip), or straight away when Ari drills the set. */
+const WORD_P = ['n', 'v', 'adj', 'adv', 'pron', 'conj', 'prep'];
+const DRIP_PER_DAY = 12;
+const wordKey = (w, p) => norm(w) + '|' + p;
+function wordIndex() {
+  const ix = new Map();
+  LEX.forEach(l => { const k = wordKey(l.w, l.p); if (!ix.has(k)) ix.set(k, l.id); });
+  Object.values(S.custom || {}).forEach(l => { const k = wordKey(l.w, l.p); if (!ix.has(k)) ix.set(k, l.id); });
+  return ix;
+}
+function parseWords(text) {
+  text = String(text || '').replace(/\r\n?/g, '\n');
+  const i = text.indexOf('EDZ-WOORDEN v1');
+  if (i < 0) return {error: 'Ik vind geen woordenlijst in deze tekst.', hint: 'Kopieer het hele blok, van EDZ-WOORDEN v1 tot EDZ-EINDE.'};
+  let body = text.slice(i + 'EDZ-WOORDEN v1'.length);
+  const e = body.indexOf('EDZ-EINDE'); if (e >= 0) body = body.slice(0, e);
+  body = body.replace(/^\s*```[a-z]*\s*$/gim, '');
+  const a = body.indexOf('{'), b = body.lastIndexOf('}');
+  if (a < 0 || b < a) return {error: 'De woordenlijst is leeg of niet volledig.', hint: 'Kopieer het hele blok, tot en met EDZ-EINDE.'};
+  const raw = body.slice(a, b + 1); let d = null;
+  try { d = JSON.parse(raw); } catch (err) { try { d = JSON.parse(raw.replace(/[“”„‟″]/g, '"').replace(/[‘’‚‛′]/g, "'")); } catch (err2) { d = null; } }
+  if (!d || typeof d !== 'object' || Array.isArray(d)) return {error: 'De woordenlijst is geen geldige JSON.', hint: 'Vraag Claude: ‘geef de woordenlijst opnieuw als geldige JSON’.'};
+  const set = str(d.set, 80);
+  if (!set) return {error: 'De woordenlijst heeft geen naam (set).', hint: 'Elke lijst heeft een naam nodig, bv. "set":"Mijn woorden 1".'};
+  if (!Array.isArray(d.words) || !d.words.length) return {error: 'De woordenlijst heeft geen woorden.', hint: 'Het veld "words" moet 1 tot 200 woorden bevatten.'};
+  const ix = wordIndex(); const seen = new Set();
+  const out = {set, datum: /^\d{4}-\d\d-\d\d$/.test(d.datum) ? d.datum : dateKey(), bron: str(d.bron, 120), fresh: [], existing: [], rejected: []};
+  d.words.slice(0, 200).forEach((x, n) => {
+    const nr = n + 1;
+    if (!x || typeof x !== 'object') { out.rejected.push({nr, w: '?', why: 'geen woord'}); return; }
+    let w = str(x.w, 60), g = x.g, p = typeof x.p === 'string' ? x.p.trim().toLowerCase() : '';
+    const art = w.match(/^(de|het)\s+(.+)$/i); if (art) { w = art[2]; g = g || art[1].toLowerCase(); p = p || 'n'; }
+    const miss = ['d', 's', 'en'].filter(k => !str(x[k])); if (!w) miss.unshift('w');
+    if (miss.length) { out.rejected.push({nr, w: w || '?', why: 'ontbreekt: ' + miss.join(', ')}); return; }
+    if (!WORD_P.includes(p)) { out.rejected.push({nr, w, why: p ? `onbekende woordsoort "${p}"` : 'woordsoort (p) ontbreekt'}); return; }
+    if (p === 'n' && g !== 'de' && g !== 'het') { out.rejected.push({nr, w, why: 'zelfstandig naamwoord zonder de/het'}); return; }
+    const k = wordKey(w, p);
+    if (seen.has(k)) { out.rejected.push({nr, w, why: 'staat twee keer in de lijst'}); return; } seen.add(k);
+    if (ix.has(k)) { out.existing.push({w, id: ix.get(k)}); return; }
+    out.fresh.push({w, p, g: p === 'n' ? g : undefined, pl: p === 'n' ? str(x.pl, 60) || null : null, dim: p === 'n' ? str(x.dim, 60) || null : null, d: str(x.d, 200), s: str(x.s, 200), en: str(x.en, 120), plan: planId(x.plan)});
+  });
+  if (d.words.length > 200) out.rejected.push({nr: 201, w: '…', why: `alleen de eerste 200 woorden (${d.words.length} in de lijst)`});
+  return {data: out};
+}
+const findSet = name => (S.sets || []).find(x => norm(x.name) === norm(name));
+function importWords(text) {
+  let res; try { res = parseWords(text); } catch (e) { res = {error: 'Deze woordenlijst kon ik niet lezen.'}; }
+  if (res.error) return res;
+  closeSheet(); previewWords(res.data); return {ok: true, data: res.data};
+}
+function previewWords(r) {
+  const set = findSet(r.set); const inSet = set ? r.existing.filter(x => set.ids.includes(x.id)).length : 0;
+  const alg = r.fresh.filter(x => !x.plan).length;
+  const ov = openOverlay('wimport', `<button class="iconbtn" data-act="overlay-close" data-id="wimport" aria-label="Sluiten">✕</button><span class="small">Woordenlijst</span>`, `<div class="stack">
+    <div class="eyebrow">${set ? 'Bestaande set bijwerken' : 'Nieuwe set'}${r.bron ? ' · ' + esc(r.bron) : ''}</div>
+    <h1>${esc(r.set)}</h1>
+    <div class="procsum" id="wi-sum"><b>${r.fresh.length}</b> ${r.fresh.length === 1 ? 'nieuw woord' : 'nieuwe woorden'} · <b>${r.existing.length}</b> al in de app · <b>${alg}</b> naar Algemeen</div>
+    <div class="small">Nieuwe woorden komen in de set en op hun plein (of in Algemeen). Woorden die al in de app staan, worden aan de set gekoppeld; hun kaart blijft zoals ze is.${set && inSet ? ` ${inSet} ${inSet === 1 ? 'woord zit' : 'woorden zitten'} al in deze set.` : ''} Nieuwe woorden komen ${DRIP_PER_DAY} per dag in Herhalen; oefen de set om ze sneller te krijgen.</div>
+    ${r.rejected.length ? `<div class="card soft stack" style="gap:4px" id="wi-rej"><b>${r.rejected.length} niet ingelezen</b>${r.rejected.map(x => `<div class="small">${x.nr}. <b class="nl">${esc(x.w)}</b>: ${esc(x.why)}</div>`).join('')}</div>` : ''}
+    ${r.fresh.length ? `<details class="card"><summary class="small" style="cursor:pointer">Toon de nieuwe woorden</summary><div class="small" style="margin-top:8px">${r.fresh.map(x => `${x.g ? `<span class="${x.g}">${x.g}</span> ` : ''}<b class="nl">${esc(x.w)}</b> · ${esc(x.plan ? placeLine(x.plan).replace(/^\S+ · /, '') : 'Algemeen')}`).join('<br>')}</div></details>` : ''}
+    <div class="grid2"><button class="btn line" type="button" data-act="overlay-close" data-id="wimport">Annuleer</button><button class="btn" type="button" id="wi-go" ${r.fresh.length || r.existing.length ? '' : 'disabled'}>Importeer</button></div>
+  </div>`);
+  $('#wi-go', ov).onclick = () => { const n = saveWords(r); closeOverlay('wimport'); render(); toast(n.added || n.linked ? `${r.set}: ${n.added} nieuw, ${n.linked} gekoppeld` : 'Niets nieuws: alles stond al in de set'); };
+}
+function saveWords(r) {
+  let set = findSet(r.set);
+  if (!set) { set = {id: uid('s-'), name: r.set, ids: []}; S.sets.push(set); }
+  Object.assign(set, {src: 'woorden', bron: r.bron || set.bron || '', datum: r.datum});
+  const ix = wordIndex(); let added = 0, linked = 0;
+  r.fresh.forEach(x => {
+    let id = ix.get(wordKey(x.w, x.p)); // pasted twice before saving: still one word
+    if (!id) { id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: x.w, p: x.p, g: x.g, pl: x.pl, dim: x.dim, d: x.d, s: x.s, en: x.en, plan: x.plan, src: 'woorden', date: r.datum}; ix.set(wordKey(x.w, x.p), id); S.drip.ids.push(id); added++; }
+    if (!set.ids.includes(id)) set.ids.push(id);
+  });
+  r.existing.forEach(x => { if (!set.ids.includes(x.id)) { set.ids.push(x.id); linked++; } });
+  dripRelease(true);
+  Store.mark('words', 'items', 'state');
+  return {added, linked};
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && dripRelease()) render(); });
+// a few new words a day into Herhalen; drilling a set releases its words at once
+function dripRelease(sameDay) {
+  const D = S.drip; if (!D || !D.ids.length) return 0;
+  D.ids = D.ids.filter(id => LX(id) && !S.items['w:' + id + ':rec']);
+  if (D.day === today() && !sameDay) return 0;
+  const room = D.day === today() ? Math.max(0, DRIP_PER_DAY - (D.n || 0)) : DRIP_PER_DAY;
+  const now = D.ids.splice(0, room);
+  now.forEach(id => { introduce('w:' + id + ':rec'); S.seen[id] = 1; });
+  D.n = (D.day === today() ? D.n || 0 : 0) + now.length; D.day = today();
+  if (now.length) Store.mark('items', 'state');
+  return now.length;
+}
+// Herhaal: one set on its own (due words first, then words not yet in Herhalen)
+function reviewSet(id) {
+  const set = getSet(id); if (!set) return;
+  const ws = set.ids.map(LX).filter(Boolean); if (!ws.length) { toast('Deze set is leeg'); return; }
+  const due = ws.filter(l => isDue('w:' + l.id + ':rec')), fresh = ws.filter(l => !S.items['w:' + l.id + ':rec']), rest = ws.filter(l => S.items['w:' + l.id + ':rec'] && !isDue('w:' + l.id + ':rec'));
+  const d = shuffle(due); const pick = uniq(d.slice(0, 10).concat(fresh.slice(0, 15 - Math.min(10, d.length)), d.slice(10), shuffle(rest))).slice(0, 15);
+  const keys = pick.map(l => 'w:' + l.id + (l.g && S.items['w:' + l.id + ':rec'] && Math.random() < .3 ? ':gen' : ':rec'));
+  keys.forEach(k => introduce(k)); S.drip.ids = S.drip.ids.filter(x => !pick.some(l => l.id === x));
+  closeSheet(); toast('Herhaal: ' + set.name); startSession({keys, intros: true});
+}
+function setWaiting(set) { const ids = new Set(S.drip.ids); return set.ids.filter(id => ids.has(id)).length; }
+
 /* ===== LONG-PRESS ENGLISH ===== */
 (function () {
   let timer = null, tip = null, fired = false;
@@ -3853,6 +4022,7 @@ document.addEventListener('click', e => {
     case 'naslag': NASLAG = d.seg; render(); break;
     case 'wseg': WSEG = d.seg; render(); break;
     case 'cards': openCards(d.set); break;
+    case 'set-review': reviewSet(d.id); break;
     case 'card-grade': cardGrade(d.ok === '1'); break;
     case 'cards-again': startCards(shuffle(CARDS.unknown), {mode: CARDS.mode, dir: CARDS.dir, name: CARDS.name}); break;
     case 'word-add': closeSheet(); quickAdd(d.w); break;
@@ -3927,7 +4097,7 @@ document.addEventListener('change', e => {
 /* ===== INIT ===== */
 (function init() {
   let first = false; try { first = !localStorage.getItem(LS_KEY) && !localStorage.getItem(LS_OLD); } catch (e) {}
-  Store.loadLocal(); Audio.load();
+  Store.loadLocal(); Audio.load(); dripRelease();
   if (first) Store.persist();
   registerSW();
   render();
