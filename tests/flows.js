@@ -70,6 +70,22 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(await p.evaluate(() => S.sq.u7q1.steps.lees === 80 && /gehaald/.test($('#read-end').textContent)), 'Lees: 4 of 5 right is gehaald (80%)');
   await p.click('[data-act=read-close]');
 
+  // 2.6 woordenboek: a word without a card opens a filled-in card; one tap adds it
+  await p.evaluate(() => loadDict()); await p.evaluate(() => { PAD.lvl = 'sq'; PAD.q = 'u3q3'; PAD.u = 'u3'; render(); startStep('u3q3', 'lees'); }); await p.waitForTimeout(200);
+  await p.click('#read [data-act=word-look][data-w=citroenen]'); await p.waitForTimeout(200);
+  const dc = await p.evaluate(() => ({w: ($('.sheet .wc-word') || {}).textContent, pill: !!$('.sheet .dictpill'), add: !!$('#dc-add')})); await shot('06b_woordenboek');
+  await p.click('#dc-add'); await p.waitForTimeout(150);
+  const dadd = await p.evaluate(() => { const c = Object.values(S.custom).find(x => x.w === 'citroen'); return c && c.g === 'de' && c.pl === 'citroenen' && c.src === 'woordenboek' && !!S.items['w:' + c.id + ':rec']; });
+  await p.click('#read [data-act=word-look][data-w=citroenen]'); await p.waitForTimeout(200);
+  const again = await p.evaluate(() => !$('#dc-add') && /mijn woord/.test($('.sheet').textContent)); await p.evaluate(() => closeSheet());
+  ok(/citroen/.test(dc.w) && dc.pill && dc.add && dadd && again, 'woordenboek: tapping "citroenen" in Lees opens "de citroen" filled in; one tap adds it to my words and Herhalen; tapping again shows my card');
+  const form = await p.evaluate(() => new Promise(res => { wordForm(null, ''); const i = $('#nw-w'); i.value = 'kast'; i.dispatchEvent(new Event('input', {bubbles: true}));
+    setTimeout(() => { res({d: $('#nw-d').value, pl: $('#nw-pl').value, het: $('input[name=nw-g]:checked').value, note: !!$('#nw-dict')}); closeSheet(); }, 600); }));
+  ok(form.d && form.pl === 'kasten' && form.het === 'de' && form.note, 'Nieuw woord: typing "kast" fills in the card from the woordenboek');
+  const miss = await p.evaluate(() => { lookupWord('xyzzyq'); const t = $('.sheet').textContent; closeSheet(); return /niet in het woordenboek/.test(t) && /Claude/.test(t); });
+  ok(miss, 'a word that is not in the woordenboek either: the sheet says so and offers the question for Claude');
+  await p.evaluate(() => { const o = $('#read'); if (o) closeOverlay('read'); });
+
   // Scroll: the listening card asks what the sentence means; every card has a clear label
   const lis = await p.evaluate(() => { const c = {kind: 'l', s: SENT.find(x => x.id === 'u1s2'), fid: 'ftest'}; FC.ftest = c;
     const sec = document.createElement('section'); sec.className = 'fcard'; sec.dataset.fid = 'ftest'; sec.innerHTML = fcardHTML(c); document.body.appendChild(sec);
@@ -233,6 +249,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(await P.evaluate(() => !!navigator.serviceWorker.controller), 'service worker controls the page');
   await A.ctx.setOffline(true); await P.reload(); await P.waitForTimeout(600);
   ok(await P.evaluate(() => typeof S === 'object' && !!document.querySelector('#tabs')), 'works offline after the first visit');
+  ok(await P.evaluate(() => loadDict().then(d => d.length >= 1000 && !!dictFind('kiest'), () => false)), 'the woordenboek works offline too (1,000+ words; kiest → kiezen)');
   await A.ctx.setOffline(false);
   ok(!(await P.$('#update')), 'no update toast without a new version');
   A.server.overrides['/sw.js'] = require('fs').readFileSync(require('path').join(require('./page').ROOT, 'sw.js'), 'utf8').replace(/edz-[0-9a-f]+/, 'edz-test-next');

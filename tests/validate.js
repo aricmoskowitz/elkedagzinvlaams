@@ -7,6 +7,7 @@ const {openApp} = require('./page');
   const {p, errs, close} = await openApp();
   const fixture = require('fs').readFileSync(require('path').join(__dirname, 'reports', 'mijn-woorden-1.txt'), 'utf8');
   await p.evaluate(t => { window.WOORDEN_FIXTURE = t; }, fixture);
+  await p.evaluate(() => loadDict());
   const r = await p.evaluate(() => {
     const bad = []; let n = 0;
     UNITS.filter(u => u.built).forEach(u => unitKeys(u.id).forEach(k => {
@@ -72,6 +73,30 @@ const {openApp} = require('./page');
         if (Math.hypot(gx, gy) > 16) bad.push(where + ': a name stands ' + Math.round(Math.hypot(gx, gy)) + ' px from the edge of its square'); }); };
     signBad(WORLD ? WORLD.g : (buildWorld(), WORLD.g), worldSigns(), UNITS.map((u, i) => townPx(i).concat(40)), 'Pad'); // on the Pad a town is its square plus the ring of houses and bunting
     [0, 100].forEach(m => UNITS.filter(u => u.built).forEach(u => { S.markt = S.markt || {}; S.markt[u.id] = m; const t = townSigns(u.id); signBad(buildTown(u.id).g, [...t, t.markt], TSQ.map(q => sqCenter(q).concat(q.h * TS)), u.id + ' map (Grote Markt ' + m + '%)'); }));
+    // 2.6 woordenboek: every entry complete and consistent (see src/woordenboek/README.md)
+    let nd2 = 0; const seenW = new Set(); const lexW = new Set(LEX.map(l => norm(l.w) + '|' + l.p));
+    const PS = ['n', 'v', 'adj', 'adv', 'prep', 'pron', 'conj', 'num', 'int', 'q'];
+    (DICT || []).forEach(l => { nd2++; const k = norm(l.w) + '|' + l.p; const why = m => bad.push('woordenboek ' + l.w + ' (' + l.p + '): ' + m);
+      if (seenW.has(k)) why('twice'); seenW.add(k); if (lexW.has(k)) why('already in the app (LEX)');
+      if (!PS.includes(l.p)) why('unknown part of speech');
+      ['w', 'd', 'en', 's', 'se'].forEach(f => { if (!l[f] || typeof l[f] !== 'string' || !l[f].trim()) why('no ' + f); });
+      if (l.p === 'n' && !['de', 'het'].includes(l.g)) why('noun without de/het');
+      if (l.p === 'n' && (l.pl === undefined || l.dim === undefined)) why('noun without pl/dim (null if none)');
+      if (l.p === 'adj' && l.e === undefined) why('adjective without e (null if it never changes)');
+      if (l.p === 'v') { const v = l.v || {};
+        if (!['w', 's', 'o'].includes(v.t) || !v.st || !Array.isArray(v.im) || v.im.length !== 2 || !v.pp || !['h', 'z', 'hz'].includes(v.aux)) why('verb forms incomplete');
+        if (v.sep && !l.w.startsWith(v.sep)) why('separable prefix is not the start of the verb'); }
+      if (l.s && l.s.split(/\s+/).length > 14) why('example longer than 14 words');
+      const forms = new Set([l.w, l.pl, l.dim, l.e].concat(l.f || []).filter(Boolean).map(norm).concat(l.v ? allForms(l) : []));
+      if (l.s && !norm(l.s).split(' ').some(t => forms.has(t)) && !forms.has(norm(l.s))) why('example does not contain the word: ' + l.s);
+      if (['n', 'v', 'adj'].includes(l.p) && l.d && norm(l.d).split(' ').includes(norm(l.w))) why('the Dutch explanation uses the word itself'); });
+    if (nd2 < 1000) bad.push('woordenboek has ' + nd2 + ' words, fewer than 1000');
+    // every word in the app's own texts has a card: an app word, or a woordenboek word (names and articles aside)
+    const noCard = new Set(); const NAMES = new Set(WB_NAMES);
+    Object.values(READ).map(R => R.text).concat(SENT.map(s => s.nl), LEX.map(l => l.s || '')).forEach(t => t.split(/\s+/).forEach((tok, i) => {
+      const core = tok.replace(/^[^\p{L}’']+|[^\p{L}’']+$/gu, ''); if (!core || core.length < 2 || (i > 0 && /^\p{Lu}/u.test(core))) return;
+      const n = norm(core); if (FORM_IX[n] || dictFind(n) || NAMES.has(n) || ['de', 'het', 'een', "'s"].includes(n)) return; noCard.add(n); }));
+    if (noCard.size) bad.push('words in the app texts without a card: ' + [...noCard].join(', '));
     // underline means "tap for the word card" only: the subject is bold, verbs are gold
     if (/<u>/.test(frameHTML(SENT[0]))) bad.push('frameHTML underlines the subject');
     // synonym/antonym/definition cards for Ari's own words too (an own pronoun like iemand once had a single choice)
@@ -80,8 +105,8 @@ const {openApp} = require('./page');
     Object.values(S.custom).forEach(l => { const r = relOf(l);
       if (r.syn.length || r.ant.length) for (let i = 0; i < 4; i++) { nw++; const ex = relEx(l); if (ex.options.length < 4 || !ex.options.includes(ex.answer) || new Set(ex.options.map(norm)).size !== ex.options.length) bad.push(l.w + ' (own word) rel ' + ex.options); }
       if (l.d) { nw++; const ex = defEx(l); if (ex.options.length < 3 || !ex.options.includes(ex.answer)) bad.push(l.w + ' (own word) def ' + ex.options); } });
-    n += nq + nt + ne + nl + nw;
-    S = blankState(); return {n, nbad: bad.length, bad: bad.slice(0, 40), w1: w1.kind, w2: w2.kind, conjSentence: nc, relation: nr, definition: nd, leesQuestions: nq, translate: nt, englishCue: ne, listen: nl, ownWords: nw};
+    n += nq + nt + ne + nl + nw + nd2;
+    S = blankState(); return {n, nbad: bad.length, bad: bad.slice(0, 40), w1: w1.kind, w2: w2.kind, conjSentence: nc, relation: nr, definition: nd, leesQuestions: nq, translate: nt, englishCue: ne, listen: nl, ownWords: nw, woordenboek: nd2};
   });
   // underline is for tappable words only: no <u> in any source part
   fs.readdirSync(require('path').join(__dirname, '..', 'src')).filter(f => f.endsWith('.js')).forEach(f => { if (/<u>/.test(fs.readFileSync(require('path').join(__dirname, '..', 'src', f), 'utf8'))) { r.nbad++; r.bad.push('src/' + f + ' uses <u>: underline is only for tappable words'); } });

@@ -1,0 +1,125 @@
+{"w":"water","p":"n","g":"het","pl":"wateren","dim":"watertje","d":"de heldere vloeistof die je drinkt en die uit de kraan komt","en":"water","s":"Mag ik een glas water, alstublieft?","se":"May I have a glass of water, please?"}
+{"w":"we","p":"pron","f":["wij"],"d":"ik en andere mensen samen (zonder nadruk)","en":"we","s":"We nemen de tram naar de Meir.","se":"We take the tram to the Meir."}
+{"w":"wel","p":"adv","d":"zegt dat iets toch zo is; het tegendeel van 'niet'","en":"indeed, well","s":"Ik heb geen auto, maar wel een fiets.","se":"I don't have a car, but I do have a bike."}
+{"w":"welk","p":"q","f":["welke"],"d":"vraagwoord als je moet kiezen tussen dingen of mensen","en":"which","s":"Welke tram gaat naar het Centraal Station?","se":"Which tram goes to Central Station?"}
+{"w":"werkwoord","p":"n","g":"het","pl":"werkwoorden","dim":null,"d":"een woord dat zegt wat iemand doet of wat er gebeurt, zoals 'lopen'","en":"verb","s":"In een Nederlandse zin staat het werkwoord op plaats twee.","se":"In a Dutch sentence the verb is in second place."}
+{"w":"werpen","p":"v","d":"iets met kracht door de lucht laten vliegen; gooien","en":"to throw","s":"Hij werpt het papiertje in de vuilbak.","se":"He throws the piece of paper in the bin.","v":{"t":"s","st":"werp","im":["wierp","wierpen"],"pp":"geworpen","aux":"h"}}
+{"w":"wij","p":"pron","f":["we"],"d":"ik en andere mensen samen (met nadruk)","en":"we","s":"Wij wonen al tien jaar in Berchem.","se":"We have lived in Berchem for ten years."}
+{"w":"wijn","p":"n","g":"de","pl":"wijnen","dim":"wijntje","d":"een drank met alcohol die van druiven gemaakt wordt","en":"wine","s":"We drinken een glas rode wijn op het terras.","se":"We drink a glass of red wine on the terrace."}
+{"w":"winkel","p":"n","g":"de","pl":"winkels","dim":"winkeltje","d":"een zaak waar je dingen kunt kopen","en":"shop","s":"De winkel op de hoek sluit om zes uur.","se":"The shop on the corner closes at six."}
+{"w":"woord","p":"n","g":"het","pl":"woorden","dim":"woordje","d":"een groep letters met een betekenis; zinnen bestaan daaruit","en":"word","s":"Wat betekent dat woord?","se":"What does that word mean?"}
+{"w":"worden","p":"v","d":"veranderen tot iets anders; in een nieuwe toestand komen","en":"to become","s":"Het wordt koud in Antwerpen.","se":"It's getting cold in Antwerp.","v":{"t":"s","st":"word","im":["werd","werden"],"pp":"geworden","aux":"z"}}
+{"w":"wow","p":"int","d":"dat zeg je als je iets heel straf of verrassend vindt","en":"wow","s":"Wow, wat een mooi zicht vanaf het MAS!","se":"Wow, what a beautiful view from the MAS!"}
+{"w":"zacht","p":"adj","e":"zachte","f":["zachter","zachtst"],"d":"niet hard of ruw; ook: niet luid","en":"soft, gentle","s":"Dit kussen is lekker zacht.","se":"This cushion is nice and soft."}
+{"w":"zaterdag","p":"n","g":"de","pl":"zaterdagen","dim":null,"d":"de dag na vrijdag en voor zondag","en":"Saturday","s":"Op zaterdag gaan we naar de markt op het Theaterplein.","se":"On Saturday we go to the market on the Theaterplein."}
+{"w":"ze","p":"pron","f":["zij"],"d":"zij, zonder nadruk: een vrouw of meisje, of een groep; ook: haar of hen","en":"she, they","s":"Ze woont in Borgerhout.","se":"She lives in Borgerhout."}
+{"w":"zelf","p":"pron","d":"die persoon en niemand anders; zonder hulp","en":"-self (myself, yourself...)","s":"Ik heb die taart zelf gebakken.","se":"I baked that cake myself."}
+{"w":"zelfgemaakt","p":"adj","e":"zelfgemaakte","d":"thuis klaargemaakt, niet in de winkel gekocht","en":"homemade","s":"Mijn bomma bakt altijd zelfgemaakte wafels.","se":"My grandma always bakes homemade waffles."}
+{"w":"zetten","p":"v","d":"iets ergens neerplaatsen; ook: koffie of thee klaarmaken","en":"to put, to place","s":"Zet de fiets maar tegen de muur.","se":"Just put the bike against the wall.","v":{"t":"w","st":"zet","im":["zette","zetten"],"pp":"gezet","aux":"h"}}
+{"w":"zeven","p":"num","d":"het getal na zes: 7","en":"seven","s":"De winkel gaat om zeven uur open.","se":"The shop opens at seven o'clock."}
+{"w":"zin","p":"n","g":"de","pl":"zinnen","dim":"zinnetje","d":"een groep woorden met een werkwoord die samen iets zeggen; ook: goesting om iets te doen","en":"sentence, desire","s":"Ik heb zin in frieten.","se":"I feel like having fries."}
+{"w":"zitten","p":"v","d":"op een stoel, bank of de grond rusten op je achterwerk","en":"to sit","s":"We zitten op een terras op de Groenplaats.","se":"We are sitting on a terrace on the Groenplaats.","v":{"t":"s","st":"zit","im":["zat","zaten"],"pp":"gezeten","aux":"h"}}
+{"w":"zo","p":"adv","d":"op deze manier; ook: heel, erg","en":"so, like this","s":"Doe het zo, dan lukt het.","se":"Do it like this, then it works."}
+{"w":"zoals","p":"conj","d":"op dezelfde manier als; ook: bijvoorbeeld","en":"like, such as","s":"Ik eet graag Belgische gerechten, zoals stoverij met frieten.","se":"I like eating Belgian dishes, such as stew with fries."}
+{"w":"zout","p":"n","g":"het","pl":"zouten","dim":null,"d":"een wit poeder dat je over eten strooit voor de smaak","en":"salt","s":"Er moet nog wat zout in de soep.","se":"The soup needs a bit more salt."}
+{"w":"zus","p":"n","g":"de","pl":"zussen","dim":"zusje","d":"een meisje of vrouw met dezelfde ouders als jij","en":"sister","s":"Mijn zus woont in Gent.","se":"My sister lives in Ghent."}
+{"w":"u","p":"pron","f":["uw"],"d":"beleefd woord voor 'jij' of 'jou', tegen iemand die je niet goed kent","en":"you (polite)","s":"Kan ik u helpen, meneer?","se":"Can I help you, sir?"}
+{"w":"nee","p":"int","f":["neen"],"d":"dat zeg je als je niet akkoord gaat of iets weigert; het tegendeel van 'ja'","en":"no","s":"Nee, dank u, ik heb al koffie.","se":"No, thank you, I already have coffee."}
+{"w":"daar","p":"adv","d":"op die plaats, niet hier","en":"there","s":"Daar is de bakker, naast de apotheek.","se":"There's the bakery, next to the pharmacy."}
+{"w":"jullie","p":"pron","d":"jij en de anderen samen; ook: van jij en de anderen","en":"you (plural), your","s":"Waar wonen jullie in Antwerpen?","se":"Where do you live in Antwerp?"}
+{"w":"wie","p":"q","d":"vraagwoord als je naar een persoon vraagt","en":"who","s":"Wie komt er zaterdag eten?","se":"Who is coming to dinner on Saturday?"}
+{"w":"jou","p":"pron","f":["je"],"d":"'jij' als voorwerp of na een voorzetsel, met nadruk","en":"you (object)","s":"Ik bel jou morgen na het werk.","se":"I'll call you tomorrow after work."}
+{"w":"door","p":"prep","d":"van de ene kant naar de andere kant van iets; ook: zegt wie iets doet","en":"through, by","s":"We fietsen door het Stadspark.","se":"We cycle through the Stadspark."}
+{"w":"alleen","p":"adv","d":"met niemand anders erbij; ook: niet meer dan dat","en":"alone, only","s":"Ik woon alleen in een klein appartement.","se":"I live alone in a small flat."}
+{"w":"toch","p":"adv","d":"ondanks iets anders; ook: om iets te benadrukken","en":"still, anyway","s":"Het regent, maar we gaan toch naar de markt.","se":"It's raining, but we're going to the market anyway."}
+{"w":"eens","p":"adv","d":"één keer; ook: maakt een vraag of een bevel vriendelijker","en":"once, just","s":"Kijk eens, daar is de kathedraal!","se":"Look, there's the cathedral!"}
+{"w":"misschien","p":"adv","d":"het is mogelijk, maar niet zeker","en":"maybe, perhaps","s":"Misschien gaan we morgen naar de zoo.","se":"Maybe we'll go to the zoo tomorrow."}
+{"w":"nooit","p":"adv","d":"op geen enkel moment; het tegendeel van 'altijd'","en":"never","s":"Ik neem nooit de auto naar het centrum.","se":"I never take the car to the city centre."}
+{"w":"oké","p":"int","f":["ok"],"d":"dat zeg je als je akkoord gaat","en":"okay","s":"Oké, ik zie je om acht uur aan het station.","se":"Okay, I'll see you at eight at the station."}
+{"w":"iemand","p":"pron","d":"een persoon, maar je weet of zegt niet wie","en":"someone, somebody","s":"Er staat iemand aan de deur.","se":"There's someone at the door."}
+{"w":"nodig","p":"adj","e":"nodige","d":"wat je moet hebben of moet doen","en":"necessary, needed","s":"Ik heb een nieuwe fietsband nodig.","se":"I need a new bicycle tyre."}
+{"w":"tijd","p":"n","g":"de","pl":"tijden","dim":"tijdje","d":"de uren, minuten en dagen die voorbijgaan","en":"time","s":"Ik heb vandaag geen tijd om te koken.","se":"I don't have time to cook today."}
+{"w":"leven","p":"n","g":"het","pl":"levens","dim":"leventje","d":"de tijd tussen je geboorte en je dood; ook: hoe je woont en werkt","en":"life","s":"Het leven in Antwerpen is druk maar fijn.","se":"Life in Antwerp is busy but nice."}
+{"w":"leven","p":"v","d":"bestaan en ademen, niet dood zijn; ook: ergens wonen en werken","en":"to live","s":"Mijn grootouders leven nog allebei.","se":"My grandparents are both still alive.","v":{"t":"w","st":"leef","im":["leefde","leefden"],"pp":"geleefd","aux":"h"}}
+{"w":"jaar","p":"n","g":"het","pl":"jaren","dim":"jaartje","d":"een tijd van twaalf maanden","en":"year","s":"Ik woon al twee jaar in Antwerpen.","se":"I've lived in Antwerp for two years."}
+{"w":"hun","p":"pron","d":"van hen; ook: aan hen (als meewerkend voorwerp)","en":"their, them","s":"Ze komen met hun kinderen naar het park.","se":"They're coming to the park with their children."}
+{"w":"allemaal","p":"pron","d":"iedereen of alles samen, niemand of niets uitgezonderd","en":"all, everyone","s":"We gaan allemaal samen naar de cinema.","se":"We're all going to the cinema together."}
+{"w":"vader","p":"n","g":"de","pl":"vaders","dim":"vadertje","d":"de man die een kind heeft; papa","en":"father","s":"Mijn vader werkt in de haven.","se":"My father works in the port."}
+{"w":"vrouw","p":"n","g":"de","pl":"vrouwen","dim":"vrouwtje","d":"een volwassen persoon die geen man is; ook: echtgenote","en":"woman, wife","s":"De vrouw van de bakker is heel vriendelijk.","se":"The baker's wife is very friendly."}
+{"w":"ander","p":"adj","e":"andere","d":"niet dezelfde; een die verschilt","en":"other, different","s":"Ik neem vandaag een andere tram.","se":"I'm taking a different tram today."}
+{"w":"zij","p":"pron","f":["ze"],"d":"een vrouw of meisje, of een groep mensen (met nadruk)","en":"she, they","s":"Zij werkt in het ziekenhuis, ik niet.","se":"She works at the hospital, I don't."}
+{"w":"anders","p":"adv","d":"op een andere manier; ook: als dat niet zo is","en":"differently, otherwise","s":"Neem je jas mee, anders krijg je het koud.","se":"Take your coat, otherwise you'll get cold."}
+{"w":"bedanken","p":"v","d":"zeggen dat je blij bent met wat iemand voor je deed","en":"to thank","s":"Ik bedank de buurvrouw voor de bloemen.","se":"I thank the neighbour for the flowers.","v":{"t":"w","st":"bedank","im":["bedankte","bedankten"],"pp":"bedankt","aux":"h"}}
+{"w":"één","p":"num","f":["een"],"d":"het getal 1; het eerste getal","en":"one","s":"Ik wil één bolletje vanille, alstublieft.","se":"I'd like one scoop of vanilla, please."}
+{"w":"erg","p":"adv","d":"heel, zeer; ook: op een slechte manier","en":"very, badly","s":"Het is erg druk op de Meir vandaag.","se":"It's very busy on the Meir today."}
+{"w":"spijt","p":"n","g":"de","pl":null,"dim":null,"d":"het gevoel dat je iets liever niet gedaan had","en":"regret","s":"Ik heb spijt dat ik niet gekomen ben.","se":"I regret that I didn't come."}
+{"w":"geld","p":"n","g":"het","pl":null,"dim":null,"d":"munten en briefjes waarmee je betaalt","en":"money","s":"Ik heb geen geld meer op mijn rekening.","se":"I have no money left in my account."}
+{"w":"niemand","p":"pron","d":"geen enkele persoon","en":"nobody","s":"Er is niemand thuis.","se":"Nobody is home."}
+{"w":"niks","p":"pron","d":"(spreektaal) helemaal geen ding; niets","en":"nothing","s":"Ik heb vandaag nog niks gegeten.","se":"I haven't eaten anything yet today."}
+{"w":"sorry","p":"int","d":"dat zeg je als je iets fout gedaan hebt","en":"sorry","s":"Sorry, ik heb je niet gezien.","se":"Sorry, I didn't see you."}
+{"w":"vast","p":"adv","d":"zeker of bijna zeker; ook: stevig, niet los","en":"surely, probably","s":"Hij is vast nog op het werk.","se":"He's probably still at work."}
+{"w":"elkaar","p":"pron","d":"de ene de andere, en omgekeerd","en":"each other","s":"We zien elkaar zaterdag op de markt.","se":"We'll see each other at the market on Saturday."}
+{"w":"al","p":"pron","f":["alle"],"d":"het geheel; iedereen of alles van een groep","en":"all","s":"Alle winkels zijn vandaag dicht.","se":"All the shops are closed today."}
+{"w":"toe","p":"adv","d":"in de richting van; ook: dicht, gesloten","en":"to, closed","s":"Doe de deur toe, het is koud.","se":"Close the door, it's cold."}
+{"w":"bedoelen","p":"v","d":"iets willen zeggen; een bepaald idee in je hoofd hebben","en":"to mean","s":"Wat bedoel je met dat woord?","se":"What do you mean by that word?","v":{"t":"w","st":"bedoel","im":["bedoelde","bedoelden"],"pp":"bedoeld","aux":"h"}}
+{"w":"ding","p":"n","g":"het","pl":"dingen","dim":"dingetje","d":"een voorwerp of zaak waarvan je de naam niet zegt","en":"thing","s":"Wat is dat ding op je fiets?","se":"What's that thing on your bike?"}
+{"w":"alsjeblieft","p":"adv","f":["alstublieft"],"d":"beleefd woord als je iets vraagt of geeft, tegen iemand die je met 'jij' aanspreekt","en":"please, here you are","s":"Geef me het zout eens, alsjeblieft.","se":"Pass me the salt, please."}
+{"w":"zonder","p":"prep","d":"niet met; als iets ontbreekt","en":"without","s":"Ik drink mijn koffie zonder suiker.","se":"I drink my coffee without sugar."}
+{"w":"steeds","p":"adv","d":"altijd, telkens weer; ook: meer en meer","en":"always, more and more","s":"Het wordt steeds drukker op de Meir.","se":"It's getting busier and busier on the Meir."}
+{"w":"hallo","p":"int","d":"een groet als je iemand ziet of aan de telefoon hebt","en":"hello","s":"Hallo, met Ari!","se":"Hello, it's Ari!"}
+{"w":"houden","p":"v","f":["hou"],"d":"iets in je hand hebben en niet loslaten; ook: graag zien (met 'van')","en":"to hold, to keep","s":"Ik hou van Antwerpen.","se":"I love Antwerp.","v":{"t":"s","st":"houd","im":["hield","hielden"],"pp":"gehouden","aux":"h","imp":"hou"}}
+{"w":"vertellen","p":"v","d":"aan iemand zeggen wat er gebeurd is","en":"to tell","s":"Vertel eens, hoe was je weekend?","se":"So tell me, how was your weekend?","v":{"t":"w","st":"vertel","im":["vertelde","vertelden"],"pp":"verteld","aux":"h"}}
+{"w":"helemaal","p":"adv","d":"volledig, voor de volle honderd procent","en":"completely, totally","s":"De tram is helemaal vol.","se":"The tram is completely full."}
+{"w":"luisteren","p":"v","d":"goed opletten wat je met je oren hoort","en":"to listen","s":"Ik luister naar de radio in de keuken.","se":"I listen to the radio in the kitchen.","v":{"t":"w","st":"luister","im":["luisterde","luisterden"],"pp":"geluisterd","aux":"h"}}
+{"w":"lijken","p":"v","d":"eruitzien als iets of iemand anders; de indruk geven","en":"to seem, to look like","s":"Je lijkt op je moeder.","se":"You look like your mother.","v":{"t":"s","st":"lijk","im":["leek","leken"],"pp":"geleken","aux":"h"}}
+{"w":"ooit","p":"adv","d":"op een moment in het verleden of in de toekomst","en":"ever","s":"Ben je ooit in het MAS geweest?","se":"Have you ever been to the MAS?"}
+{"w":"paar","p":"n","g":"het","pl":"paren","dim":"paartje","d":"twee dingen of mensen die bij elkaar horen; ook: een klein aantal","en":"pair, couple","s":"Ik koop een paar appels op de markt.","se":"I buy a few apples at the market."}
+{"w":"gebeuren","p":"v","d":"plaatsvinden; voorkomen zonder dat je het plant","en":"to happen","s":"Wat is er gebeurd op de Leien?","se":"What happened on the Leien?","v":{"t":"w","st":"gebeur","im":["gebeurde","gebeurden"],"pp":"gebeurd","aux":"z"}}
+{"w":"zorgen","p":"v","d":"op iemand of iets letten en helpen; ook: iets regelen","en":"to take care","s":"Ik zorg voor de kinderen van mijn zus.","se":"I take care of my sister's children.","v":{"t":"w","st":"zorg","im":["zorgde","zorgden"],"pp":"gezorgd","aux":"h"}}
+{"w":"zorg","p":"n","g":"de","pl":"zorgen","dim":null,"d":"aandacht en hulp voor iemand; ook: een gedachte die je ongerust maakt","en":"care, worry","s":"Maak je geen zorgen, het komt goed.","se":"Don't worry, it will be fine."}
+{"w":"gek","p":"adj","e":"gekke","f":["gekker","gekst"],"d":"niet normaal, raar; ook: dol op iets","en":"crazy, mad","s":"Wat een gek idee!","se":"What a crazy idea!"}
+{"w":"laatst","p":"adj","e":"laatste","d":"op het einde, na alle andere","en":"last","s":"De laatste tram vertrekt om middernacht.","se":"The last tram leaves at midnight."}
+{"w":"geweldig","p":"adj","e":"geweldige","d":"heel goed, fantastisch","en":"great, terrific","s":"Het concert in de Lotto Arena was geweldig.","se":"The concert at the Lotto Arena was great."}
+{"w":"zelfs","p":"adv","d":"wat je niet zou verwachten; ook dat nog","en":"even","s":"Zelfs op zondag is de bakker open.","se":"The bakery is open even on Sunday."}
+{"w":"enig","p":"adj","e":"enige","d":"maar één, geen ander; ook: een beetje","en":"only, some","s":"Hij is het enige kind in het gezin.","se":"He is the only child in the family."}
+{"w":"bang","p":"adj","e":"bange","f":["banger","bangst"],"d":"vol angst; schrik hebben","en":"afraid, scared","s":"Mijn hond is bang voor het vuurwerk.","se":"My dog is afraid of the fireworks."}
+{"w":"geleden","p":"adv","d":"zoveel tijd terug, gerekend vanaf nu","en":"ago","s":"Ik ben drie jaar geleden naar Antwerpen verhuisd.","se":"I moved to Antwerp three years ago."}
+{"w":"jongen","p":"n","g":"de","pl":"jongens","dim":"jongetje","d":"een kind dat geen meisje is, of een jonge man","en":"boy","s":"De jongen speelt voetbal op het plein.","se":"The boy is playing football on the square."}
+{"w":"wereld","p":"n","g":"de","pl":"werelden","dim":"wereldje","d":"de aarde met alle landen en mensen","en":"world","s":"Antwerpen heeft een van de grootste havens van de wereld.","se":"Antwerp has one of the biggest ports in the world."}
+{"w":"heen","p":"adv","d":"naar daar, weg van hier","en":"away, there","s":"Een ticket heen en terug naar Brussel, alstublieft.","se":"A return ticket to Brussels, please."}
+{"w":"kennen","p":"v","d":"weten wie iemand is, of iets al gezien of geleerd hebben","en":"to know","s":"Ken je de buren al?","se":"Do you know the neighbours yet?","v":{"t":"w","st":"ken","im":["kende","kenden"],"pp":"gekend","aux":"h"}}
+{"w":"hen","p":"pron","f":["ze"],"d":"'zij' (meervoud) als voorwerp, vooral na een voorzetsel","en":"them","s":"Ik ga morgen met hen naar de zoo.","se":"I'm going to the zoo with them tomorrow."}
+{"w":"eerst","p":"adv","d":"voor alle andere dingen; als nummer één","en":"first","s":"Eerst drinken we koffie, dan gaan we winkelen.","se":"First we have coffee, then we go shopping."}
+{"w":"eigen","p":"adj","e":null,"d":"van jezelf, niet van een ander","en":"own","s":"Ik heb nu mijn eigen appartement in Zurenborg.","se":"I now have my own flat in Zurenborg."}
+{"w":"zoon","p":"n","g":"de","pl":"zonen","dim":"zoontje","d":"een jongen of man als kind van zijn ouders","en":"son","s":"Onze zoon gaat naar school in Berchem.","se":"Our son goes to school in Berchem."}
+{"w":"gelijk","p":"adj","e":"gelijke","d":"hetzelfde, niet verschillend","en":"equal, same","s":"Je hebt gelijk, de tram is te laat.","se":"You're right, the tram is late."}
+{"w":"probleem","p":"n","g":"het","pl":"problemen","dim":"probleempje","d":"iets moeilijks dat je moet oplossen","en":"problem","s":"Geen probleem, ik help je wel.","se":"No problem, I'll help you."}
+{"w":"alsof","p":"conj","d":"op een manier zoals wanneer iets waar zou zijn","en":"as if","s":"Hij doet alsof hij me niet ziet.","se":"He acts as if he doesn't see me."}
+{"w":"geloven","p":"v","d":"denken dat iets waar is","en":"to believe","s":"Ik geloof dat de winkel nu dicht is.","se":"I believe the shop is closed now.","v":{"t":"w","st":"geloof","im":["geloofde","geloofden"],"pp":"geloofd","aux":"h"}}
+{"w":"familie","p":"n","g":"de","pl":"families","dim":null,"d":"al je verwanten, zoals ooms, tantes en neven","en":"family, relatives","s":"Mijn familie komt op zondag eten.","se":"My family is coming to dinner on Sunday."}
+{"w":"politie","p":"n","g":"de","pl":null,"dim":null,"d":"de mensen die zorgen dat iedereen de wet volgt en het veilig blijft","en":"police","s":"Bel de politie, er is een ongeluk gebeurd!","se":"Call the police, there's been an accident!"}
+{"w":"bijna","p":"adv","d":"niet helemaal, maar heel dichtbij","en":"almost, nearly","s":"Het is bijna acht uur.","se":"It's almost eight o'clock."}
+{"w":"eigenlijk","p":"adv","d":"in werkelijkheid; als je het goed bekijkt","en":"actually","s":"Eigenlijk heb ik geen honger.","se":"Actually, I'm not hungry."}
+{"w":"manier","p":"n","g":"de","pl":"manieren","dim":null,"d":"hoe je iets doet","en":"way, manner","s":"Wat is de snelste manier naar het station?","se":"What's the quickest way to the station?"}
+{"w":"precies","p":"adv","d":"juist zo; helemaal correct","en":"exactly","s":"De trein vertrekt precies om negen uur.","se":"The train leaves at exactly nine o'clock."}
+{"w":"orde","p":"n","g":"de","pl":"ordes","dim":null,"d":"toestand waarin alles netjes en goed geregeld is","en":"order","s":"Is alles in orde met je fiets?","se":"Is everything all right with your bike?"}
+{"w":"verder","p":"adv","d":"meer naar voren; ook: daarna, voor de rest","en":"further, on","s":"Fiets nog een beetje verder, dan zie je de kerk.","se":"Cycle on a bit further, then you'll see the church."}
+{"w":"stoppen","p":"v","d":"niet verder gaan; ophouden","en":"to stop","s":"De tram stopt aan de Groenplaats.","se":"The tram stops at the Groenplaats.","v":{"t":"w","st":"stop","im":["stopte","stopten"],"pp":"gestopt","aux":"hz"}}
+{"w":"hoofd","p":"n","g":"het","pl":"hoofden","dim":"hoofdje","d":"het bovenste deel van je lichaam, met je ogen, neus en mond","en":"head","s":"Ik heb pijn in mijn hoofd.","se":"My head hurts."}
+{"w":"daarom","p":"adv","d":"om die reden","en":"that's why, therefore","s":"Het regent, daarom neem ik de tram.","se":"It's raining, that's why I'm taking the tram."}
+{"w":"kant","p":"n","g":"de","pl":"kanten","dim":"kantje","d":"een van de zijden van iets; ook: een richting","en":"side","s":"De bakker is aan de andere kant van de straat.","se":"The bakery is on the other side of the street."}
+{"w":"voelen","p":"v","d":"iets merken met je lichaam of je hart","en":"to feel","s":"Ik voel me vandaag niet zo goed.","se":"I don't feel so well today.","v":{"t":"w","st":"voel","im":["voelde","voelden"],"pp":"gevoeld","aux":"h"}}
+{"w":"zaak","p":"n","g":"de","pl":"zaken","dim":"zaakje","d":"een winkel of bedrijf; ook: een kwestie","en":"business, matter","s":"Zijn zaak in de Kloosterstraat verkoopt oude meubels.","se":"His shop in the Kloosterstraat sells old furniture."}
+{"w":"kans","p":"n","g":"de","pl":"kansen","dim":"kansje","d":"de mogelijkheid dat iets gebeurt of lukt","en":"chance","s":"Er is een grote kans op regen vandaag.","se":"There's a good chance of rain today."}
+{"w":"pas","p":"adv","d":"nog maar net; ook: niet eerder dan","en":"only just, not until","s":"De winkel gaat pas om tien uur open.","se":"The shop doesn't open until ten."}
+{"w":"tussen","p":"prep","d":"in het midden van twee dingen of mensen","en":"between","s":"De apotheek ligt tussen de bakker en de bank.","se":"The pharmacy is between the bakery and the bank."}
+{"w":"prima","p":"adj","e":null,"d":"heel goed; in orde","en":"fine, excellent","s":"Dat is prima, ik kom om zeven uur.","se":"That's fine, I'll come at seven."}
+{"w":"hulp","p":"n","g":"de","pl":null,"dim":null,"d":"wat je doet voor iemand die iets niet alleen kan","en":"help","s":"Bedankt voor je hulp met de verhuis.","se":"Thanks for your help with the move."}
+{"w":"pijn","p":"n","g":"de","pl":"pijnen","dim":"pijntje","d":"een naar gevoel in je lichaam als je ziek of gewond bent","en":"pain","s":"Ik heb pijn aan mijn rug.","se":"My back hurts."}
+{"w":"school","p":"n","g":"de","pl":"scholen","dim":"schooltje","d":"een gebouw waar kinderen les krijgen","en":"school","s":"De kinderen fietsen elke dag naar school.","se":"The children cycle to school every day."}
+{"w":"plan","p":"n","g":"het","pl":"plannen","dim":"plannetje","d":"een idee over wat je gaat doen en hoe","en":"plan","s":"Wat zijn je plannen voor het weekend?","se":"What are your plans for the weekend?"}
+{"w":"broer","p":"n","g":"de","pl":"broers","dim":"broertje","d":"een jongen of man met dezelfde ouders als jij","en":"brother","s":"Mijn broer woont in Mechelen.","se":"My brother lives in Mechelen."}
+{"w":"jezelf","p":"pron","d":"jij, en niemand anders","en":"yourself","s":"Zorg goed voor jezelf!","se":"Take good care of yourself!"}
+{"w":"juist","p":"adj","e":"juiste","d":"zonder fout; correct","en":"right, correct","s":"Is dit de juiste tram naar Linkeroever?","se":"Is this the right tram to Linkeroever?"}
+{"w":"soort","p":"n","g":"de","pl":"soorten","dim":null,"d":"een groep dingen die op elkaar lijken","en":"kind, sort","s":"Welke soort brood wil je?","se":"What kind of bread do you want?"}
+{"w":"ergens","p":"adv","d":"op een plaats, maar je weet of zegt niet waar","en":"somewhere","s":"Mijn sleutels liggen hier ergens.","se":"My keys are around here somewhere."}

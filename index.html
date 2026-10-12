@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "a5f0cc3165";</script>
+<script>const APP_VERSION = "bfc903591b";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -353,6 +353,8 @@ a.btn{text-decoration:none;text-align:center;box-sizing:border-box}
 /* 2.5: your own sentence, the words that differ */
 .yours .d{color:var(--warn);text-decoration:line-through;text-decoration-thickness:1.5px}
 .en-hl{font-weight:700;color:var(--ink)}
+.dictpill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--ink2);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:1px 8px;vertical-align:1px}
+.dictpill.vl{color:#7A5A12;background:#FBF3DC;border-color:#EAD9A6}
 
 </style>
 </head>
@@ -1292,8 +1294,8 @@ Object.entries({
    Basic words Ari already uses that the plan did not list, so reports kept
    flagging them as new. New ids only. The square words live in SQUARES;
    the four Algemeen words (u: 0) belong to no square. */
-Object.assign(POS, {pron: 'vnw', conj: 'vw', prep: 'vz'});
-Object.assign(POS_EN, {pron: 'pronoun', conj: 'conjunction', prep: 'preposition'});
+Object.assign(POS, {pron: 'vnw', conj: 'vw', prep: 'vz', num: 'telw', int: 'tw'});
+Object.assign(POS_EN, {pron: 'pronoun', conj: 'conjunction', prep: 'preposition', num: 'number', int: 'interjection'});
 LEX.push(
 {id:'stad',u:1,w:'stad',p:'n',g:'de',pl:'steden',dim:'stadje',d:'een grote plaats met veel straten en huizen',en:'city, town',s:'Antwerpen is een mooie stad.',se:'Antwerp is a beautiful city.'},
 {id:'dag',u:1,w:'dag',p:'n',g:'de',pl:'dagen',dim:'dagje',d:'een periode van vierentwintig uur',en:'day',s:'Vandaag is een mooie dag.',se:'Today is a beautiful day.'},
@@ -1457,6 +1459,16 @@ const auxWord = a => a === 'z' ? 'is' : a === 'hz' ? 'heeft / is' : 'heeft';
 function allForms(l) {
   const f = vForms(l); if (!f) return [];
   return uniq([f.ik, f.jij, f.hij, f.pl, f.im[0], f.im[1], f.pp, f.sep + f.pp, l.w].filter(Boolean).map(norm));
+}
+// 2.6: forms a word takes in running text that the card does not list: comparatives (ouder, oudere, oudst, oudste),
+// the plural of the diminutive (pintjes), and a separable verb written as one word (aankwam, aankomt, aankom)
+const COMP_IRR = {goed: ['beter', 'betere', 'best', 'beste'], veel: ['meer', 'meest', 'meeste'], weinig: ['minder', 'minst', 'minste'], graag: ['liever', 'liefst']};
+function textForms(l) {
+  const out = [];
+  if (l.p === 'adj') { if (COMP_IRR[l.w]) out.push(...COMP_IRR[l.w]); else if (l.e) { const c = l.e + 'r', s = l.w.replace(/s$/, '') + 'st'; out.push(c, c + 'e', s, s + 'e'); } }
+  if (l.p === 'n' && l.dim) out.push(l.dim + 's');
+  if (l.v && l.v.sep) { const f = vForms(l); [f.ik, f.hij, f.im[0], f.im[1]].forEach(x => x && out.push(f.sep + x)); }
+  return out;
 }
 function kofschip(l) {
   const v = l.v; if (!v || v.t !== 'w') return '';
@@ -3163,6 +3175,7 @@ const FORM_IX = (() => {
   const ix = {};
   const add = (f, id) => { const k = norm(f); if (k && k.length > 1 && !ix[k]) ix[k] = id; };
   LEX.forEach(l => { [l.w, l.pl, l.dim, l.e].forEach(f => f && add(f, l.id)); if (l.v) allForms(l).forEach(f => add(f, l.id)); });
+  LEX.forEach(l => textForms(l).forEach(f => add(f, l.id))); // after every listed form, so a listed form always wins
   return ix;
 })();
 const SQ_OF_WORD = (() => { const m = {}; PLAN_SQ.forEach(q => (q.words || []).forEach(w => { m[w] = q.id; })); return m; })();
@@ -3495,10 +3508,10 @@ function tapWords(text) {
   return esc(text).split(/(\s+)/).map((tok, i) => {
     const core = tok.replace(/^[^\p{L}’']+|[^\p{L}’']+$/gu, '');
     if (!core) return tok;
-    if (FUNC_W.has(core.toLowerCase()) && !FORM_IX[norm(core)]) return tok;
+    if ((FUNC_W.has(core.toLowerCase()) || /^[’']s$/i.test(core)) && !FORM_IX[norm(core)]) return tok; // ’s (’s avonds) is no word to look up
     if (i > 0 && /^\p{Lu}/u.test(core) && !FORM_IX[norm(core)]) return tok;
     const n = norm(core); const id = FORM_IX[n] || (Object.values(S.custom || {}).find(l => norm(l.w) === n) || {}).id;
-    return tok.replace(core, id ? `<button class="rw" data-act="word" data-id="${id}">${core}</button>` : `<button class="rw new" data-act="word-add" data-w="${esc(core)}">${core}</button>`);
+    return tok.replace(core, id ? `<button class="rw" data-act="word" data-id="${id}">${core}</button>` : `<button class="rw new" data-act="word-look" data-w="${esc(core)}">${core}</button>`);
   }).join('');
 }
 function readHTML(text) { return tapWords(text); }
@@ -4689,6 +4702,125 @@ function feedListen(fid, j) {
   $('.fback', sec).hidden = false;
 }
 
+/* ===== VERSION 2.6: the woordenboek =====
+   A built-in dictionary (woordenboek.json, made by build.py from src/woordenboek/*.jsonl).
+   - tap a word the app has no card for: the filled-in card opens, one tap adds it (to a set if you like)
+   - the Nieuw woord form fills itself in when the word is in the woordenboek
+   - searching in Woorden also finds woordenboek words
+   - Ari's own words (imported lists) get their missing forms from it
+   The file loads a few seconds after start (never while the app opens) and the service worker keeps it offline. */
+
+let DICT = null, DICT_IX = null, DICT_P = null;
+// names at the start of a sentence in the app's texts: they need no card (tests/validate.js)
+const WB_NAMES = ['sarah', 'lies', 'tom', 'karim', 'maria', 'emma', 'pieter', 'nadia', 'rubens', 'antwerpen', 'gent', 'brussel', 'zurenborg', 'berchem', 'meir', 'schelde', 'seef'];
+function loadDict() {
+  if (DICT) return Promise.resolve(DICT);
+  if (!DICT_P) DICT_P = fetch('woordenboek.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(list => {
+    DICT = list.map(x => ({...x, id: 'd:' + x.w + ':' + x.p, dict: true})); DICT_IX = {};
+    const add = (f, l) => { const k = norm(f || ''); if (k && !DICT_IX[k]) DICT_IX[k] = l; };
+    DICT.forEach(l => add(l.w, l)); // lemmas first, so "kast" never points at another word's form
+    DICT.forEach(l => { [l.pl, l.dim, l.e].concat(l.f || []).forEach(f => add(f, l)); if (l.v) allForms(l).forEach(f => add(f, l)); });
+    DICT.forEach(l => textForms(l).forEach(f => add(f, l)));
+    enrichCustom();
+    return DICT;
+  }).catch(e => { DICT_P = null; throw e; });
+  return DICT_P;
+}
+// a word as it stands in a text → its woordenboek entry (or null)
+const dictFind = w => (DICT_IX && DICT_IX[norm(w)]) || null;
+// one of Ari's own words with the same lemma and part of speech
+const ownFor = l => Object.values(S.custom || {}).find(c => norm(c.w) === norm(l.w) && (c.p === l.p || !c.p));
+
+/* ---------- tapping a word ---------- */
+function lookupWord(w) {
+  const go = () => {
+    const l = dictFind(w);
+    if (!l) return quickAdd(w, true);
+    const own = ownFor(l); if (own) return showWord(own.id);
+    openDictCard(l);
+  };
+  if (DICT) return go();
+  toast('Even het woordenboek openen…');
+  loadDict().then(go, () => quickAdd(w, true));
+}
+function openDictCard(l) {
+  const s = openSheet(`<div class="stack">
+    ${wordCardHTML(l, {actions: false}).replace('<div class="eyebrow">', `<div class="eyebrow"><span class="dictpill" data-en="From the dictionary">Woordenboek</span> ${l.vl ? '<span class="dictpill vl" data-en="Flemish">Vlaams</span> ' : ''}`)}
+    <label class="f">Zet ook in set<select id="dc-set"><option value="">Geen set (alleen bij mijn woorden)</option>${S.sets.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label>
+    <button class="btn block" id="dc-add">+ Voeg toe aan mijn woorden</button>
+  </div>`);
+  s.querySelector('#dc-add').onclick = () => { const id = addDictWord(l, s.querySelector('#dc-set').value); closeSheet(); toast('Bewaard: ' + l.w); render(); return id; };
+}
+// copy the entry into Ari's own words (with every form), straight into Herhalen
+function addDictWord(l, setId) {
+  const own = ownFor(l); let id = own && own.id;
+  if (!id) {
+    id = uid('u-'); const {dict, ...rest} = l;
+    S.custom[id] = {...rest, id, custom: true, u: 0, plan: null, src: 'woordenboek', date: dateKey()};
+    S.seen[id] = 1; introduce('w:' + id + ':rec'); if (l.g) introduce('w:' + id + ':gen');
+  }
+  if (setId) { const set = S.sets.find(x => x.id === setId); if (set && !set.ids.includes(id)) set.ids.push(id); }
+  Store.mark('words', 'items', 'state'); return id;
+}
+// redefines quickAdd (app13): for a word that is not in the woordenboek either: say so, and offer Claude
+function quickAdd(w, missing) {
+  const sets = S.sets;
+  const s = openSheet(`<div class="stack">
+    <div class="eyebrow">Nieuw woord</div><div class="wc-word">${esc(w)}</div>
+    <div class="small">${missing ? 'Dit woord staat niet in het woordenboek van de app. Vraag het aan je Claude Project (de vraag staat klaar om te plakken), of vul de kaart zelf in.' : 'Dit woord staat nog niet in je woorden. Vul de kaart nu of later aan.'}</div>
+    ${missing ? `<button class="btn line block" id="qa-claude">Kopieer de vraag voor Claude</button>` : ''}
+    <label class="f">Zet ook in set<select id="qa-set"><option value="">Geen set (alleen bij je eigen woorden)</option>${sets.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label>
+    <button class="btn block" id="qa-go">Vul de kaart zelf in</button>
+  </div>`);
+  s.querySelector('#qa-go').onclick = () => { const set = s.querySelector('#qa-set').value; closeSheet(); wordForm(set || null, w); };
+  const c = s.querySelector('#qa-claude');
+  if (c) c.onclick = () => copyText(`Wat betekent “${w}”? Geef het woord als EDZ-WOORDEN v1-blok (set: Mijn woorden), met de/het, meervoud of vervoeging, een uitleg in het Nederlands, een voorbeeldzin en het Engels.`, null, () => toast('Gekopieerd: plak het in je Claude Project'));
+}
+
+/* ---------- the Nieuw woord form fills itself in ---------- */
+function dictFillForm(inp) {
+  const box = inp.closest('form'); if (!box) return;
+  const run = () => {
+    const l = dictFind(inp.value.trim()); const note = box.querySelector('#nw-dict');
+    if (!l || norm(l.w) !== norm(inp.value.trim())) { if (note) note.remove(); return; }
+    const set = (sel, v) => { const el = box.querySelector(sel); if (el && !el.value.trim() && v) el.value = v; };
+    const p = box.querySelector('#nw-p'); if (p && [...p.options].some(o => o.value === l.p)) { p.value = l.p; p.dispatchEvent(new Event('change')); } else if (p) { p.value = 'adv'; p.dispatchEvent(new Event('change')); }
+    if (l.g) { const g = box.querySelector(`input[name="nw-g"][value="${l.g}"]`); if (g) g.checked = true; }
+    set('#nw-pl', l.pl); set('#nw-dim', l.dim); set('#nw-d', l.d); set('#nw-s', l.s); set('#nw-en', l.en);
+    box.dataset.dict = l.id;
+    if (!note) inp.insertAdjacentHTML('afterend', `<div id="nw-dict" class="small"><span class="dictpill">Woordenboek</span> ingevuld; pas aan wat je wilt.</div>`);
+  };
+  if (DICT) run(); else loadDict().then(run, () => {});
+}
+// after the form is saved (app13 wordForm), give the new word its verb forms and other fields from the woordenboek
+document.addEventListener('submit', e => {
+  const f = e.target; if (f.id !== 'wform' || !f.dataset.dict) return;
+  setTimeout(() => { const l = (DICT || []).find(x => x.id === f.dataset.dict); const c = l && Object.values(S.custom).find(x => norm(x.w) === norm(l.w) && !x.v && !x.e);
+    if (c) { ['v', 'e', 'f', 'se', 'vl', 'syn', 'ant'].forEach(k => { if (l[k] !== undefined && c[k] === undefined) c[k] = l[k]; }); Store.mark('words'); } }, 0);
+});
+
+/* ---------- Ari's own words get what is missing ---------- */
+function enrichCustom() {
+  let n = 0;
+  Object.values(S.custom || {}).forEach(c => { const l = DICT.find(x => norm(x.w) === norm(c.w) && x.p === c.p); if (!l) return;
+    ['g', 'pl', 'dim', 'e', 'v', 'f', 'd', 's', 'se', 'en'].forEach(k => { if ((c[k] === undefined || c[k] === null || c[k] === '') && l[k]) { c[k] = l[k]; n++; } }); });
+  if (n) Store.mark('words');
+  return n;
+}
+
+/* ---------- searching in Woorden finds woordenboek words too ---------- */
+function dictHits(q) {
+  q = norm(q || ''); if (q.length < 2 || !DICT) return '';
+  const have = new Set(allWords().map(l => norm(l.w)));
+  const hits = DICT.filter(l => !have.has(norm(l.w)) && (norm(l.w).startsWith(q) || norm(l.en || '').split(/[ ,]+/).includes(q))).slice(0, 8);
+  if (!hits.length) return '';
+  return `<div class="eyebrow" style="margin-top:12px"><span class="dictpill">Woordenboek</span> nog niet in je woorden</div>${hits.map(l => `<button class="tapline" data-act="dict-word" data-id="${esc(l.id)}"><div class="t"><div class="nl" style="font-weight:600">${wordHTML(l)}</div><div class="small">${esc(l.en || '')}</div></div><span class="chev">›</span></button>`).join('')}`;
+}
+const dictById = id => (DICT || []).find(l => l.id === id);
+
+// load it after the app has opened, so opening stays fast
+setTimeout(() => { loadDict().catch(() => {}); }, 2500);
+
 /* ===== LONG-PRESS ENGLISH ===== */
 (function () {
   let timer = null, tip = null, fired = false;
@@ -4765,6 +4897,8 @@ document.addEventListener('click', e => {
     case 'card-grade': cardGrade(d.ok === '1'); break;
     case 'cards-again': startCards(shuffle(CARDS.unknown), {mode: CARDS.mode, dir: CARDS.dir, name: CARDS.name}); break;
     case 'word-add': closeSheet(); quickAdd(d.w); break;
+    case 'word-look': closeSheet(); lookupWord(d.w); break;
+    case 'dict-word': { const l = dictById(d.id); if (l) { closeSheet(); openDictCard(l); } break; }
     case 'word': showWord(d.id); break;
     case 'lesson-ro': openLesson(d.q, true); break;
     case 'lesson-done': closeOverlay('lesson'); startStep(d.q, 'oefen'); break;
@@ -4818,7 +4952,8 @@ document.addEventListener('submit', e => { if (e.target.id === 'ex-form') { e.pr
 document.addEventListener('input', e => {
   const t = e.target;
   if (t.id === 'ex-in') { const er = $('#ex-err'); if (er) er.hidden = true; }
-  if (t.id === 'wsearch') { WQ = t.value; $('#wlist').innerHTML = wordList(); }
+  if (t.id === 'wsearch') { WQ = t.value; $('#wlist').innerHTML = wordList() + dictHits(WQ); }
+  if (t.id === 'nw-w') { clearTimeout(t._dt); t._dt = setTimeout(() => dictFillForm(t), 350); }
   if (t.id === 'nsearch') { NQ = t.value; naslagFilter(); }
   if (t.id === 'set-rate') { S.settings.rate = Number(t.value); $('#rate-out').textContent = t.value; Store.mark('state'); }
 });

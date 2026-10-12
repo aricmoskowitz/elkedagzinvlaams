@@ -38,7 +38,7 @@ css = open(os.path.join(D, 'src', 'style.css')).read()
 js = ''
 for n in ['content', 'content2', 'content4', 'content5', 'content3', 'content6', 'content7', 'content8', 'content9']:
     js += open(os.path.join(D, 'src', n + '.js')).read() + '\n'
-for n in ['app1', 'app2', 'app3', 'app4', 'app8', 'app5', 'app7', 'app9', 'app10', 'app12', 'app13', 'app14', 'app15', 'app16', 'app17', 'app18', 'app6']:
+for n in ['app1', 'app2', 'app3', 'app4', 'app8', 'app5', 'app7', 'app9', 'app10', 'app12', 'app13', 'app14', 'app15', 'app16', 'app17', 'app18', 'app19', 'app6']:
     js += open(os.path.join(D, 'src', n + '.js')).read() + '\n'
 
 body = f'''<style>
@@ -61,7 +61,16 @@ body = f'''<style>
 </body>
 </html>
 '''
-VERSION = hashlib.sha256(body.encode()).hexdigest()[:10]
+# the woordenboek: every src/woordenboek/*.jsonl line is one entry; one compact JSON file next to the page
+WDIR = os.path.join(D, 'src', 'woordenboek'); words = []
+for n in sorted(f for f in os.listdir(WDIR) if f.endswith('.jsonl')):
+    for i, line in enumerate(open(os.path.join(WDIR, n), encoding='utf-8')):
+        line = line.strip()
+        if not line: continue
+        try: words.append(json.loads(line))
+        except Exception as e: sys.exit(f'woordenboek/{n} line {i + 1}: {e}')
+dict_json = json.dumps(words, ensure_ascii=False, separators=(',', ':'))
+VERSION = hashlib.sha256((body + dict_json).encode()).hexdigest()[:10]  # a new woordenboek is a new version too
 html = f'''<!doctype html>
 <html lang="nl">
 <head>
@@ -99,4 +108,5 @@ sw = open(os.path.join(D, 'src', 'sw.js')).read().replace('__VERSION__', VERSION
 open(os.path.join(D, 'index.html'), 'w').write(html)
 open(os.path.join(D, 'manifest.webmanifest'), 'w').write(json.dumps(manifest, indent=1, ensure_ascii=False) + '\n')
 open(os.path.join(D, 'sw.js'), 'w').write(sw)
-print('built index.html', round(len(html.encode()) / 1024), 'KB · version', VERSION)
+open(os.path.join(D, 'woordenboek.json'), 'w', encoding='utf-8').write(dict_json)
+print('built index.html', round(len(html.encode()) / 1024), 'KB · woordenboek', len(words), 'words', round(len(dict_json.encode()) / 1024), 'KB · version', VERSION)

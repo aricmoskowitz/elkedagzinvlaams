@@ -7,6 +7,7 @@ const FORM_IX = (() => {
   const ix = {};
   const add = (f, id) => { const k = norm(f); if (k && k.length > 1 && !ix[k]) ix[k] = id; };
   LEX.forEach(l => { [l.w, l.pl, l.dim, l.e].forEach(f => f && add(f, l.id)); if (l.v) allForms(l).forEach(f => add(f, l.id)); });
+  LEX.forEach(l => textForms(l).forEach(f => add(f, l.id))); // after every listed form, so a listed form always wins
   return ix;
 })();
 const SQ_OF_WORD = (() => { const m = {}; PLAN_SQ.forEach(q => (q.words || []).forEach(w => { m[w] = q.id; })); return m; })();

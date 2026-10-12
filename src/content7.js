@@ -2,8 +2,8 @@
    Basic words Ari already uses that the plan did not list, so reports kept
    flagging them as new. New ids only. The square words live in SQUARES;
    the four Algemeen words (u: 0) belong to no square. */
-Object.assign(POS, {pron: 'vnw', conj: 'vw', prep: 'vz'});
-Object.assign(POS_EN, {pron: 'pronoun', conj: 'conjunction', prep: 'preposition'});
+Object.assign(POS, {pron: 'vnw', conj: 'vw', prep: 'vz', num: 'telw', int: 'tw'});
+Object.assign(POS_EN, {pron: 'pronoun', conj: 'conjunction', prep: 'preposition', num: 'number', int: 'interjection'});
 LEX.push(
 {id:'stad',u:1,w:'stad',p:'n',g:'de',pl:'steden',dim:'stadje',d:'een grote plaats met veel straten en huizen',en:'city, town',s:'Antwerpen is een mooie stad.',se:'Antwerp is a beautiful city.'},
 {id:'dag',u:1,w:'dag',p:'n',g:'de',pl:'dagen',dim:'dagje',d:'een periode van vierentwintig uur',en:'day',s:'Vandaag is een mooie dag.',se:'Today is a beautiful day.'},
