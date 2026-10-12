@@ -77,7 +77,7 @@ document.addEventListener('click', e => {
     case 'word': showWord(d.id); break;
     case 'lesson-ro': openLesson(d.q, true); break;
     case 'lesson-done': closeOverlay('lesson'); startStep(d.q, 'oefen'); break;
-    case 'overlay-close': closeOverlay(d.id); if (d.id === 'flash') FLASH = null; render(); break;
+    case 'overlay-close': Audio.stop(); closeOverlay(d.id); if (d.id === 'flash') FLASH = null; render(); break;
     case 'ses-close': closeSession(); break;
     case 'ses-next': sesNext(); break;
     case 'ans': submitAnswer(d.v); break;
@@ -88,7 +88,7 @@ document.addEventListener('click', e => {
       else { const p = $(`#tok-pool .tok[data-j="${d.j}"]`); if (p) p.classList.remove('used'); el.remove(); }
       break;
     }
-    case 'say': Audio.say(d.text); break;
+    case 'say': Audio.say(d.text, el); break;
     case 'reveal-en': el.textContent = d.enText || '—'; el.style.borderStyle = 'solid'; el.style.color = 'var(--ink)'; break;
     case 'add-to-set': addToSetSheet(d.id); break;
     case 'set-add': { const set = S.sets.find(s => s.id === d.set); if (set && !set.ids.includes(d.id)) { set.ids.push(d.id); Store.mark('words'); toast('Toegevoegd aan ' + set.name); } if (d.close) closeSheet(); else setEditor(d.set); render(); break; }
@@ -114,6 +114,7 @@ document.addEventListener('click', e => {
     case 'fclose': closeFeed(); break;
     case 'faudio': S.settings.autoAudio = !S.settings.autoAudio; el.textContent = S.settings.autoAudio ? 'Geluid aan' : 'Geluid uit'; Store.mark('state'); break;
     case 'fans': feedAnswer(d.fid, d.v); break;
+    case 'flis': feedListen(d.fid, d.j); break;
     case 'freveal': { const sec = el.closest('.fcard'); $('.fback', sec).hidden = false; el.hidden = true; const g = $('.fgrade', sec); if (g) g.hidden = false; break; }
     case 'fknew': { const c = FC[d.fid]; if (c && !c.done) { c.done = true; grade('w:' + c.l.id + ':rec', d.ok === '1'); } $$('[data-act="fknew"]', el.closest('.fcard')).forEach(b => { b.disabled = true; if (b === el) b.style.outline = '2px solid var(--gold)'; }); break; }
   }

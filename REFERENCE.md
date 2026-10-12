@@ -41,7 +41,7 @@ Retired or merged words: *module* â†’ **town** (UI) / **unit** (spec). *Item* â†
 
 1. **Ontdek** (Notice): the rule, the sentence frame and the new words.
 2. **Oefen** (Practice): drills.
-3. **Lees** (Read): a short text with three questions. *Built in Batch 3.*
+3. **Lees** (Read): a short text with five comprehension questions (who, what, where, when, why; never grammar). 4 of 5 is gehaald, 5 of 5 is 100%. *Built in Batch 3; five questions since 2.5.*
 4. **Luister** (Listen): listening exercises.
 5. **Gebruik** (Use): tutor conversation and writing. *Batch 2.*
 

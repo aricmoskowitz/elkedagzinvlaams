@@ -2,7 +2,7 @@
 
 /* ---------- Lees: one short text per square ---------- */
 ACTIVE_STEPS.push('lees');
-STEP_DESC.lees = 'Een korte tekst met drie vragen';
+STEP_DESC.lees = 'Een korte tekst met vijf vragen';
 function startStep(q, step) {
   if (!sqOpen(q)) { toast('Dit plein is nog dicht. Doe eerst het vorige, of test je erin.'); return; }
   S.cur = q; Store.mark('state');
@@ -23,11 +23,11 @@ function readHTML(text) {
 function openRead(q) {
   const R = READ[q]; const sq = SQ[q]; READING = {q, ans: {}};
   openOverlay('read', `<button class="iconbtn" data-act="overlay-close" data-id="read" aria-label="Sluiten">✕</button><span class="small">Lees · ${esc(sq.name)}</span>`, `<div class="stack">
-    ${coachTip('lees', 'Lees de tekst. Tik op een groen onderlijnd woord voor de woordkaart. Tik op de luidspreker om de hele tekst te horen. Beantwoord dan de drie vragen: 2 van de 3 juist en dit gildehuis is klaar.')}
+    ${coachTip('lees', 'Lees de tekst. Tik op een groen onderlijnd woord voor de woordkaart. Tik op de luidspreker om de hele tekst te horen. Beantwoord dan de vijf vragen: 4 van de 5 juist en dit gildehuis is gehaald.')}
     <div class="row" style="align-items:flex-start">${speakBtn(R.text)}<h1 style="flex:1">${esc(R.title)}</h1></div>
     <div class="readtext nl">${readHTML(R.text)}</div>
     <button class="en-hidden" data-act="reveal-en" data-en-text="${esc(R.en)}" style="align-self:flex-start">Waarover gaat het? (Engels)</button>
-    <div class="eyebrow">Drie vragen</div>
+    <div class="eyebrow">${R.qs.length === 5 ? 'Vijf' : R.qs.length} vragen</div>
     ${R.qs.map((x, i) => `<div class="card stack" style="gap:8px" id="rq-${i}"><div style="font-weight:600">${i + 1}. ${esc(x.q)}</div><div class="opts">${x.o.map((o, j) => `<button class="opt" data-act="read-ans" data-i="${i}" data-j="${j}">${esc(o)}</button>`).join('')}</div></div>`).join('')}
     <div id="read-end"></div>
   </div>`);
@@ -37,9 +37,9 @@ function readAnswer(i, j) {
   const R = READ[READING.q]; const ok = R.qs[i].a === j; READING.ans[i] = ok;
   const box = $('#rq-' + i); $$('.opt', box).forEach((b, k) => { b.disabled = true; if (k === R.qs[i].a) b.classList.add('right'); else if (k === j) b.classList.add('wrong'); });
   if (Object.keys(READING.ans).length === R.qs.length) {
-    const n = Object.values(READING.ans).filter(Boolean).length; const pass = n >= 2;
+    const n = Object.values(READING.ans).filter(Boolean).length; const pass = n >= Math.ceil(R.qs.length * .8); // 4 of 5, the same 80% as everywhere
     if (pass) { sqstate(READING.q).steps.lees = Math.max(sqstate(READING.q).steps.lees || 0, Math.round(n / R.qs.length * 100)); Store.mark('state'); }
-    $('#read-end').innerHTML = `<div class="card soft stack" style="gap:8px"><div class="big-num">${n} / ${R.qs.length}</div><div>${pass ? 'Goed gelezen: dit gildehuis is klaar.' : 'Lees de tekst nog eens en probeer opnieuw.'}</div><button class="btn block" data-act="${pass ? 'read-close' : 'read-again'}" data-q="${READING.q}">${pass ? 'Terug naar het plein' : 'Opnieuw'}</button></div>`;
+    $('#read-end').innerHTML = `<div class="card soft stack" style="gap:8px"><div class="big-num">${n} / ${R.qs.length}</div><div>${pass ? (n === R.qs.length ? 'Alles juist: dit gildehuis krijgt een ster.' : 'Goed gelezen: dit gildehuis is gehaald.') : 'Lees de tekst nog eens en probeer opnieuw.'}</div><button class="btn block" data-act="${pass ? 'read-close' : 'read-again'}" data-q="${READING.q}">${pass ? 'Terug naar het plein' : 'Opnieuw'}</button></div>`;
     $('#read-end').scrollIntoView({block: 'center', behavior: 'smooth'});
   }
 }

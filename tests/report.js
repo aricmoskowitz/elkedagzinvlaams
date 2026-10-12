@@ -226,7 +226,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(/Woordvolgorde · Tramplein · inversie/.test(fc.sub) && /uit je gesprek met Claude, 12 okt/.test(fc.sub) && fc.d.length >= 1, 'Verbeter de zin shows the kind of mistake, the square and where it came from: ' + fc.sub.trim());
   ok(!(await q.evaluate(() => !!$('#ses-body .fixw.hint'))), 'the hint is hidden until asked');
   await q.click('[data-act=fix-hint]'); await q.waitForTimeout(80);
-  ok(await q.evaluate(() => !!$('#ses-body .fixw.hint') && getComputedStyle($('#ses-body .fx.d')).textDecorationLine.includes('underline') && !$('[data-act=fix-hint]')), 'Hint underlines the words that are wrong: ' + fc.d.join(', '));
+  ok(await q.evaluate(() => !!$('#ses-body .fixw.hint') && getComputedStyle($('#ses-body .fx.d')).textDecorationLine === 'none' && getComputedStyle($('#ses-body .fx.d')).backgroundColor !== 'rgba(0, 0, 0, 0)' && !$('[data-act=fix-hint]')), 'Hint marks the words that are wrong (a tint, not an underline: underline is for tappable words): ' + fc.d.join(', '));
   if (process.env.SHOTS) await q.screenshot({path: path.join(process.env.SHOTS, 'c1_fix.png')});
   await q.fill('#ex-in', 'Morgen neem ik de tram'); await q.click('#ex-form button'); await q.waitForTimeout(80);
   ok(await q.evaluate(() => $('#fb .fb.ok') !== null), 'the corrected sentence is accepted');

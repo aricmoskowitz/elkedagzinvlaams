@@ -32,7 +32,7 @@ function conjOptions(l, o) {
 }
 function conjSentEx(key, l, o, ctx) {
   const s = o.s; const ans = o.surf.toLowerCase();
-  const base = {key, lex: l, sent: s, label: 'conjS', prompt: `<span class="nl">${blankOut(s.nl, o.surf)}</span>`, sub: `${esc(s.en)} · <span class="nl">(${esc(l.w)} · ${o.tense === 'nu' ? 'nu' : 'verleden tijd'})</span>`, answer: ans, why: clozeWhy(l, o.surf), say: s.nl};
+  const base = {key, lex: l, sent: s, label: 'conjS', prompt: `<span class="nl">${blankOut(s.nl, o.surf)}</span>`, sub: `${enCue(s.en, l)} · <span class="nl">(${esc(l.w)} · ${o.tense === 'nu' ? 'nu' : 'verleden tijd'})</span>`, answer: ans, why: clozeWhy(l, o.surf), say: s.nl};
   if (ctx === 'feed') return {...base, type: 'mc', options: conjOptions(l, o)};
   return {...base, type: 'type', accept: [norm(ans)]};
 }
@@ -41,7 +41,9 @@ function conjSentEx(key, l, o, ctx) {
 function relEx(l) {
   const r = relOf(l); const kind = r.syn.length && (!r.ant.length || Math.random() < .5) ? 'syn' : 'ant';
   const ans = pick(r[kind]); const avoid = new Set([l.w, ...r.syn, ...r.ant].map(norm));
-  const pool = shuffle(allWords().filter(x => x.id !== l.id && x.p === l.p && !avoid.has(norm(x.w)))).map(x => x.w);
+  // same part of speech first; a rare one (an own pronoun like iemand) is filled up with other words, so there are always 4 choices
+  const others = allWords().filter(x => x.id !== l.id && !avoid.has(norm(x.w)));
+  const pool = shuffle(others.filter(x => x.p === l.p)).concat(shuffle(others.filter(x => x.p !== l.p))).map(x => x.w);
   const opts = shuffle(uniq([ans].concat(pool)).slice(0, 4));
   return {type: 'mc', key: 'w:' + l.id + ':rec', lex: l, label: kind, prompt: `<span class="nl" style="font-size:30px">${wordHTML(l)}</span>`,
     sub: kind === 'syn' ? 'Welk woord betekent ongeveer hetzelfde?' : 'Wat is het tegenovergestelde?', options: opts, answer: ans,
@@ -56,7 +58,7 @@ function defEx(l) {
 const metWords = () => allWords().filter(l => S.items['w:' + l.id + ':rec'] || S.seen[l.id]);
 Object.assign(DAYWORD, {conjS: 'Vervoeg in de zin', syn: 'Zelfde betekenis', ant: 'Tegenovergestelde', def: 'Welk woord is het?'});
 Object.assign(DAYWORD_EN, {conjS: 'Conjugate in the sentence', syn: 'Same meaning', ant: 'Opposite', def: 'Which word is it?'});
-HOWTO.fix = ['Typ de zin opnieuw, maar nu juist.', 'Het label zegt wat voor fout het is (woordvolgorde, lidwoord, werkwoordsvorm…). Vast? Tik op <b>Hint</b>: de woorden die niet kloppen worden onderlijnd.'];
+HOWTO.fix = ['Typ de zin opnieuw, maar nu juist.', 'Het label zegt wat voor fout het is (woordvolgorde, lidwoord, werkwoordsvorm…). Vast? Tik op <b>Hint</b>: de woorden die niet kloppen worden gemarkeerd.'];
 HOWTO.conjS = ['Vul de juiste vorm van het werkwoord in de zin in.', 'Tussen haakjes staan het werkwoord en de tijd: <i>(nemen · nu)</i> → <b class="verbword">neem</b>, <b class="verbword">neemt</b> of <b class="verbword">nemen</b>?'];
 
 /* ---------- Verbeter de zin: what kind of mistake, where, and a hint ---------- */

@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "4ed4479bd8";</script>
+<script>const APP_VERSION = "013b370bd7";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -113,7 +113,7 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--in
 .progress > div{height:100%;background:var(--ink);transition:width .3s}
 
 /* exercises */
-.ex-label{font-size:13px;color:var(--ink2);font-weight:500}
+.ex-label:empty{display:none}
 .ex-prompt{font-family:var(--display);font-size:24px;line-height:1.3;font-variation-settings:'opsz' 48}
 .ex-sub{color:var(--ink2);font-size:15px}
 .blank{display:inline-block;min-width:3em;border-bottom:2px solid var(--ink);color:transparent}
@@ -140,6 +140,7 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--in
 .why{font-size:15px;line-height:1.55}
 .why i{font-family:var(--display)}
 .speak{border:1.5px solid var(--go);background:var(--bg);color:var(--go);border-radius:50%;width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.speak .ico-stop{display:none}.speak.playing{background:var(--go);color:#fff}.speak.playing .ico-play{display:none}.speak.playing .ico-stop{display:block}
 
 /* sentence frame: gold = the verb bracket */
 .frame{display:flex;flex-wrap:wrap;gap:4px;font-size:14px}
@@ -148,7 +149,9 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--in
 .frame .slot .box{border-radius:8px;padding:7px 8px;font-family:var(--display);font-size:16px;min-height:36px;background:var(--soft)}
 .frame .s2 .box,.frame .s4 .box{background:var(--verb-fill);color:var(--verb);box-shadow:inset 0 0 0 1.5px var(--verb-line)}
 .frame .empty .box{background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--faint);font-family:var(--ui);font-size:12px}
-.frame u{text-decoration-thickness:2px;text-underline-offset:3px}
+.frame .subj,.subj{font-weight:700}
+/* underline means one thing only: tap for the word card (.rw) */
+u{text-decoration:none}
 .verbword{color:var(--verb);font-weight:600}
 
 /* word card */
@@ -189,7 +192,8 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--in
 #feed .fscroll{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .fcard{height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:64px 16px calc(40px + env(safe-area-inset-bottom,0px))}
 .fcard .fin{width:100%;max-width:420px;background:#fff;border-radius:18px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;min-height:56%;justify-content:center;border:1px solid var(--line)}
-.fcard .kind{font-size:13px;color:var(--ink2);font-weight:500}
+.fcard .kind,.ex-label{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--ink);font-weight:600;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px 12px 4px 10px;letter-spacing:.01em}
+.kind .ki,.ex-label .ki{font-size:15px;line-height:1;color:var(--ink2)}
 
 #tip{position:fixed;z-index:60;background:var(--ink);color:#fff;font-size:13px;padding:6px 10px;border-radius:8px;pointer-events:none;max-width:240px}
 #toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:70;background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;max-width:90%}
@@ -278,7 +282,7 @@ details.planarc[open]{display:flex;flex-direction:column}
 details.more>summary{cursor:pointer;color:var(--go);font-weight:600;padding:6px 0;list-style:none}
 details.more>summary::-webkit-details-marker{display:none}
 details.more>summary::after{content:' ›'}
-.rw.new{text-decoration-color:var(--faint);text-decoration-style:dotted}
+.rw.new{text-decoration-color:var(--go)}
 .rw.hl{font-weight:700}
 .swipe-wrap{position:relative;padding:8px 0}
 .swipe-hint{position:absolute;top:20px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:0;transition:opacity .15s}
@@ -326,7 +330,7 @@ a.btn{text-decoration:none;text-align:center;box-sizing:border-box}
 .rel{margin-top:4px;color:var(--ink2)}
 .rel b{color:var(--ink);font-weight:500}
 .fixlab{display:inline-block;background:var(--warn-tint);color:var(--warn);border-radius:6px;padding:1px 8px;font-weight:600;font-size:14px}
-.fixw.hint .fx.d{text-decoration:underline wavy var(--warn);text-underline-offset:5px;text-decoration-thickness:1.5px}
+.fixw.hint .fx.d{color:var(--warn);background:var(--warn-tint);border-radius:4px;box-shadow:0 0 0 2px var(--warn-tint);font-weight:600}
 
 /* 2.4: progress on the maps, the town's goal, the opdracht box */
 .goal{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;padding:12px 14px;border:1.5px solid var(--line);border-radius:14px}
@@ -345,6 +349,10 @@ a.btn{text-decoration:none;text-align:center;box-sizing:border-box}
 .sparkle path{animation:twinkle 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes twinkle{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1.15)}}
 @media (prefers-reduced-motion:reduce){.sparkle path{animation:none}}
+
+/* 2.5: your own sentence, the words that differ */
+.yours .d{color:var(--warn);text-decoration:line-through;text-decoration-thickness:1.5px}
+.en-hl{font-weight:700;color:var(--ink)}
 
 </style>
 </head>
@@ -529,7 +537,7 @@ const GRAM = {
 u1:{title:'Het werkwoord op plaats 2',en:'Verb second · inversion',
  body:[
  'In a Dutch main clause the conjugated verb (<i>de persoonsvorm</i>) always sits in <b>slot 2</b>. Slot 1 can hold the subject, but also a time, a place or a question word.',
- 'When something other than the subject takes slot 1, the subject moves to <b>just after the verb</b>. This is called <i>inversie</i>: <i>Ik neem morgen de tram</i> → <i>Morgen neem <u>ik</u> de tram</i>.',
+ 'When something other than the subject takes slot 1, the subject moves to <b>just after the verb</b>. This is called <i>inversie</i>: <i>Ik neem morgen de tram</i> → <i>Morgen neem <b class="subj">ik</b> de tram</i>.',
  'Yes/no questions and commands leave slot 1 empty, so the verb comes first: <i>Neem jij de tram?</i> · <i>Ga rechtdoor.</i>',
  'When <i>jij/je</i> comes after the verb, the verb loses its <i>-t</i>: <i>jij neemt</i> but <i>neem jij?</i>'],
  why:'Dutch keeps the old Germanic “verb-second” rule, as German does. English lost it, except in fossils like “Here comes the tram” or “Never have I seen that”.',
@@ -537,10 +545,10 @@ u1:{title:'Het werkwoord op plaats 2',en:'Verb second · inversion',
 u2:{title:'Scheidbare werkwoorden',en:'Separable verbs',
  body:[
  'Many verbs have a small stressed prefix: <i><b>mee</b>nemen, <b>op</b>bellen, <b>uit</b>stappen, <b>af</b>rekenen</i>.',
- 'In a main clause the conjugated part goes to <b>slot 2</b> and the prefix drops to the <b>end</b> (slot 4): <i>Ik <u>neem</u> de plant <u>mee</u>.</i>',
+ 'In a main clause the conjugated part goes to <b>slot 2</b> and the prefix drops to the <b>end</b> (slot 4): <i>Ik <b class="verbword">neem</b> de plant <b class="verbword">mee</b>.</i>',
  'As an infinitive the verb stays in one piece: <i>Ik wil de plant meenemen.</i> In the participle, <i>ge-</i> slips in between: <i>mee<b>ge</b>nomen</i>.',
  'The stress tells you: <i>MEEnemen</i> (separable) versus <i>beSTELlen</i> (not separable, stress on the root).'],
- why:'The prefix is really a small adverb that grew onto the verb, like English “pick the flowers <u>up</u>”. Dutch sends it to the end of the clause, the same place other verb parts go.',
+ why:'The prefix is really a small adverb that grew onto the verb, like English “pick the flowers <b>up</b>”. Dutch sends it to the end of the clause, the same place other verb parts go.',
  ex:['u2s1','u2s8','u2s13','u2s10']},
 u3:{title:'De of het? · verkleinwoorden',en:'De or het · diminutives',
  body:[
@@ -570,19 +578,19 @@ const SQUARES = [
  rule:'In a Dutch main clause the conjugated verb (<i>de persoonsvorm</i>) always sits in <b>slot 2</b>. Here the subject takes slot 1.',ex:['u1s1','u1s4','u1s18'],
  words:['tram','station','halte','hoek','straat','stad','nemen','zijn','wonen','zoeken','dichtbij'],sents:['u1s1','u1s4','u1s10','u1s15','u1s18','u1s19']},
 {id:'u1q2',u:'u1',n:2,name:'Tramplein',title:'Inversie',en:'Inversion',
- rule:'Put a time or a place in slot 1 and the verb <b>still</b> stays in slot 2. The subject moves to just after the verb: <i>Morgen neem <u>ik</u> de tram.</i>',ex:['u1s2','u1s17','u1s13'],
+ rule:'Put a time or a place in slot 1 and the verb <b>still</b> stays in slot 2. The subject moves to just after the verb: <i>Morgen neem <b class="subj">ik</b> de tram.</i>',ex:['u1s2','u1s17','u1s13'],
  words:['morgen','vandaag','dag','vaak','plein','kathedraal','brug','fietsen','zien','komen','werk'],sents:['u1s2','u1s6','u1s8','u1s11','u1s13','u1s17','u1s20']},
 {id:'u1q3',u:'u1',n:3,name:'Vragenmarkt',title:'Vragen en bevelen',en:'Questions and commands',
  rule:'Yes/no questions and commands leave slot 1 empty, so the verb comes first. Question words (<i>waar, hoe</i>) take slot 1. When <i>jij/je</i> follows the verb, the verb drops its <i>-t</i>: <i>neem jij?</i>',ex:['u1s7','u1s3','u1s5'],
  words:['waar','hoe','ver','gaan','weg','rechtdoor','fiets','links','rechts'],sents:['u1s3','u1s5','u1s7','u1s9','u1s12','u1s14','u1s16']},
 {id:'u2q1',u:'u2',n:1,name:'Plantenmarkt',title:'Het voorvoegsel achteraan',en:'The prefix goes to the end',
- rule:'Separable verbs split in a main clause: the conjugated part goes to slot 2 and the small prefix goes to the <b>end</b>: <i>Ik <u>neem</u> de plant <u>mee</u>.</i>',ex:['u2s1','u2s3','u2s5'],
+ rule:'Separable verbs split in a main clause: the conjugated part goes to slot 2 and the small prefix goes to the <b>end</b>: <i>Ik <b class="verbword">neem</b> de plant <b class="verbword">mee</b>.</i>',ex:['u2s1','u2s3','u2s5'],
  words:['plant','bloem','pot','cactus','zak','stekje','verkoper','meenemen','uitkiezen','afrekenen','kosten','duur','goedkoop'],sents:['u2s1','u2s3','u2s4','u2s5','u2s14','u2s15','u2s18']},
 {id:'u2q2',u:'u2',n:2,name:'Theaterplein',title:'Voorvoegsel en inversie',en:'Prefix and inversion',
- rule:'The two rules combine: something in slot 1, the verb in slot 2, the subject right after it, and the prefix still at the end: <i>Aan de Groenplaats <u>stap</u> ik <u>uit</u>.</i>',ex:['u2s8','u2s7','u2s12'],
+ rule:'The two rules combine: something in slot 1, the verb in slot 2, the subject right after it, and the prefix still at the end: <i>Aan de Groenplaats <b class="verbword">stap</b> ik <b class="verbword">uit</b>.</i>',ex:['u2s8','u2s7','u2s12'],
  words:['opbellen','uitstappen','aankomen','opstaan','vroeg'],sents:['u2s6','u2s7','u2s8','u2s9','u2s12','u2s16']},
 {id:'u2q3',u:'u2',n:3,name:'Zondagsplein',title:'Samen of apart',en:'Together or apart',
- rule:'After another verb (like <i>wil</i>) the infinitive stays in one piece at the end: <i>Ik wil de plant <u>meenemen</u>.</i> The prefix only splits off when the verb itself is in slot 2.',ex:['u2s10','u2s11','u2s13'],
+ rule:'After another verb (like <i>wil</i>) the infinitive stays in one piece at the end: <i>Ik wil de plant <b class="verbword">meenemen</b>.</i> The prefix only splits off when the verb itself is in slot 2.',ex:['u2s10','u2s11','u2s13'],
  words:['zondag','altijd','terugkomen','ophalen','markt','vogel','prijs'],sents:['u2s2','u2s10','u2s11','u2s13','u2s17']},
 {id:'u3q1',u:'u3',n:1,name:'Frietkot',title:'De of het',en:'De or het',
  rule:'Two words for “the”: <b style="color:var(--de)">de</b> (about two thirds of nouns) and <b style="color:var(--het)">het</b>. A compound takes the article of its <b>last</b> part: friet + <i>het kot</i> → <i>het frietkot</i>.',ex:['u3s1','u3s9','u3s3'],
@@ -772,7 +780,7 @@ SENT.push(
 
 SQUARES.push(
 {id:'u4q1',u:'u4',n:1,name:'Bakkershoek',title:'Willen en kunnen',en:'Want and can',
- rule:'A modal verb (<i>willen, kunnen</i>) takes slot 2. The main verb goes to the <b>end</b>, as an infinitive: <i>Ik <u>wil</u> een broodje <u>kopen</u>.</i> The two verbs form a bracket around the middle.',ex:['u4s1','u4s4','u4s5'],
+ rule:'A modal verb (<i>willen, kunnen</i>) takes slot 2. The main verb goes to the <b>end</b>, as an infinitive: <i>Ik <b class="verbword">wil</b> een broodje <b class="verbword">kopen</b>.</i> The two verbs form a bracket around the middle.',ex:['u4s1','u4s4','u4s5'],
  words:['willen','kunnen','brood','taart','bakker','kopen','betalen','kaart','graag'],sents:['u4s1','u4s2','u4s3','u4s4','u4s5','u4s6']},
 {id:'u4q2',u:'u4',n:2,name:'Koffieplein',title:'Mag ik…?',en:'May I…?',
  rule:'Ask politely with <i>mogen</i>: <i>Mag ik de rekening?</i> The modal comes first in a question. Often the second verb is left out because it is obvious (<i>Mag ik een koffie?</i> = may I <i>have</i> a coffee).',ex:['u4s7','u4s8','u4s11'],
@@ -781,13 +789,13 @@ SQUARES.push(
  rule:'<i>moeten</i> (must) and <i>zullen</i> (will, shall) work the same way: modal in slot 2, infinitive at the end. <i>Zullen we…?</i> makes a suggestion.',ex:['u4s13','u4s14','u4s15'],
  words:['moeten','zullen','vertrekken','wachten','boot','haven','straks','samen'],sents:['u4s13','u4s14','u4s15','u4s16','u4s17','u4s18']},
 {id:'u5q1',u:'u5',n:1,name:'Boekenplein',title:'Hebben + ge…t / ge…d',en:'Have + weak participle',
- rule:'The present perfect is <i>hebben</i> in slot 2 and a participle at the <b>end</b>: <i>Ik <u>heb</u> gisteren <u>gewerkt</u>.</i> Weak verbs: <i>ge</i> + stem + <i>t</i> or <i>d</i>. The stem ends in a letter of <b>’t kofschip</b> (t, k, f, s, ch, p)? Then <i>-t</i> (<i>gewerkt</i>); otherwise <i>-d</i> (<i>gespeeld</i>).',ex:['u5s1','u5s2','u5s4'],
+ rule:'The present perfect is <i>hebben</i> in slot 2 and a participle at the <b>end</b>: <i>Ik <b class="verbword">heb</b> gisteren <b class="verbword">gewerkt</b>.</i> Weak verbs: <i>ge</i> + stem + <i>t</i> or <i>d</i>. The stem ends in a letter of <b>’t kofschip</b> (t, k, f, s, ch, p)? Then <i>-t</i> (<i>gewerkt</i>); otherwise <i>-d</i> (<i>gespeeld</i>).',ex:['u5s1','u5s2','u5s4'],
  words:['gisteren','weekend','week','werken','spelen','koken','wandelen','maken','vorig'],sents:['u5s1','u5s2','u5s3','u5s4','u5s5','u5s6']},
 {id:'u5q2',u:'u5',n:2,name:'Museumplein',title:'Sterke deelwoorden',en:'Strong participles',
  rule:'Strong verbs change their vowel and end in <i>-en</i>: <i>lezen → gelezen, schrijven → geschreven, kijken → gekeken, zien → gezien</i>. Learn them in families (<i>ij – ee – e</i>).',ex:['u5s7','u5s9','u5s12'],
  words:['lezen','schrijven','kijken','museum','boek','schilderij','film'],sents:['u5s7','u5s8','u5s9','u5s10','u5s11','u5s12']},
 {id:'u5q3',u:'u5',n:3,name:'Reizigersplein',title:'Zijn + deelwoord',en:'Be + participle',
- rule:'Verbs of movement to a place or change of state take <i>zijn</i>: <i>ik <u>ben</u> naar zee <u>gegaan</u>, de trein <u>is</u> <u>vertrokken</u></i>. Also <i>zijn</i> and <i>blijven</i> themselves: <i>ik ben thuis gebleven</i>.',ex:['u5s14','u5s13','u5s18'],
+ rule:'Verbs of movement to a place or change of state take <i>zijn</i>: <i>ik <b class="verbword">ben</b> naar zee <b class="verbword">gegaan</b>, de trein <b class="verbword">is</b> <b class="verbword">vertrokken</b></i>. Also <i>zijn</i> and <i>blijven</i> themselves: <i>ik ben thuis gebleven</i>.',ex:['u5s14','u5s13','u5s18'],
  words:['blijven','thuis','trein','zee','vakantie','vriend','reizen'],sents:['u5s13','u5s14','u5s15','u5s16','u5s17','u5s18']},
 {id:'u6q1',u:'u6',n:1,name:'Gevelplein',title:'De en het + -e',en:'The + -e',
  rule:'Before a noun, after <i>de, het, die, dit, deze, dat</i>, the adjective <b>always</b> gets <i>-e</i>: <i>de oude kerk, het oude huis</i>. Watch the spelling: <i>groot → grote</i>.',ex:['u6s1','u6s2','u6s5'],
@@ -796,7 +804,7 @@ SQUARES.push(
  rule:'The one exception: <i>een</i> (or no article) + a singular <i>het</i>-word, and the adjective stays bare: <i>een oud huis, een hoog dak</i>. With a <i>de</i>-word it still gets <i>-e</i>: <i>een rode deur</i>.',ex:['u6s7','u6s10','u6s9'],
  words:['hoog','smal','rood','wit','gevel','dak','raam','tuin'],sents:['u6s7','u6s8','u6s9','u6s10','u6s11']},
 {id:'u6q3',u:'u6',n:3,name:'Binnenplaats',title:'Achter het werkwoord · meervoud',en:'After the verb · plurals',
- rule:'After the verb, the adjective has no ending: <i>het huis is <u>oud</u></i>. Before a plural it always has <i>-e</i>: <i>de oude trappen, gezellige cafés</i>.',ex:['u6s14','u6s13','u6s15'],
+ rule:'After the verb, the adjective has no ending: <i>het huis is <b>oud</b></i>. Before a plural it always has <i>-e</i>: <i>de oude trappen, gezellige cafés</i>.',ex:['u6s14','u6s13','u6s15'],
  words:['donker','licht','gezellig','kamer','trap','appartement'],sents:['u6s12','u6s13','u6s14','u6s15','u6s16','u6s17']},
 );
 Object.assign(GRAM, {
@@ -880,16 +888,16 @@ SENT.push(
 );
 SQUARES.push(
 {id:'u7q1',u:'u7',n:1,name:'Omdatplein',title:'Omdat en want',en:'Omdat and want',
- rule:'Both give a reason. After <i>omdat</i> the conjugated verb goes to the <b>end</b>: <i>…omdat het <u>regent</u></i>. After <i>want</i> the order stays normal: <i>…want het <u>regent</u></i>, <i>…want het <u>is</u> zaterdag</i>.',ex:['u7s1','u7s2','u7s4'],
+ rule:'Both give a reason. After <i>omdat</i> the conjugated verb goes to the <b>end</b>: <i>…omdat het <b class="verbword">regent</b></i>. After <i>want</i> the order stays normal: <i>…want het <b class="verbword">regent</b></i>, <i>…want het <b class="verbword">is</b> zaterdag</i>.',ex:['u7s1','u7s2','u7s4'],
  words:['omdat','want','waarom','goed','leuk','moe','druk','mening','vinden'],sents:['u7s1','u7s2','u7s3','u7s4','u7s5','u7s6','u7s7','u7s8']},
 {id:'u7q2',u:'u7',n:2,name:'Denkplein',title:'Dat, of en vraagwoorden',en:'Dat, of and question words',
- rule:'<i>Ik weet / denk / hoop / vraag</i> + a clause with <i>dat</i>, <i>of</i> or a question word (<i>waar, wat, hoeveel</i>): the conjugated verb goes to the <b>end</b> of that clause. <i>Ik weet dat de halte dichtbij <u>is</u>.</i> <i>Weet u waar de Meir <u>is</u>?</i>',ex:['u7s9','u7s11','u7s13'],
+ rule:'<i>Ik weet / denk / hoop / vraag</i> + a clause with <i>dat</i>, <i>of</i> or a question word (<i>waar, wat, hoeveel</i>): the conjugated verb goes to the <b>end</b> of that clause. <i>Ik weet dat de halte dichtbij <b class="verbword">is</b>.</i> <i>Weet u waar de Meir <b class="verbword">is</b>?</i>',ex:['u7s9','u7s11','u7s13'],
  words:['weten','denken','vragen','begrijpen','zeggen','hopen','zeker','buurt','buur','buurvrouw'],sents:['u7s9','u7s10','u7s11','u7s12','u7s13','u7s14','u7s15','u7s16']},
 {id:'u7q3',u:'u7',n:3,name:'Alsplein',title:'Als, wanneer, toen',en:'When and if clauses',
- rule:'In an <i>als / wanneer / toen</i>-clause the verb goes to the end. When that clause comes <b>first</b>, it fills slot 1, so the main clause starts with its verb: <i>Als het <u>regent</u>, <u>neem</u> ik de tram.</i> <i>Toen</i> is for one time in the past.',ex:['u7s17','u7s20','u7s21'],
+ rule:'In an <i>als / wanneer / toen</i>-clause the verb goes to the end. When that clause comes <b>first</b>, it fills slot 1, so the main clause starts with its verb: <i>Als het <b class="verbword">regent</b>, <b class="verbword">neem</b> ik de tram.</i> <i>Toen</i> is for one time in the past.',ex:['u7s17','u7s20','u7s21'],
  words:['als','wanneer','toen','zon','weer','regenen','warm','koud','paraplu','vrij','schijnen'],sents:['u7s17','u7s18','u7s19','u7s20','u7s21','u7s22','u7s23','u7s24']},
 );
-GRAM.u7 = {title:'Bijzinnen', en:'Subordinate clauses', body:[], why:'A subordinate clause is a sentence inside a sentence. Dutch marks it by sending the conjugated verb to the end, so you hear where the clause stops: <i>…dat het museum vandaag open <u>is</u>.</i> Only <i>want, maar, en, of</i> (“or”) and <i>dus</i> keep normal order. And when a whole clause stands in slot 1, the main verb still has to be second: <i>Als het regent, neem ik…</i>', ex:['u7s1']};
+GRAM.u7 = {title:'Bijzinnen', en:'Subordinate clauses', body:[], why:'A subordinate clause is a sentence inside a sentence. Dutch marks it by sending the conjugated verb to the end, so you hear where the clause stops: <i>…dat het museum vandaag open <b class="verbword">is</b>.</i> Only <i>want, maar, en, of</i> (“or”) and <i>dus</i> keep normal order. And when a whole clause stands in slot 1, the main verb still has to be second: <i>Als het regent, neem ik…</i>', ex:['u7s1']};
 Object.assign(UNITS.find(x => x.id === 'u7'), {built: true, theme: 'Meningen en het weer', themeEn: 'Opinions and the weather',
   mission: 'Vraag een Antwerpenaar wat hij of zij van de stad vindt, en geef zelf je mening met “omdat”.', missionEn: 'Ask a local what they think of the city, and give your own opinion with “omdat”.'});
 SCENARIOS.splice(SCENARIOS.findIndex(s => s.id === 'sc-free'), 0,
@@ -903,71 +911,73 @@ EXTRAS.push(
 
 /* ===== Batch 3 content: the Lees house — one short text per square =====
    Written in easy Dutch in the style of Wablieft: short sentences, Antwerp settings,
-   the square's grammar and words on purpose. a = index of the right option. */
+   the square's grammar and words on purpose. a = index of the right option.
+   2.5: five questions per text, all about what the text says (who, what, where, when, why).
+   No questions about grammar or word order: the other guild houses test that. tests/validate.js checks it. */
 const READ = {
 u1q1: {title: 'Sarah neemt de tram', en: 'Sarah takes the tram to work.',
  text: 'Sarah woont in Antwerpen. Ze werkt in een winkel op de Meir. Ze neemt elke dag de tram. De halte is om de hoek van haar straat. De tram komt om acht uur. Sarah stapt in en zoekt een plaats. De tram rijdt naar het Centraal Station en dan naar de Meir. Het is niet ver. Sarah vindt de tram handig. Maar op vrijdag fietst ze naar het werk.',
- qs: [{q: 'Waar werkt Sarah?', o: ['In een winkel op de Meir', 'In het station', 'In een café'], a: 0}, {q: 'Hoe laat komt de tram?', o: ['Om zeven uur', 'Om acht uur', 'Om negen uur'], a: 1}, {q: 'Wat doet Sarah op vrijdag?', o: ['Ze neemt de bus', 'Ze blijft thuis', 'Ze fietst naar het werk'], a: 2}]},
+ qs: [{q: 'Waar werkt Sarah?', o: ['In een winkel op de Meir', 'In het station', 'In een café'], a: 0}, {q: 'Waar is de halte?', o: ['Naast de winkel', 'Aan het station', 'Om de hoek van haar straat'], a: 2}, {q: 'Hoe laat komt de tram?', o: ['Om zeven uur', 'Om acht uur', 'Om negen uur'], a: 1}, {q: 'Waar rijdt de tram eerst naartoe?', o: ['Naar het Centraal Station', 'Naar de Meir', 'Naar de Schelde'], a: 0}, {q: 'Wat doet Sarah op vrijdag?', o: ['Ze neemt de bus', 'Ze blijft thuis', 'Ze fietst naar het werk'], a: 2}]},
 u1q2: {title: 'Een dag in de stad', en: 'Tom tells about a day in the city.',
  text: 'Vandaag heb ik vrij. Om negen uur neem ik de tram naar de Groenplaats. Op het plein zie ik de kathedraal. Die toren is heel hoog! Na de kathedraal ga ik naar de Schelde. Daar wandel ik een uurtje. Om twaalf uur eet ik een broodje. Morgen werk ik opnieuw. Maar vandaag geniet ik van de stad.',
- qs: [{q: 'Waarom kan hij vandaag naar de stad?', o: ['Hij heeft vrij', 'Het regent', 'Hij werkt daar'], a: 0}, {q: 'Wat ziet hij op de Groenplaats?', o: ['Het station', 'De kathedraal', 'De Schelde'], a: 1}, {q: 'In de zin “Om twaalf uur eet ik een broodje” staat het werkwoord…', o: ['op plaats 1', 'op plaats 2', 'op het einde'], a: 1}]},
+ qs: [{q: 'Waarom kan hij vandaag naar de stad?', o: ['Hij heeft vrij', 'Het regent', 'Hij werkt daar'], a: 0}, {q: 'Hoe gaat hij naar de Groenplaats?', o: ['Met de fiets', 'Te voet', 'Met de tram'], a: 2}, {q: 'Wat ziet hij op de Groenplaats?', o: ['Het station', 'De kathedraal', 'De Schelde'], a: 1}, {q: 'Wat doet hij aan de Schelde?', o: ['Hij eet een broodje', 'Hij wandelt een uurtje', 'Hij neemt de boot'], a: 1}, {q: 'Wanneer werkt hij opnieuw?', o: ['Morgen', 'Vandaag', 'Volgende week'], a: 0}]},
 u1q3: {title: 'Vragen aan de halte', en: 'A tourist asks the way at a stop.',
  text: 'Een toerist staat aan de halte. Hij heeft een kaart in zijn hand. “Pardon, meneer. Waar is de Meir?” vraagt hij. Een oudere man helpt hem. “Neem tram 3. Stap uit aan de Meir. Ga dan rechtdoor.” “Is het ver?” “Nee, het is dichtbij. Tien minuten.” “Dank u wel!” zegt de toerist. “Graag gedaan. Goeie dag nog!”',
- qs: [{q: 'Wat zoekt de toerist?', o: ['Het station', 'De Meir', 'Een hotel'], a: 1}, {q: 'Welke tram moet hij nemen?', o: ['Tram 3', 'Tram 4', 'Tram 10'], a: 0}, {q: '“Ga dan rechtdoor” is…', o: ['een vraag', 'een bevel', 'een mening'], a: 1}]},
+ qs: [{q: 'Wat zoekt de toerist?', o: ['Het station', 'De Meir', 'Een hotel'], a: 1}, {q: 'Wat heeft de toerist in zijn hand?', o: ['Een kaart', 'Een ticket', 'Een telefoon'], a: 0}, {q: 'Wie helpt de toerist?', o: ['Een buschauffeur', 'Een jonge vrouw', 'Een oudere man'], a: 2}, {q: 'Welke tram moet hij nemen?', o: ['Tram 3', 'Tram 4', 'Tram 10'], a: 0}, {q: 'Is de Meir ver?', o: ['Ja, een uur te voet', 'Nee, tien minuten', 'Dat weet de man niet'], a: 1}]},
 u2q1: {title: 'Zondag op de Vogelmarkt', en: 'Lies buys plants at the Sunday market.',
  text: 'Op zondag staat Lies vroeg op. Ze gaat naar de Vogelmarkt op het Theaterplein. Er zijn veel kramen met planten en bloemen. Lies kiest een kleine cactus uit. Die is goedkoop: drie euro. Ze neemt ook een stekje van een plant mee. Aan de kassa rekent ze af. De verkoper geeft haar een zakje. Om elf uur komt ze thuis aan.',
- qs: [{q: 'Waar is de Vogelmarkt?', o: ['Op de Groenplaats', 'Op het Theaterplein', 'Aan de Schelde'], a: 1}, {q: 'Hoeveel kost de cactus?', o: ['Drie euro', 'Tien euro', 'Een euro'], a: 0}, {q: 'In “Lies kiest een cactus uit” staat “uit”…', o: ['vooraan', 'na het werkwoord', 'op het einde'], a: 2}]},
+ qs: [{q: 'Wanneer gaat Lies naar de markt?', o: ['Op zaterdag', 'Op zondag', 'Op maandag'], a: 1}, {q: 'Waar is de Vogelmarkt?', o: ['Op de Groenplaats', 'Aan de Schelde', 'Op het Theaterplein'], a: 2}, {q: 'Hoeveel kost de cactus?', o: ['Drie euro', 'Tien euro', 'Een euro'], a: 0}, {q: 'Wat neemt ze nog mee?', o: ['Bloemen', 'Een stekje van een plant', 'Een zakje aarde'], a: 1}, {q: 'Hoe laat is ze weer thuis?', o: ['Om tien uur', 'Om twaalf uur', 'Om elf uur'], a: 2}]},
 u2q2: {title: 'Een plant voor mama', en: 'Karim looks for a gift at the market.',
  text: 'Morgen is mama jarig. Daarom ga ik vandaag naar de markt. Aan de eerste kraam kies ik niets uit: alles is te duur. Aan de tweede kraam zie ik een mooie plant. “Hoeveel kost die?” vraag ik. “Tien euro,” zegt de verkoper. Ik neem de plant mee. Morgen bel ik mama op en breng ik de plant.',
- qs: [{q: 'Waarom gaat hij naar de markt?', o: ['Mama is morgen jarig', 'Hij heeft honger', 'Hij verkoopt planten'], a: 0}, {q: 'Wat is het probleem aan de eerste kraam?', o: ['Er zijn geen planten', 'Alles is te duur', 'De kraam is dicht'], a: 1}, {q: 'Waar staat “op” in “Morgen bel ik mama op”?', o: ['Op het einde', 'Na morgen', 'Voor mama'], a: 0}]},
+ qs: [{q: 'Waarom gaat hij naar de markt?', o: ['Mama is morgen jarig', 'Hij heeft honger', 'Hij verkoopt planten'], a: 0}, {q: 'Wat is het probleem aan de eerste kraam?', o: ['Er zijn geen planten', 'Alles is te duur', 'De kraam is dicht'], a: 1}, {q: 'Aan welke kraam ziet hij een mooie plant?', o: ['De eerste', 'De derde', 'De tweede'], a: 2}, {q: 'Hoeveel kost de plant?', o: ['Vijf euro', 'Tien euro', 'Twintig euro'], a: 1}, {q: 'Wat doet hij morgen?', o: ['Hij belt mama op en brengt de plant', 'Hij gaat weer naar de markt', 'Hij koopt een taart'], a: 0}]},
 u2q3: {title: 'Een briefje van de buurvrouw', en: 'A neighbour asks for help with her plants.',
  text: 'Dag buur! Ik ga een week op reis. Wil jij mijn planten water geven? De sleutel ligt onder de pot bij de deur. Je moet de planten niet elke dag water geven: twee keer per week is genoeg. De cactus mag je vergeten. Ik kom zaterdag terug. Dan haal ik de sleutel op. Bedankt! Groetjes, Maria.',
- qs: [{q: 'Waar ligt de sleutel?', o: ['Onder de pot', 'In de brievenbus', 'Bij de verkoper'], a: 0}, {q: 'Hoe vaak moet de buur water geven?', o: ['Elke dag', 'Twee keer per week', 'Nooit'], a: 1}, {q: 'In “Ik kom zaterdag terug” staat het werkwoord “terugkomen”…', o: ['samen', 'apart', 'als infinitief'], a: 1}]},
+ qs: [{q: 'Waarom schrijft Maria het briefje?', o: ['Ze is ziek', 'Ze gaat een week op reis', 'Ze verhuist'], a: 1}, {q: 'Waar ligt de sleutel?', o: ['Onder de pot', 'In de brievenbus', 'Bij de verkoper'], a: 0}, {q: 'Hoe vaak moet de buur water geven?', o: ['Elke dag', 'Nooit', 'Twee keer per week'], a: 2}, {q: 'Welke plant mag de buur vergeten?', o: ['De cactus', 'De grote plant bij de deur', 'Alle planten'], a: 0}, {q: 'Wanneer komt Maria terug?', o: ['Vrijdag', 'Zaterdag', 'Zondag'], a: 1}]},
 u3q1: {title: 'Aan het frietkot', en: 'Ordering at the chip shop.',
  text: 'Het frietkot op de hoek is heel bekend. Er staat altijd een rij. De friet is vers en de saus is zelfgemaakt. Ik bestel een klein pak frieten met mayonaise. Mijn vriend neemt een pak met stoofvlees. Het vlees is warm en zacht. We eten buiten op een bankje. Het frietkot is voor ons het beste van Antwerpen.',
- qs: [{q: 'Wat bestelt de schrijver?', o: ['Frieten met stoofvlees', 'Frieten met mayonaise', 'Een broodje'], a: 1}, {q: 'Is het “de” of “het” frietkot?', o: ['de frietkot', 'het frietkot', 'allebei'], a: 1}, {q: 'Waar eten ze?', o: ['Binnen', 'Thuis', 'Buiten op een bankje'], a: 2}]},
+ qs: [{q: 'Wat is er altijd aan het frietkot?', o: ['Muziek', 'Een terras', 'Een rij'], a: 2}, {q: 'Wat is zelfgemaakt?', o: ['De saus', 'De friet', 'Het vlees'], a: 0}, {q: 'Wat bestelt de schrijver?', o: ['Frieten met stoofvlees', 'Frieten met mayonaise', 'Een broodje'], a: 1}, {q: 'Wat neemt de vriend?', o: ['Frieten met mayonaise', 'Een broodje', 'Een pak met stoofvlees'], a: 2}, {q: 'Waar eten ze?', o: ['Binnen', 'Buiten op een bankje', 'Thuis'], a: 1}]},
 u3q2: {title: 'Een terrasje', en: 'A small break on a terrace.',
  text: 'De zon schijnt. Emma en Pieter zoeken een terrasje op de Grote Markt. Ze bestellen twee pintjes en een koffietje. Bij de koffie krijg je een koekje. Pieter heeft ook honger. Hij neemt een broodje met kaas. Emma vindt het tafeltje een beetje klein. Maar het terras is gezellig, en ze blijven een uurtje zitten.',
- qs: [{q: 'Wat bestellen ze?', o: ['Twee pintjes en een koffietje', 'Drie koffies', 'Frieten'], a: 0}, {q: 'Wat krijg je bij de koffie?', o: ['Een broodje', 'Een koekje', 'Een wafel'], a: 1}, {q: 'Alle woorden op -je zijn…', o: ['de-woorden', 'het-woorden', 'meervoud'], a: 1}]},
+ qs: [{q: 'Waar zoeken ze een terrasje?', o: ['Op de Meir', 'Aan de Schelde', 'Op de Grote Markt'], a: 2}, {q: 'Wat bestellen ze?', o: ['Twee pintjes en een koffietje', 'Drie koffies', 'Frieten'], a: 0}, {q: 'Wat krijg je bij de koffie?', o: ['Een broodje', 'Een koekje', 'Een wafel'], a: 1}, {q: 'Wat eet Pieter?', o: ['Een broodje met kaas', 'Een wafel', 'Frieten'], a: 0}, {q: 'Wat vindt Emma van het tafeltje?', o: ['Te groot', 'Vuil', 'Een beetje klein'], a: 2}]},
 u3q3: {title: 'Op de vismarkt', en: 'Shopping for fish and mussels.',
  text: 'Op vrijdag koop ik vis op de markt. De mosselen zijn vers en niet duur. Ik neem twee kilo mosselen. De visboer geeft me ook twee citroenen. Thuis maak ik de mosselen klaar met groenten en wat wijn. Mijn kinderen eten liever frieten. Dus bak ik ook frieten. Zo is iedereen blij.',
- qs: [{q: 'Wat koopt de schrijver?', o: ['Twee kilo mosselen', 'Twee vissen', 'Frieten'], a: 0}, {q: 'Wat is het meervoud van “mossel”?', o: ['mossels', 'mosselen', 'allebei kan'], a: 2}, {q: 'Wat eten de kinderen liever?', o: ['Mosselen', 'Vis', 'Frieten'], a: 2}]},
+ qs: [{q: 'Wanneer koopt de schrijver vis?', o: ['Op zaterdag', 'Op vrijdag', 'Op zondag'], a: 1}, {q: 'Wat koopt de schrijver?', o: ['Twee kilo mosselen', 'Twee vissen', 'Frieten'], a: 0}, {q: 'Wat geeft de visboer erbij?', o: ['Peterselie', 'Een zak frieten', 'Twee citroenen'], a: 2}, {q: 'Wat eten de kinderen liever?', o: ['Mosselen', 'Frieten', 'Vis'], a: 1}, {q: 'Waarom is iedereen blij?', o: ['Er zijn mosselen én frieten', 'De vis was gratis', 'Het is zondag'], a: 0}]},
 u4q1: {title: 'Bij de bakker', en: 'Buying bread and cake at the baker’s.',
  text: 'De bakker in mijn straat opent om zeven uur. Ik wil elke ochtend vers brood kopen. Vandaag wil ik ook een taart bestellen, want zondag komen vrienden. “Kan ik met de kaart betalen?” vraag ik. “Natuurlijk,” zegt de bakker. “U kunt de taart zaterdag ophalen.” Ik betaal en ga blij naar huis.',
- qs: [{q: 'Hoe laat opent de bakker?', o: ['Om zes uur', 'Om zeven uur', 'Om acht uur'], a: 1}, {q: 'Waarom wil hij een taart?', o: ['Er komen vrienden', 'Hij is jarig', 'Hij heeft honger'], a: 0}, {q: 'In “Ik wil brood kopen” staat “kopen”…', o: ['op plaats 2', 'op het einde', 'vooraan'], a: 1}]},
+ qs: [{q: 'Hoe laat opent de bakker?', o: ['Om zes uur', 'Om zeven uur', 'Om acht uur'], a: 1}, {q: 'Wat wil de schrijver elke ochtend kopen?', o: ['Vers brood', 'Een taart', 'Koffiekoeken'], a: 0}, {q: 'Waarom wil hij een taart?', o: ['Hij is jarig', 'Hij heeft honger', 'Er komen zondag vrienden'], a: 2}, {q: 'Hoe wil hij betalen?', o: ['Met de kaart', 'Cash', 'Later'], a: 0}, {q: 'Wanneer kan hij de taart ophalen?', o: ['Vrijdag', 'Zaterdag', 'Zondag'], a: 1}]},
 u4q2: {title: 'In het café', en: 'Polite requests in a café.',
  text: 'Het is koud buiten. Ik ga een café binnen aan de haven. “Mag ik hier zitten?” vraag ik. “Ja, natuurlijk,” zegt de ober. Ik wil graag een warme thee met melk. Mag ik ook een glas water? De ober brengt alles snel. Na een uur vraag ik: “Mag ik de rekening, alstublieft?” Ik betaal vier euro.',
- qs: [{q: 'Waar is het café?', o: ['Aan de haven', 'Op de Meir', 'Bij het station'], a: 0}, {q: 'Wat drinkt de schrijver?', o: ['Koffie', 'Thee met melk', 'Bier'], a: 1}, {q: '“Mag ik de rekening?” is…', o: ['een beleefde vraag', 'een bevel', 'een klacht'], a: 0}]},
+ qs: [{q: 'Waarom gaat de schrijver het café binnen?', o: ['Hij heeft honger', 'Het is koud buiten', 'Hij wacht op een vriend'], a: 1}, {q: 'Waar is het café?', o: ['Aan de haven', 'Op de Meir', 'Bij het station'], a: 0}, {q: 'Wat drinkt de schrijver?', o: ['Koffie', 'Bier', 'Thee met melk'], a: 2}, {q: 'Wat vraagt hij nog?', o: ['Een koekje', 'Een glas water', 'Suiker'], a: 1}, {q: 'Hoeveel betaalt hij?', o: ['Vier euro', 'Twee euro', 'Zes euro'], a: 0}]},
 u4q3: {title: 'Een drukke week', en: 'Everything that must happen this week.',
  text: 'Deze week moet ik veel doen. Maandag moet ik naar de dokter. Dinsdag moet ik lang werken. Woensdag zal ik mijn zus helpen met verhuizen. Donderdag moet ik niets doen, dus zal ik lekker thuisblijven. En vrijdag? Dan moeten we naar de Nederlandse les. Ik zal mijn huiswerk op donderdag maken!',
- qs: [{q: 'Wat doet hij woensdag?', o: ['Werken', 'Zijn zus helpen', 'Naar de dokter gaan'], a: 1}, {q: 'Wanneer maakt hij zijn huiswerk?', o: ['Donderdag', 'Vrijdag', 'Maandag'], a: 0}, {q: '“Ik zal je helpen” is…', o: ['een belofte', 'een vraag', 'het verleden'], a: 0}]},
+ qs: [{q: 'Waar moet hij maandag naartoe?', o: ['Naar het werk', 'Naar de dokter', 'Naar de les'], a: 1}, {q: 'Wat doet hij woensdag?', o: ['Zijn zus helpen met verhuizen', 'Lang werken', 'Naar de dokter gaan'], a: 0}, {q: 'Wat doet hij donderdag?', o: ['Hij werkt lang', 'Hij helpt zijn zus', 'Hij blijft lekker thuis'], a: 2}, {q: 'Wat is er op vrijdag?', o: ['Een feest', 'De Nederlandse les', 'De dokter'], a: 1}, {q: 'Wanneer maakt hij zijn huiswerk?', o: ['Donderdag', 'Vrijdag', 'Maandag'], a: 0}]},
 u5q1: {title: 'Mijn weekend', en: 'What Nadia did at the weekend.',
  text: 'Vorig weekend heb ik veel gedaan. Op zaterdag heb ik gewerkt in de winkel. ’s Avonds heb ik met vrienden gekookt. We hebben pasta gemaakt en veel gepraat. Op zondag heb ik gefietst naar het park. Daar heb ik een uur gewandeld. Ik heb ook mijn moeder gebeld. Het was een fijn weekend!',
- qs: [{q: 'Wat heeft Nadia op zaterdag gedaan?', o: ['Ze heeft gewerkt', 'Ze heeft gefietst', 'Ze heeft geslapen'], a: 0}, {q: 'Wie heeft ze gebeld?', o: ['Een vriend', 'Haar moeder', 'De winkel'], a: 1}, {q: '“Gekookt” eindigt op -t omdat…', o: ['kook in ’t kofschip zit (k)', 'het sterk is', 'het een uitzondering is'], a: 0}]},
+ qs: [{q: 'Wat heeft Nadia op zaterdag gedaan?', o: ['Ze heeft gefietst', 'Ze heeft geslapen', 'Ze heeft gewerkt in de winkel'], a: 2}, {q: 'Wat hebben ze ’s avonds gemaakt?', o: ['Pasta', 'Soep', 'Pizza'], a: 0}, {q: 'Hoe is Nadia naar het park gegaan?', o: ['Met de tram', 'Met de fiets', 'Te voet'], a: 1}, {q: 'Hoe lang heeft ze in het park gewandeld?', o: ['Een halfuur', 'De hele dag', 'Een uur'], a: 2}, {q: 'Wie heeft ze gebeld?', o: ['Een vriend', 'Haar moeder', 'De winkel'], a: 1}]},
 u5q2: {title: 'In het museum', en: 'A visit to a museum on a rainy day.',
  text: 'Zondag heeft het de hele dag geregend. Daarom zijn we naar het museum gegaan. We hebben mooie schilderijen gezien. Mijn dochter heeft een boek over Rubens gekocht. In het café van het museum hebben we koffie gedronken en een taart gegeten. We hebben ook iets nieuws gelezen: Rubens heeft in Antwerpen gewoond!',
- qs: [{q: 'Waarom zijn ze naar het museum gegaan?', o: ['Het heeft geregend', 'Het was gratis', 'Hun vriend werkt daar'], a: 0}, {q: 'Wat heeft de dochter gekocht?', o: ['Een schilderij', 'Een boek', 'Een taart'], a: 1}, {q: 'Welk deelwoord is sterk?', o: ['gewoond', 'gedronken', 'gekocht'], a: 1}]},
+ qs: [{q: 'Waarom zijn ze naar het museum gegaan?', o: ['Het heeft geregend', 'Het was gratis', 'Hun vriend werkt daar'], a: 0}, {q: 'Wat hebben ze in het museum gezien?', o: ['Oude boten', 'Mooie schilderijen', 'Dieren'], a: 1}, {q: 'Wat heeft de dochter gekocht?', o: ['Een schilderij', 'Een taart', 'Een boek over Rubens'], a: 2}, {q: 'Wat hebben ze in het café gegeten?', o: ['Een taart', 'Een broodje', 'Frieten'], a: 0}, {q: 'Wat hebben ze over Rubens gelezen?', o: ['Hij heeft het museum gebouwd', 'Hij heeft in Antwerpen gewoond', 'Hij was een koning'], a: 1}]},
 u5q3: {title: 'Een reis naar Gent', en: 'A day trip to Ghent by train.',
  text: 'Vorige zaterdag ben ik met de trein naar Gent gegaan. De trein is om negen uur vertrokken. Ik ben om tien uur aangekomen. In Gent ben ik de hele dag gewandeld. Ik ben ook naar het kasteel gegaan. ’s Avonds ben ik moe teruggekomen. Maar ik ben heel blij: Gent is prachtig!',
- qs: [{q: 'Hoe is hij naar Gent gegaan?', o: ['Met de auto', 'Met de trein', 'Met de fiets'], a: 1}, {q: 'Hoe laat is hij aangekomen?', o: ['Om negen uur', 'Om tien uur', 'Om elf uur'], a: 1}, {q: 'Waarom “ben … gegaan” en niet “heb … gegaan”?', o: ['Gaan is een beweging naar een plaats', 'Gaan is zwak', 'Het is een vraag'], a: 0}]},
+ qs: [{q: 'Hoe is hij naar Gent gegaan?', o: ['Met de auto', 'Met de trein', 'Met de fiets'], a: 1}, {q: 'Hoe laat is de trein vertrokken?', o: ['Om negen uur', 'Om acht uur', 'Om tien uur'], a: 0}, {q: 'Hoe laat is hij aangekomen?', o: ['Om negen uur', 'Om elf uur', 'Om tien uur'], a: 2}, {q: 'Wat heeft hij in Gent bezocht?', o: ['Een museum', 'Het kasteel', 'De haven'], a: 1}, {q: 'Hoe voelt hij zich ’s avonds?', o: ['Moe, maar heel blij', 'Boos', 'Ziek'], a: 0}]},
 u6q1: {title: 'Mijn straat', en: 'Describing a street in Zurenborg.',
  text: 'Ik woon in een oude straat in Zurenborg. De huizen zijn heel mooi. Het grote huis op de hoek heeft een rode deur. Naast mijn huis staat een oude kerk met een hoge toren. De nieuwe bakker is dichtbij. In de kleine winkel om de hoek koop ik elke dag de krant. Ik woon hier graag.',
- qs: [{q: 'Welke kleur heeft de deur van het grote huis?', o: ['Rood', 'Wit', 'Groen'], a: 0}, {q: 'Wat staat naast het huis?', o: ['Een bakker', 'Een oude kerk', 'Een station'], a: 1}, {q: 'Waarom “de oude kerk” met -e?', o: ['Na de/het/die/dit krijgt het bijvoeglijk naamwoord -e', 'Kerk is meervoud', 'Het is een uitzondering'], a: 0}]},
+ qs: [{q: 'In welke wijk woont de schrijver?', o: ['In Berchem', 'In Zurenborg', 'Op het Zuid'], a: 1}, {q: 'Welke kleur heeft de deur van het grote huis?', o: ['Rood', 'Wit', 'Groen'], a: 0}, {q: 'Wat staat naast het huis?', o: ['Een bakker', 'Een station', 'Een oude kerk'], a: 2}, {q: 'Wat heeft de kerk?', o: ['Een rode deur', 'Een hoge toren', 'Een grote tuin'], a: 1}, {q: 'Wat koopt de schrijver elke dag in de kleine winkel?', o: ['De krant', 'Brood', 'Bloemen'], a: 0}]},
 u6q2: {title: 'Een huis te koop', en: 'An advert for a house for sale.',
  text: 'Te koop: een oud huis in Berchem. Het huis heeft een smalle gevel en een hoog dak. Beneden is er een groot raam en een ruime keuken. Boven zijn er twee slaapkamers en een klein bad. Achter het huis is er een klein tuintje. Een rustig huis in een gezellige straat. Prijs: op aanvraag.',
- qs: [{q: 'Hoeveel slaapkamers zijn er?', o: ['Eén', 'Twee', 'Drie'], a: 1}, {q: 'Waarom “een groot raam” zonder -e?', o: ['Een + het-woord: geen -e', 'Raam is een de-woord', 'Het is meervoud'], a: 0}, {q: 'Wat is er achter het huis?', o: ['Een garage', 'Een klein tuintje', 'Een straat'], a: 1}]},
+ qs: [{q: 'Waar staat het huis?', o: ['In Zurenborg', 'Op de Meir', 'In Berchem'], a: 2}, {q: 'Wat is er beneden?', o: ['Een groot raam en een ruime keuken', 'Twee slaapkamers', 'Een klein bad'], a: 0}, {q: 'Hoeveel slaapkamers zijn er?', o: ['Eén', 'Twee', 'Drie'], a: 1}, {q: 'Wat is er achter het huis?', o: ['Een garage', 'Een straat', 'Een klein tuintje'], a: 2}, {q: 'Hoeveel kost het huis?', o: ['Tweehonderdduizend euro', 'Dat staat er niet: prijs op aanvraag', 'Het is gratis'], a: 1}]},
 u6q3: {title: 'Een nieuw appartement', en: 'Moving into a new flat.',
  text: 'Mijn nieuwe appartement is klein maar gezellig. De kamers zijn licht, want er zijn grote ramen. De keuken is een beetje donker. De trappen naar boven zijn smal en oud. Maar de buren zijn vriendelijk en de straat is rustig. In de buurt zijn er leuke cafés en goedkope winkels. Ik ben tevreden!',
- qs: [{q: 'Hoe is de keuken?', o: ['Licht', 'Een beetje donker', 'Heel groot'], a: 1}, {q: 'Waarom “de kamers zijn licht” zonder -e?', o: ['Achter het werkwoord: geen -e', 'Kamers is een het-woord', 'Licht is een zelfstandig naamwoord'], a: 0}, {q: 'Hoe zijn de buren?', o: ['Vriendelijk', 'Druk', 'Oud'], a: 0}]},
+ qs: [{q: 'Waarom zijn de kamers licht?', o: ['Er zijn grote ramen', 'Er zijn veel lampen', 'De muren zijn wit'], a: 0}, {q: 'Hoe is de keuken?', o: ['Licht', 'Heel groot', 'Een beetje donker'], a: 2}, {q: 'Hoe zijn de trappen naar boven?', o: ['Breed en nieuw', 'Smal en oud', 'Er zijn geen trappen'], a: 1}, {q: 'Hoe zijn de buren?', o: ['Vriendelijk', 'Druk', 'Oud'], a: 0}, {q: 'Wat is er in de buurt?', o: ['Een groot park', 'Leuke cafés en goedkope winkels', 'Het station'], a: 1}]},
 u7q1: {title: 'Waarom ik fiets', en: 'Why the writer likes cycling in Antwerp.',
  text: 'Ik fiets graag in Antwerpen, want de stad is niet groot. Ik neem niet vaak de tram, omdat die soms vol is. Fietsen is ook goedkoop. Maar vandaag neem ik de tram, omdat het regent. Mijn collega vindt fietsen gevaarlijk, want er zijn veel auto’s. Dat is waar. Maar ik blijf het doen, omdat ik zo vrij ben.',
- qs: [{q: 'Waarom neemt de schrijver vandaag de tram?', o: ['Omdat het regent', 'Omdat de fiets kapot is', 'Omdat het ver is'], a: 0}, {q: 'Wat vindt de collega van fietsen?', o: ['Leuk', 'Gevaarlijk', 'Goedkoop'], a: 1}, {q: 'Na welk woord gaat het werkwoord naar het einde?', o: ['want', 'omdat', 'maar'], a: 1}]},
+ qs: [{q: 'Waarom fietst de schrijver graag in Antwerpen?', o: ['De stad is niet groot', 'Hij heeft geen auto', 'Het is gezond'], a: 0}, {q: 'Waarom neemt hij niet vaak de tram?', o: ['Die is duur', 'Die is soms vol', 'Die is traag'], a: 1}, {q: 'Waarom neemt hij vandaag toch de tram?', o: ['Omdat de fiets kapot is', 'Omdat het ver is', 'Omdat het regent'], a: 2}, {q: 'Wat vindt de collega van fietsen?', o: ['Leuk', 'Gevaarlijk', 'Goedkoop'], a: 1}, {q: 'Waarom blijft de schrijver fietsen?', o: ['Omdat hij zo vrij is', 'Omdat zijn collega het vraagt', 'Omdat het snel is'], a: 0}]},
 u7q2: {title: 'Een nieuwe collega', en: 'Questions about a new colleague.',
  text: 'Er is een nieuwe collega op het werk. Ik weet niet waar ze vandaan komt. Ik denk dat ze Spaans spreekt. Mijn baas zegt dat ze heel slim is. Ik vraag me af of ze Nederlands leert, net als ik. Morgen vraag ik of ze samen koffie wil drinken. Ik hoop dat ze ja zegt!',
- qs: [{q: 'Wat denkt de schrijver over de collega?', o: ['Dat ze Spaans spreekt', 'Dat ze uit Antwerpen komt', 'Dat ze de baas is'], a: 0}, {q: 'Wat wil de schrijver morgen vragen?', o: ['Of ze samen koffie wil drinken', 'Waar ze woont', 'Hoe oud ze is'], a: 0}, {q: 'In “Ik hoop dat ze ja zegt” staat “zegt”…', o: ['op plaats 2', 'op het einde', 'vooraan'], a: 1}]},
+ qs: [{q: 'Wat weet de schrijver niet over de collega?', o: ['Hoe ze heet', 'Waar ze vandaan komt', 'Waar ze werkt'], a: 1}, {q: 'Wat denkt de schrijver?', o: ['Dat ze Spaans spreekt', 'Dat ze uit Antwerpen komt', 'Dat ze de baas is'], a: 0}, {q: 'Wat zegt de baas over haar?', o: ['Dat ze te laat komt', 'Dat ze Spaans leert', 'Dat ze heel slim is'], a: 2}, {q: 'Wat wil de schrijver morgen vragen?', o: ['Waar ze woont', 'Of ze samen koffie wil drinken', 'Hoe oud ze is'], a: 1}, {q: 'Wat hoopt de schrijver?', o: ['Dat ze ja zegt', 'Dat ze Spaans spreekt', 'Dat ze zijn baas wordt'], a: 0}]},
 u7q3: {title: 'Het weer in België', en: 'What people do in Belgian weather.',
  text: 'In België regent het vaak. Als het regent, neem ik altijd een paraplu mee. Als de zon schijnt, zit iedereen op een terras. Toen ik in België aankwam, vond ik het weer vreselijk. Nu ben ik eraan gewend. Wanneer het mooi weer is, wandel ik aan de Schelde. En als het slecht weer is, blijf ik thuis met een boek.',
- qs: [{q: 'Wat doet iedereen als de zon schijnt?', o: ['Op een terras zitten', 'Thuisblijven', 'Een paraplu kopen'], a: 0}, {q: 'Wat vond de schrijver toen hij in België aankwam?', o: ['Het weer was vreselijk', 'Het weer was mooi', 'De stad was klein'], a: 0}, {q: 'Na “Als het regent,” komt eerst…', o: ['het onderwerp', 'het werkwoord', 'een komma en dan “ik”'], a: 1}]},
+ qs: [{q: 'Wat neemt de schrijver mee als het regent?', o: ['Een boek', 'Een paraplu', 'Een jas'], a: 1}, {q: 'Wat doet iedereen als de zon schijnt?', o: ['Op een terras zitten', 'Thuisblijven', 'Een paraplu kopen'], a: 0}, {q: 'Wat vond de schrijver van het weer toen hij aankwam?', o: ['Mooi', 'Normaal', 'Vreselijk'], a: 2}, {q: 'Waar wandelt hij als het mooi weer is?', o: ['In het park', 'Aan de Schelde', 'Op de Meir'], a: 1}, {q: 'Wat doet hij bij slecht weer?', o: ['Hij blijft thuis met een boek', 'Hij gaat naar de film', 'Hij fietst toch'], a: 0}]},
 };
 
 /* ===== The full learning plan to C1: 10 arcs, 5 levels (Delen) =====
@@ -1579,17 +1589,25 @@ const Audio = {
     const vs = this.voices; if (!vs.length) return null;
     return vs.find(v => v.name === S.settings.voice) || vs.find(v => /ellen/i.test(v.name)) || vs.find(v => /nl[-_]BE/i.test(v.lang)) || vs[0];
   },
-  say(text) {
+  // btn: the speaker button that was tapped. While it plays it shows a stop sign; tapping it again stops.
+  btn: null,
+  say(text, btn) {
     if (!('speechSynthesis' in window)) { toast('Spraak is niet beschikbaar in deze browser'); return; }
+    if (btn && btn === this.btn && btn.classList.contains('playing')) { this.stop(); return; }
     try {
-      speechSynthesis.cancel();
+      this.stop();
       const u = new SpeechSynthesisUtterance(String(text).replace(/<[^>]+>/g, ''));
       const v = this.voice(); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'nl-BE';
-      u.rate = S.settings.rate || 0.9; speechSynthesis.speak(u);
+      u.rate = S.settings.rate || 0.9;
+      if (btn) { this.btn = btn; btn.classList.add('playing'); btn.dataset.label = btn.getAttribute('aria-label') || ''; btn.setAttribute('aria-label', 'Stop'); u.onend = u.onerror = () => { if (this.btn === btn) this.release(); }; }
+      speechSynthesis.speak(u);
     } catch (e) {}
-  }
+  },
+  release() { const b = this.btn; this.btn = null; if (b) { b.classList.remove('playing'); b.setAttribute('aria-label', b.dataset.label || 'Beluister'); } },
+  stop() { this.release(); try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {} }
 };
-const speakBtn = (text, label = 'Beluister') => `<button class="speak" data-act="say" data-text="${esc(text)}" aria-label="${label}" data-en="Listen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>`;
+const SPEAK_ICON = (n = 18) => `<svg class="ico-play" width="${n}" height="${n}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg><svg class="ico-stop" width="${n}" height="${n}" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>`;
+const speakBtn = (text, label = 'Beluister') => `<button class="speak" data-act="say" data-text="${esc(text)}" aria-label="${label}" data-en="Listen · tap again to stop">${SPEAK_ICON()}</button>`;
 
 /* ===== ARTICLES & WORD DISPLAY ===== */
 const art = l => l && l.g ? `<span class="art ${l.g}">${l.g}</span> ` : '';
@@ -1609,7 +1627,7 @@ function frameCols(s) {
   c.forEach((x, i) => {
     let sl = x.sl;
     if (sl === 's') sl = (i === 0) ? '1' : '3';
-    cols[sl].push(x.sl === 's' ? `<u>${esc(x.t)}</u>` : esc(x.t));
+    cols[sl].push(x.sl === 's' ? `<b class="subj">${esc(x.t)}</b>` : esc(x.t));
   });
   return cols;
 }
@@ -1620,7 +1638,7 @@ function frameHTML(s) {
   return `<div class="frame" role="img" aria-label="Zinsschema">` + show.map(n => {
     const empty = !cols[n].length;
     return `<div class="slot s${n}${empty ? ' empty' : ''}"><span class="lab" data-en="${labs[n][2]}">${labs[n][0]} · ${labs[n][1]}</span><span class="box">${empty ? (n === 1 ? 'leeg' : '–') : cols[n].join(' ')}</span></div>`;
-  }).join('') + `</div><div class="small" style="margin-top:4px">Onderstreept: het onderwerp.</div>`;
+  }).join('') + `</div><div class="small" style="margin-top:4px" data-en="Bold: the subject">Vet: het onderwerp.</div>`;
 }
 const SUBORD = new Set(['omdat', 'dat', 'of', 'als', 'wanneer', 'toen', 'waar', 'wat', 'wie', 'hoe', 'hoeveel', 'waarom', 'welke', 'terwijl', 'voordat', 'nadat', 'zodat', 'hoewel', 'tot', 'sinds', 'zodra']);
 function frameNote(s) {
@@ -1664,6 +1682,13 @@ function orderVariants(s) {
 }
 
 /* ===== EXERCISES ===== */
+// Translating into Dutch: when the Dutch sentence starts with something other than the subject
+// (inversie), the card says so and asks for that order; otherwise every correct order counts.
+function trAsk(s) {
+  const c = s.ch; const first = c[0];
+  if (s.q || first.sl === '2' || first.sl === 's') return {sub: '', accept: orderVariants(s).map(norm)};
+  return {sub: `Begin met <b class="nl">${esc(first.t)}</b> … <span data-en="inversion: verb in slot 2, then the subject">(inversie)</span>`, accept: [norm(s.nl)]};
+}
 const DAYWORD = {fix: 'Verbeter je zin', rec: 'Kies het woord', prod: 'Vul in', gen: 'De of het?', conj: 'Vervoeg', ord: 'Zet in de juiste volgorde', tr: 'Vertaal naar het Nederlands', lisMc: 'Welke zin hoor je?', lisType: 'Luister en typ'};
 const DAYWORD_EN = {fix: 'Correct your sentence', rec: 'Pick the word', prod: 'Fill in', gen: 'De or het?', conj: 'Conjugate', ord: 'Put in the right order', tr: 'Translate into Dutch', lisMc: 'Which sentence do you hear?', lisType: 'Listen and type'};
 
@@ -1760,7 +1785,7 @@ function makeEx(key, ctx = 'drill') {
       const o = pick(occ); const s = o.s;
       const body = `<span class="nl">${blankOut(s.nl, o.surf)}</span>`;
       const hint = l.v ? ` · <span class="nl">(${esc(l.w)})</span>` : '';
-      const base = {key, lex: l, sent: s, prompt: body, sub: `${esc(s.en)}${hint}`, answer: o.surf.toLowerCase(), why: clozeWhy(l, o.surf) + (s.why ? ' ' + s.why : ''), say: s.nl};
+      const base = {key, lex: l, sent: s, prompt: body, sub: `${enCue(s.en, l)}${hint}`, answer: o.surf.toLowerCase(), why: clozeWhy(l, o.surf) + (s.why ? ' ' + s.why : ''), say: s.nl};
       if (sk === 'rec' || ctx === 'feed') {
         const opts = shuffle([o.surf.toLowerCase(), ...distractorsFor(l, o.surf)]).slice(0, ctx === 'feed' ? 3 : 4);
         if (!opts.includes(o.surf.toLowerCase())) opts[0] = o.surf.toLowerCase();
@@ -1777,11 +1802,11 @@ function makeEx(key, ctx = 'drill') {
     return {type: 'type', key, lex: l, label: 'prod', prompt: defP, sub: `${POS[l.p] || ''}${l.g ? ' · <b class="' + l.g + '">' + l.g + '</b> …' : ''} · ${esc(l.w.length)} letters`, answer: l.w, accept: [norm(l.w)], why: `${wordHTML(l)}: ${esc(l.d)}. <span class="muted">(${esc(l.en)})</span>` + (l.why ? ' ' + l.why : ''), say: (l.g ? l.g + ' ' : '') + l.w};
   }
   const s = SX[id];
-  if (sk === 'tr') return {type: 'type', key, label: 'tr', prompt: `<span class="nl">${esc(s.en)}</span>`, sub: 'Zeg het in het Nederlands, uit je hoofd.', answer: s.nl, accept: orderVariants(s).map(norm), whole: true, why: frameNote(s) + (s.why ? ' ' + s.why : ''), frame: s, say: s.nl};
+  if (sk === 'tr') return {type: 'type', key, label: 'tr', prompt: `<span class="nl">${esc(s.en)}</span>`, sub: trAsk(s).sub || 'Zeg het in het Nederlands, uit je hoofd.', answer: s.nl, accept: trAsk(s).accept, whole: true, why: frameNote(s) + (s.why ? ' ' + s.why : ''), frame: s, say: s.nl};
   if (sk === 'ord') {
     const words = s.nl.split(' ').length;
     if (it && it.r >= 1 && words <= 6 && Math.random() < 0.4) {
-      return {type: 'type', key, sent: s, label: 'tr', prompt: `<span class="nl">${esc(s.en)}</span>`, sub: '', answer: s.nl, accept: orderVariants(s).map(norm), whole: true, why: frameNote(s) + (s.why ? ' ' + s.why : ''), frame: s, say: s.nl};
+      return {type: 'type', key, sent: s, label: 'tr', prompt: `<span class="nl">${esc(s.en)}</span>`, sub: trAsk(s).sub, answer: s.nl, accept: trAsk(s).accept, whole: true, why: frameNote(s) + (s.why ? ' ' + s.why : ''), frame: s, say: s.nl};
     }
     const lower = t => PROPER.has(t.split(' ')[0]) ? t : t[0].toLowerCase() + t.slice(1);
     const toks = shuffle(s.ch.map((x, i) => ({t: i === 0 ? lower(x.t) : x.t, i})));
@@ -1933,7 +1958,7 @@ function sesRender() {
   const inp = $('#ex-in'); if (inp) setTimeout(() => inp.focus(), 60);
 }
 function exHTML(ex) {
-  let h = `<div class="ex-label" data-en="${DAYWORD_EN[ex.label] || ''}">${DAYWORD[ex.label] || ''}</div>`;
+  let h = kindLabel(ex.label, 'ex-label');
   const how = howtoHTML(ex); if (how) h += how;
   if (ex.listen) h += `<div class="row">${speakBtn(ex.say, 'Speel af')}<span class="small">Tik om opnieuw te luisteren</span></div>`;
   if (ex.prompt) h += `<div class="ex-prompt">${ex.prompt}</div>`;
@@ -1978,12 +2003,19 @@ function showFeedback(ex, res, val) {
     <h3 data-en="${headsEn[res.kind]}">${heads[res.kind]}</h3>
     ${res.note ? `<div class="small">${res.note}</div>` : ''}
     <div class="row">${ex.say ? speakBtn(ex.say) : ''}<div class="answer">${ansHTML}</div></div>
+    ${yoursHTML(ex, res, val)}
     ${ex.sent && (ex.listen || ex.whole) ? `<div class="small">${esc(ex.sent.en)}</div>` : ''}
     ${ex.frame && (res.kind === 'order' || ex.label === 'ord' || ex.label === 'tr') ? frameHTML(ex.frame) : ''}
     <div class="why">${whyFor(ex, res)}</div>
   </div><button class="btn block" data-act="ses-next" id="ses-next" style="margin-top:12px">Verder</button>`;
   if (!ex.listen && res.ok && ex.say && ex.type !== 'gen') setTimeout(() => Audio.say(ex.say), 150);
   setTimeout(() => { const n = $('#ses-next'); if (n) { n.focus({preventScroll: true}); n.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest'}); } }, 50);
+}
+// a whole sentence that was not right: show Ari's own sentence with the words that differ struck through
+function yoursHTML(ex, res, val) {
+  if (res.ok || !ex.whole || ex.type === 'order' || !String(val || '').trim()) return '';
+  const words = String(val).trim().split(/\s+/); const diff = fixDiff(val, ex.answer);
+  return `<div class="small yours"><span data-en="Your sentence">Jij:</span> <span class="nl">${words.map((w, i) => diff.has(i) ? `<s class="d">${esc(w)}</s>` : esc(w)).join(' ')}</span></div>`;
 }
 function sesNext() { if (!SES) return; SES.i++; SES.answered = false; sesRender(); }
 function sesEnd() {
@@ -2059,7 +2091,9 @@ function startStep(q, step) {
   if (step === 'lees') return toast('Lezen komt in een volgende versie');
   if (step === 'gebruik') return openUse(q);
 }
-const nextStep = q => BUILT_STEPS.find(s => !stepDone(q, s)) || (typeof READ !== 'undefined' && READ[q] && !stepDone(q, 'lees') ? 'lees' : null) || (!stepDone(q, 'gebruik') ? 'gebruik' : 'oefen');
+// the next guild house in the plein's own order (Ontdek, Oefen, Lees, Luister, Gebruik); Lees only where the plein has a text
+const stepAvail = (q, s) => BUILT_STEPS.includes(s) || (s === 'lees' && typeof READ !== 'undefined' && !!READ[q]) || s === 'gebruik';
+const nextStep = q => STEPS.find(s => stepAvail(q, s) && !stepDone(q, s)) || 'oefen';
 const STEP_NAME = {ontdek: 'Ontdek', oefen: 'Oefen', lees: 'Lees', luister: 'Luister', gebruik: 'Gebruik'};
 
 /* ===== LESSON (Ontdek, per square) ===== */
@@ -2074,7 +2108,7 @@ function openLesson(q, readOnly) {
     <div><div class="eyebrow">${esc(unit.name)} · ${esc(sq.name)}</div><h1 style="margin-top:4px">${esc(sq.title)}</h1><div class="muted" style="margin-top:2px">${esc(sq.en)}</div></div>
     <p class="why" style="margin:0">${sq.rule}</p>
     ${sq.ex.map(id => { const s = SX[id]; return `<div class="card stack" style="gap:8px"><div class="row">${speakBtn(s.nl)}<div class="nl" style="font-size:19px">${tapWords(s.nl)}</div></div><div class="small">${esc(s.en)}</div>${frameHTML(s)}</div>`; }).join('')}
-    <div class="small">Goud = het werkwoord (plaats 2 en het einde). Onderstreept = het onderwerp.</div>
+    <div class="small">Goud = het werkwoord (plaats 2 en het einde). Vet = het onderwerp. Een groen onderlijnd woord tik je aan voor de woordkaart.</div>
     ${first ? `<div class="card soft"><div class="eyebrow">Waarom werkt het zo?</div><div class="why" style="margin-top:4px">${g.why}</div></div>` : ''}
     <h2>Nieuwe woorden</h2>
     ${groups.filter(x => x[1].length).map(x => `<div><div class="eyebrow">${x[0]}</div>${list(x[1])}</div>`).join('')}
@@ -2931,7 +2965,7 @@ function fcardHTML(c) {
   if (c.kind === 'q' || c.kind === 'r' || c.kind === 'd') {
     const ex = c.ex = c.kind === 'r' ? relEx(c.l) : c.kind === 'd' ? defEx(c.l) : makeEx(c.key, 'feed');
     if (ex.type === 'gen') return `<div class="fin"><div class="kind">De of het?</div><div class="nl" style="font-size:40px;text-align:center">${esc(ex.lex.w)}</div>${ex.sub ? `<div class="nl" style="font-size:17px;text-align:center">${ex.sub}</div>` : ''}<div class="dehet"><button class="d" data-act="fans" data-fid="${c.fid}" data-v="de">de</button><button class="h" data-act="fans" data-fid="${c.fid}" data-v="het">het</button></div><div class="ffb"></div></div>`;
-    return `<div class="fin"><div class="kind">${DAYWORD[ex.label] || 'Kies'}</div><div class="ex-prompt" style="font-size:21px">${ex.prompt}</div>${ex.sub ? `<div class="ex-sub">${ex.sub}</div>` : ''}<div class="opts">${ex.options.map(o => `<button class="opt" data-act="fans" data-fid="${c.fid}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div><div class="ffb"></div></div>`;
+    return `<div class="fin">${kindLabel(ex.label)}<div class="ex-prompt" style="font-size:21px">${ex.prompt}</div>${ex.sub ? `<div class="ex-sub">${ex.sub}</div>` : ''}<div class="opts">${ex.options.map(o => `<button class="opt" data-act="fans" data-fid="${c.fid}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div><div class="ffb"></div></div>`;
   }
   if (c.kind === 'w' || c.kind === 'n') {
     const l = c.l; const isNew = c.kind === 'n';
@@ -2946,7 +2980,7 @@ function fcardHTML(c) {
   if (c.kind === 'gv') return `<div class="fin"><div class="kind">Werkwoord in één oogopslag</div><div class="spread"><div class="wc-word">${esc(c.l.w)}</div>${speakBtn(c.l.w)}</div><div class="small">${esc(c.l.d)}</div>${conjTable(c.l)}</div>`;
   if (c.kind === 'gf') return `<div class="fin"><div class="kind">Zinsschema</div><div class="row">${speakBtn(c.s.nl)}<div class="nl" style="font-size:20px">${esc(c.s.nl)}</div></div>${frameHTML(c.s)}<div class="why small">${frameNote(c.s)}</div></div>`;
   if (c.kind === 'gn') { const l = c.l; return `<div class="fin"><div class="kind">Zelfstandig naamwoord</div><div class="wc-word">${wordHTML(l)}</div><dl class="kv">${l.pl ? `<dt>meervoud</dt><dd><span class="de">de</span> ${esc(l.pl)}</dd>` : ''}${l.dim ? `<dt>verkleinwoord</dt><dd><span class="het">het</span> ${esc(l.dim)}</dd>` : ''}</dl><div class="why small">${genWhy(l)}</div></div>`; }
-  if (c.kind === 'l') return `<div class="fin"><div class="kind">Luister</div><div style="display:flex;justify-content:center"><button class="speak" data-act="say" data-text="${esc(c.s.nl)}" style="width:84px;height:84px" aria-label="Speel af"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg></button></div><div class="fback" hidden><div class="nl" style="font-size:21px">${esc(c.s.nl)}</div><div class="small">${esc(c.s.en)}</div></div><button class="btn line fshow" data-act="freveal" data-fid="${c.fid}">Toon de zin</button></div>`;
+  if (c.kind === 'l') return lisCardHTML(c); // app18: with a question about the meaning
   if (c.kind === 'b') return `<div class="fin" style="text-align:center"><div class="eyebrow">Even pauze</div><div class="nl bstat" style="font-size:24px"></div><div class="muted">Verder scrollen mag. Stoppen ook.</div><button class="btn" data-act="fclose" >Hier stoppen</button></div>`;
   return '';
 }
@@ -2980,7 +3014,7 @@ const HOWTO = {
   gen: ['Kies het lidwoord.', '<b class="de">de</b> is blauw, <b class="het">het</b> is rood. Zo zie je het overal in de app.'],
   conj: ['Typ de juiste vorm van het werkwoord.', 'Voorbeeld: <i>nemen · hij ___</i> → <b class="verbword">neemt</b>'],
   ord: ['Tik de stukjes in de juiste volgorde. Tik een stukje opnieuw om het terug te leggen.', 'Denk aan de regel: het werkwoord staat op plaats 2.'],
-  tr: ['Schrijf de Engelse zin in het Nederlands.', 'Andere juiste volgordes tellen ook.'],
+  tr: ['Schrijf de Engelse zin in het Nederlands.', 'Staat er <i>Begin met …</i>? Begin dan zo: het werkwoord blijft op plaats 2 en het onderwerp komt erna (inversie). Anders tellen andere juiste volgordes ook.'],
   lisMc: ['Luister en kies de zin die je hoort.', 'Tik op de luidspreker om opnieuw te luisteren.'],
   lisType: ['Luister en typ wat je hoort.', 'Hoofdletters en leestekens tellen niet mee.']
 };
@@ -3286,7 +3320,7 @@ function startRound(q, r) {
 
 /* ---------- Lees: one short text per square ---------- */
 ACTIVE_STEPS.push('lees');
-STEP_DESC.lees = 'Een korte tekst met drie vragen';
+STEP_DESC.lees = 'Een korte tekst met vijf vragen';
 function startStep(q, step) {
   if (!sqOpen(q)) { toast('Dit plein is nog dicht. Doe eerst het vorige, of test je erin.'); return; }
   S.cur = q; Store.mark('state');
@@ -3307,11 +3341,11 @@ function readHTML(text) {
 function openRead(q) {
   const R = READ[q]; const sq = SQ[q]; READING = {q, ans: {}};
   openOverlay('read', `<button class="iconbtn" data-act="overlay-close" data-id="read" aria-label="Sluiten">✕</button><span class="small">Lees · ${esc(sq.name)}</span>`, `<div class="stack">
-    ${coachTip('lees', 'Lees de tekst. Tik op een groen onderlijnd woord voor de woordkaart. Tik op de luidspreker om de hele tekst te horen. Beantwoord dan de drie vragen: 2 van de 3 juist en dit gildehuis is klaar.')}
+    ${coachTip('lees', 'Lees de tekst. Tik op een groen onderlijnd woord voor de woordkaart. Tik op de luidspreker om de hele tekst te horen. Beantwoord dan de vijf vragen: 4 van de 5 juist en dit gildehuis is gehaald.')}
     <div class="row" style="align-items:flex-start">${speakBtn(R.text)}<h1 style="flex:1">${esc(R.title)}</h1></div>
     <div class="readtext nl">${readHTML(R.text)}</div>
     <button class="en-hidden" data-act="reveal-en" data-en-text="${esc(R.en)}" style="align-self:flex-start">Waarover gaat het? (Engels)</button>
-    <div class="eyebrow">Drie vragen</div>
+    <div class="eyebrow">${R.qs.length === 5 ? 'Vijf' : R.qs.length} vragen</div>
     ${R.qs.map((x, i) => `<div class="card stack" style="gap:8px" id="rq-${i}"><div style="font-weight:600">${i + 1}. ${esc(x.q)}</div><div class="opts">${x.o.map((o, j) => `<button class="opt" data-act="read-ans" data-i="${i}" data-j="${j}">${esc(o)}</button>`).join('')}</div></div>`).join('')}
     <div id="read-end"></div>
   </div>`);
@@ -3321,9 +3355,9 @@ function readAnswer(i, j) {
   const R = READ[READING.q]; const ok = R.qs[i].a === j; READING.ans[i] = ok;
   const box = $('#rq-' + i); $$('.opt', box).forEach((b, k) => { b.disabled = true; if (k === R.qs[i].a) b.classList.add('right'); else if (k === j) b.classList.add('wrong'); });
   if (Object.keys(READING.ans).length === R.qs.length) {
-    const n = Object.values(READING.ans).filter(Boolean).length; const pass = n >= 2;
+    const n = Object.values(READING.ans).filter(Boolean).length; const pass = n >= Math.ceil(R.qs.length * .8); // 4 of 5, the same 80% as everywhere
     if (pass) { sqstate(READING.q).steps.lees = Math.max(sqstate(READING.q).steps.lees || 0, Math.round(n / R.qs.length * 100)); Store.mark('state'); }
-    $('#read-end').innerHTML = `<div class="card soft stack" style="gap:8px"><div class="big-num">${n} / ${R.qs.length}</div><div>${pass ? 'Goed gelezen: dit gildehuis is klaar.' : 'Lees de tekst nog eens en probeer opnieuw.'}</div><button class="btn block" data-act="${pass ? 'read-close' : 'read-again'}" data-q="${READING.q}">${pass ? 'Terug naar het plein' : 'Opnieuw'}</button></div>`;
+    $('#read-end').innerHTML = `<div class="card soft stack" style="gap:8px"><div class="big-num">${n} / ${R.qs.length}</div><div>${pass ? (n === R.qs.length ? 'Alles juist: dit gildehuis krijgt een ster.' : 'Goed gelezen: dit gildehuis is gehaald.') : 'Lees de tekst nog eens en probeer opnieuw.'}</div><button class="btn block" data-act="${pass ? 'read-close' : 'read-again'}" data-q="${READING.q}">${pass ? 'Terug naar het plein' : 'Opnieuw'}</button></div>`;
     $('#read-end').scrollIntoView({block: 'center', behavior: 'smooth'});
   }
 }
@@ -4341,7 +4375,7 @@ function conjOptions(l, o) {
 }
 function conjSentEx(key, l, o, ctx) {
   const s = o.s; const ans = o.surf.toLowerCase();
-  const base = {key, lex: l, sent: s, label: 'conjS', prompt: `<span class="nl">${blankOut(s.nl, o.surf)}</span>`, sub: `${esc(s.en)} · <span class="nl">(${esc(l.w)} · ${o.tense === 'nu' ? 'nu' : 'verleden tijd'})</span>`, answer: ans, why: clozeWhy(l, o.surf), say: s.nl};
+  const base = {key, lex: l, sent: s, label: 'conjS', prompt: `<span class="nl">${blankOut(s.nl, o.surf)}</span>`, sub: `${enCue(s.en, l)} · <span class="nl">(${esc(l.w)} · ${o.tense === 'nu' ? 'nu' : 'verleden tijd'})</span>`, answer: ans, why: clozeWhy(l, o.surf), say: s.nl};
   if (ctx === 'feed') return {...base, type: 'mc', options: conjOptions(l, o)};
   return {...base, type: 'type', accept: [norm(ans)]};
 }
@@ -4350,7 +4384,9 @@ function conjSentEx(key, l, o, ctx) {
 function relEx(l) {
   const r = relOf(l); const kind = r.syn.length && (!r.ant.length || Math.random() < .5) ? 'syn' : 'ant';
   const ans = pick(r[kind]); const avoid = new Set([l.w, ...r.syn, ...r.ant].map(norm));
-  const pool = shuffle(allWords().filter(x => x.id !== l.id && x.p === l.p && !avoid.has(norm(x.w)))).map(x => x.w);
+  // same part of speech first; a rare one (an own pronoun like iemand) is filled up with other words, so there are always 4 choices
+  const others = allWords().filter(x => x.id !== l.id && !avoid.has(norm(x.w)));
+  const pool = shuffle(others.filter(x => x.p === l.p)).concat(shuffle(others.filter(x => x.p !== l.p))).map(x => x.w);
   const opts = shuffle(uniq([ans].concat(pool)).slice(0, 4));
   return {type: 'mc', key: 'w:' + l.id + ':rec', lex: l, label: kind, prompt: `<span class="nl" style="font-size:30px">${wordHTML(l)}</span>`,
     sub: kind === 'syn' ? 'Welk woord betekent ongeveer hetzelfde?' : 'Wat is het tegenovergestelde?', options: opts, answer: ans,
@@ -4365,7 +4401,7 @@ function defEx(l) {
 const metWords = () => allWords().filter(l => S.items['w:' + l.id + ':rec'] || S.seen[l.id]);
 Object.assign(DAYWORD, {conjS: 'Vervoeg in de zin', syn: 'Zelfde betekenis', ant: 'Tegenovergestelde', def: 'Welk woord is het?'});
 Object.assign(DAYWORD_EN, {conjS: 'Conjugate in the sentence', syn: 'Same meaning', ant: 'Opposite', def: 'Which word is it?'});
-HOWTO.fix = ['Typ de zin opnieuw, maar nu juist.', 'Het label zegt wat voor fout het is (woordvolgorde, lidwoord, werkwoordsvorm…). Vast? Tik op <b>Hint</b>: de woorden die niet kloppen worden onderlijnd.'];
+HOWTO.fix = ['Typ de zin opnieuw, maar nu juist.', 'Het label zegt wat voor fout het is (woordvolgorde, lidwoord, werkwoordsvorm…). Vast? Tik op <b>Hint</b>: de woorden die niet kloppen worden gemarkeerd.'];
 HOWTO.conjS = ['Vul de juiste vorm van het werkwoord in de zin in.', 'Tussen haakjes staan het werkwoord en de tijd: <i>(nemen · nu)</i> → <b class="verbword">neem</b>, <b class="verbword">neemt</b> of <b class="verbword">nemen</b>?'];
 
 /* ---------- Verbeter de zin: what kind of mistake, where, and a hint ---------- */
@@ -4513,6 +4549,85 @@ function progressLegend() {
   </div><div class="small">Op het Pad heeft elke stad drie huizen (één per plein) en een stadhuis voor de Grote Markt. Is alles perfect, ook de opdracht in de stad, dan wordt de hele stad goud.</div></div>`;
 }
 
+/* ===== VERSION 2.5: clearer cards (from Ari's review) =====
+   - every card says what kind of card it is in one clear label (kindLabel)
+   - a fill-in card marks the English word that belongs in the gap (enCue), so only one choice fits
+   - the Scroll listening card asks what the sentence means before it shows it
+   The rules behind these are in CLAUDE.md (Writing content) and tests/validate.js checks them. */
+
+/* ---------- the card label ---------- */
+const KIND_ICON = {syn: '≈', ant: '⇄', def: '?', lisMc: '♪', lisType: '♪', lis: '♪'};
+Object.assign(DAYWORD, {lis: 'Luister'}); Object.assign(DAYWORD_EN, {lis: 'Listen'});
+function kindLabel(label, cls = 'kind') {
+  const t = DAYWORD[label] || (cls === 'kind' ? 'Kies' : ''); if (!t) return '';
+  return `<div class="${cls}" data-en="${esc(DAYWORD_EN[label] || '')}">${KIND_ICON[label] ? `<span class="ki" aria-hidden="true">${KIND_ICON[label]}</span>` : ''}${t}</div>`;
+}
+
+/* ---------- the English word that belongs in the gap ---------- */
+const EN_IRR = {be: 'is are am was were been ’m ’re ’s', will: '’ll would', shall: '’ll', have: 'has had', do: 'does did done', go: 'goes went gone', come: 'came', get: 'got gotten', take: 'took taken', buy: 'bought', eat: 'ate eaten', drink: 'drank drunk', see: 'saw seen', read: 'read', write: 'wrote written', find: 'found', give: 'gave given', make: 'made', say: 'said', think: 'thought', know: 'knew known', leave: 'left', bring: 'brought', sit: 'sat', stand: 'stood', run: 'ran', ride: 'rode ridden', speak: 'spoke spoken', sleep: 'slept', pay: 'paid', sell: 'sold', tell: 'told', meet: 'met', choose: 'chose chosen', begin: 'began begun', keep: 'kept', feel: 'felt', hear: 'heard', lie: 'lay lain lying', hang: 'hung', put: 'put', let: 'let', cost: 'cost', send: 'sent', spend: 'spent', win: 'won', lose: 'lost', fall: 'fell fallen', forget: 'forgot forgotten', understand: 'understood', become: 'became', swim: 'swam swum', sing: 'sang sung', fly: 'flew flown', wear: 'wore worn', hold: 'held', catch: 'caught', teach: 'taught', drive: 'drove driven', break: 'broke broken', grow: 'grew grown', throw: 'threw thrown', show: 'shown', shine: 'shone', light: 'lit', can: 'could', must: 'had to', may: 'might', child: 'children', person: 'people', man: 'men', woman: 'women'};
+const reEsc = x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// the forms an English gloss can take in a sentence: tram → trams, take → takes/took/taking, happy → happier
+function enForms(w) {
+  const f = new Set([w, w + 's', w + 'es', w + 'ed', w + 'd', w + 'ing', w + 'er', w + 'est', w + 'ly']);
+  if (/[^aeiou]y$/.test(w)) ['ies', 'ied', 'ier', 'iest', 'ily'].forEach(e => f.add(w.slice(0, -1) + e));
+  if (/e$/.test(w)) ['ing', 'ed', 'er', 'est'].forEach(e => f.add(w.slice(0, -1) + e));
+  if (/[^aeiou][aeiou][bdglmnprt]$/.test(w)) ['ing', 'ed', 'er'].forEach(e => f.add(w + w.slice(-1) + e));
+  (EN_IRR[w] || '').split(' ').filter(Boolean).forEach(x => f.add(x));
+  return [...f];
+}
+// other English words for a lemma, when the sentences use them instead of the gloss (fiets: "bike", not "bicycle")
+const EN_ALSO = {fiets: 'bike', nemen: 'have', opbellen: 'call', broodje: 'roll', pint: 'beer', stoofvlees: 'stew', drinken: 'have', liggen: 'be', willen: 'would like', zee: 'seaside'};
+// the gloss as phrases to look for: "to pick out" → ["pick out", "pick"]; "to get, receive" → ["get", "receive"]
+function enGlosses(l) {
+  const raw = String(l.en || '').replace(/\([^)]*\)/g, ' ').split(/[,;/]| or /).concat(EN_ALSO[l.id] ? EN_ALSO[l.id].split(',') : []);
+  const out = [];
+  raw.map(x => x.trim().toLowerCase().replace(/^(to|a|an|the)\s+/, '').replace(/\s+/g, ' ')).filter(Boolean).forEach(x => {
+    out.push(x); const w = x.split(' '); if (w.length > 1 && !['a', 'the'].includes(w[0])) out.push(w[0]);
+  });
+  return uniq(out);
+}
+// where the gloss is in the English sentence: [start, end] or null
+function enSpot(en, l) {
+  for (const g of enGlosses(l)) {
+    const w = g.split(' '); const heads = enForms(w[0]);
+    for (const h of heads.sort((a, b) => b.length - a.length)) {
+      // a contraction (’m, ’ll) sits right after its subject: no word boundary in front
+      const re = new RegExp((/^[’']/.test(h) ? '()' : '(^|[^\\p{L}’\'])') + '(' + reEsc([h].concat(w.slice(1)).join(' ')) + ')(?=[^\\p{L}]|$)', 'iu');
+      const m = re.exec(en); if (m) return [m.index + m[1].length, m.index + m[1].length + m[2].length];
+    }
+  }
+  return null;
+}
+// the English sentence with the gap's word marked; if it can't be found, the gloss follows in brackets
+function enCue(en, l) {
+  const at = enSpot(en, l);
+  if (at) return `${esc(en.slice(0, at[0]))}<b class="en-hl">${esc(en.slice(at[0], at[1]))}</b>${esc(en.slice(at[1]))}`;
+  return `${esc(en)} <span class="en-hl">(= ${esc(enGlosses(l)[0] || l.en || '')})</span>`;
+}
+
+/* ---------- Scroll: the listening card asks what the sentence means ---------- */
+function lisOptions(s) {
+  const pool = shuffle(SENT.filter(x => x.id !== s.id && x.u === s.u)).concat(shuffle(SENT.filter(x => x.u !== s.u)));
+  const out = [s.en]; for (const x of pool) { if (!out.some(o => norm(o) === norm(x.en))) out.push(x.en); if (out.length === 3) break; }
+  return shuffle(out);
+}
+// replaces the 'l' card of fcardHTML (app5)
+function lisCardHTML(c) {
+  const opts = c.opts = c.opts || lisOptions(c.s);
+  return `<div class="fin">${kindLabel('lis')}<div style="display:flex;justify-content:center"><button class="speak" data-act="say" data-text="${esc(c.s.nl)}" style="width:84px;height:84px" aria-label="Speel af">${SPEAK_ICON(34)}</button></div>
+    <div class="ex-sub" data-en="What does the sentence mean?">Wat betekent de zin?</div>
+    <div class="opts">${opts.map((o, j) => `<button class="opt" style="font-size:17px" data-act="flis" data-fid="${c.fid}" data-j="${j}">${esc(o)}</button>`).join('')}</div>
+    <div class="ffb"></div><div class="fback" hidden><div class="row">${speakBtn(c.s.nl)}<div class="nl" style="font-size:21px">${tapWords(c.s.nl)}</div></div></div></div>`;
+}
+function feedListen(fid, j) {
+  const c = FC[fid]; if (!c || c.done) return; c.done = true;
+  const pick1 = c.opts[+j]; const ok = pick1 === c.s.en;
+  const sec = document.querySelector(`.fcard[data-fid="${fid}"]`);
+  $$('[data-act="flis"]', sec).forEach((b, k) => { b.disabled = true; if (c.opts[k] === c.s.en) b.classList.add('right'); else if (k === +j) b.classList.add('wrong'); });
+  $('.ffb', sec).innerHTML = `<div class="fb ${ok ? 'ok' : 'no'}" style="padding:10px 12px"><b>${ok ? 'Juist!' : 'Niet helemaal'}</b><div class="why small">Je hoorde:</div></div>`;
+  $('.fback', sec).hidden = false;
+}
+
 /* ===== LONG-PRESS ENGLISH ===== */
 (function () {
   let timer = null, tip = null, fired = false;
@@ -4592,7 +4707,7 @@ document.addEventListener('click', e => {
     case 'word': showWord(d.id); break;
     case 'lesson-ro': openLesson(d.q, true); break;
     case 'lesson-done': closeOverlay('lesson'); startStep(d.q, 'oefen'); break;
-    case 'overlay-close': closeOverlay(d.id); if (d.id === 'flash') FLASH = null; render(); break;
+    case 'overlay-close': Audio.stop(); closeOverlay(d.id); if (d.id === 'flash') FLASH = null; render(); break;
     case 'ses-close': closeSession(); break;
     case 'ses-next': sesNext(); break;
     case 'ans': submitAnswer(d.v); break;
@@ -4603,7 +4718,7 @@ document.addEventListener('click', e => {
       else { const p = $(`#tok-pool .tok[data-j="${d.j}"]`); if (p) p.classList.remove('used'); el.remove(); }
       break;
     }
-    case 'say': Audio.say(d.text); break;
+    case 'say': Audio.say(d.text, el); break;
     case 'reveal-en': el.textContent = d.enText || '—'; el.style.borderStyle = 'solid'; el.style.color = 'var(--ink)'; break;
     case 'add-to-set': addToSetSheet(d.id); break;
     case 'set-add': { const set = S.sets.find(s => s.id === d.set); if (set && !set.ids.includes(d.id)) { set.ids.push(d.id); Store.mark('words'); toast('Toegevoegd aan ' + set.name); } if (d.close) closeSheet(); else setEditor(d.set); render(); break; }
@@ -4629,6 +4744,7 @@ document.addEventListener('click', e => {
     case 'fclose': closeFeed(); break;
     case 'faudio': S.settings.autoAudio = !S.settings.autoAudio; el.textContent = S.settings.autoAudio ? 'Geluid aan' : 'Geluid uit'; Store.mark('state'); break;
     case 'fans': feedAnswer(d.fid, d.v); break;
+    case 'flis': feedListen(d.fid, d.j); break;
     case 'freveal': { const sec = el.closest('.fcard'); $('.fback', sec).hidden = false; el.hidden = true; const g = $('.fgrade', sec); if (g) g.hidden = false; break; }
     case 'fknew': { const c = FC[d.fid]; if (c && !c.done) { c.done = true; grade('w:' + c.l.id + ':rec', d.ok === '1'); } $$('[data-act="fknew"]', el.closest('.fcard')).forEach(b => { b.disabled = true; if (b === el) b.style.outline = '2px solid var(--gold)'; }); break; }
   }
