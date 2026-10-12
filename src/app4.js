@@ -208,7 +208,7 @@ function viewIk() {
       <button class="btn line" data-act="word-import" data-en="Import a word list">Importeer woordenlijst</button>
     </div>
     <div class="stack" style="gap:6px"><div class="eyebrow" data-en="Backup">Back-up</div>
-      <div class="small">Je voortgang staat alleen op dit toestel. Bewaar af en toe een back-up in Bestanden.${S.settings.lastBackup ? ' Laatste back-up: ' + esc(dateKey(new Date(S.settings.lastBackup))) + '.' : ''}</div>
+      <div class="small">Je voortgang staat alleen op dit toestel. Bewaar af en toe een back-up in Bestanden, en zet hem ook in je Claude Project: de datum en het uur staan in de naam.${S.settings.lastBackup ? ' Laatste back-up: ' + esc(stamp(new Date(S.settings.lastBackup))) + '.' : ''}</div>
       <div class="grid2"><button class="btn line" data-act="export" data-en="Save backup">Bewaar back-up</button><button class="btn line" data-act="import" data-en="Restore backup">Zet back-up terug</button></div>
       <button class="link" data-act="export-text" data-en="Copy as text">Kopieer als tekst ›</button>
       <input type="file" id="imp-file" accept="application/json,.json" hidden>

@@ -45,8 +45,23 @@ function addToSetSheet(wordId) {
 /* ===== BACKUP =====
    2.0: Bewaar back-up uses the share sheet (a .json file) when it can, else a
    download. Zet back-up terug accepts 1.5 and 2.0 backups and confirms first. */
-const backupName = () => 'elkedagzin-backup-' + dateKey() + '.json';
-function backupText() { Store.flush(); return JSON.stringify(S, null, 1); }
+// 2.6: the date and time are in the file name and at the top of the file, so the Claude Project can tell backups apart
+const stamp = (d = new Date()) => dateKey(d) + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+const backupName = (d = new Date()) => 'elkedagzin-backup-' + stamp(d).replace(' ', '-').replace(':', '') + '.json';
+// a short summary at the top, for the Claude Project (the app ignores it when restoring)
+function backupHeader(d = new Date()) {
+  const built = UNITS.filter(u => u.built); const done = built.flatMap(u => squaresOf(u.id)).filter(q => sqComplete(q.id));
+  const fixes = Object.values(S.fix || {}).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  const days = Object.keys(S.activity || {}).filter(k => (S.activity[k] || {}).n).sort();
+  return {app: 'Elke Dag Zin', gemaakt: stamp(d), iso: d.toISOString(), versie: typeof APP_VERSION === 'string' ? APP_VERSION : '',
+    samenvatting: {
+      pleinen_klaar: done.map(q => q.id + ' ' + q.name), plein_nu: S.cur && SQ[S.cur] ? S.cur + ' ' + SQ[S.cur].name : '',
+      steden_grote_markt_gehaald: built.filter(u => ((S.markt || {})[u.id] || 0) >= 80).map(u => u.name),
+      woorden_in_herhaling: Object.keys(S.items || {}).filter(k => k.startsWith('w:')).length, eigen_woorden: Object.keys(S.custom || {}).length,
+      sets: (S.sets || []).map(x => x.name + ' (' + x.ids.length + ')'), fouten_bewaard: fixes.length,
+      recente_fouten: fixes.slice(0, 8).map(f => f.wrong + ' → ' + f.right), actieve_dagen: days.length, laatste_dag: days[days.length - 1] || ''}};
+}
+function backupText() { Store.flush(); return JSON.stringify({backup: backupHeader(), ...S}, null, 1); }
 function backupDone() { S.settings.lastBackup = Date.now(); Store.mark('state'); render(); }
 async function exportData() {
   let r; try { r = await saveFile(backupName(), backupText(), 'application/json'); } catch (e) { return copyBackup(); }
@@ -62,6 +77,7 @@ function copyBackup() {
 function parseBackup(text) {
   let d; try { d = JSON.parse(String(text).replace(/^\uFEFF/, '')); } catch (e) { return {error: 'Dit bestand is geen geldige back-up.'}; }
   if (!d || typeof d !== 'object' || Array.isArray(d) || !d.items || typeof d.items !== 'object') return {error: 'Dit bestand is geen back-up van Elke Dag Zin.'};
+  delete d.backup; // the header for Claude is not part of the progress
   return {data: d};
 }
 function restoreBackup(d) {

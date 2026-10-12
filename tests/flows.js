@@ -132,7 +132,9 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(!(await p.$('[data-en="Claude usage this week"]')), 'Ik has no Claude usage meter');
   const [dl] = await Promise.all([p.waitForEvent('download', {timeout: 3000}).catch(() => null), p.click('[data-act=export]')]);
   let backup = null; if (dl) backup = JSON.parse(fs.readFileSync(await dl.path(), 'utf8'));
-  ok(backup && backup.v === 3 && backup.items && /^elkedagzin-backup-\d{4}-\d\d-\d\d\.json$/.test(dl.suggestedFilename()), 'Bewaar back-up downloads a 2.0 backup');
+  ok(backup && backup.v === 3 && backup.items && /^elkedagzin-backup-\d{4}-\d\d-\d\d-\d{4}\.json$/.test(dl.suggestedFilename()), 'Bewaar back-up downloads a 2.0 backup, date and time in the name: ' + (dl && dl.suggestedFilename()));
+  ok(backup && backup.backup && /^\d{4}-\d\d-\d\d \d\d:\d\d$/.test(backup.backup.gemaakt) && Array.isArray(backup.backup.samenvatting.pleinen_klaar) && Object.keys(backup)[0] === 'backup', 'the backup starts with when it was made and a summary for Claude: ' + (backup && backup.backup.gemaakt));
+  ok(await p.evaluate(b => { const r = parseBackup(JSON.stringify(b)); return r.data && !r.data.backup; }, backup), 'restoring ignores that header');
   ok(await p.evaluate(() => S.settings.lastBackup > 0), 'last backup time stored');
   await p.click('[data-act=export-text]'); await p.waitForTimeout(100); ok(await p.evaluate(() => JSON.parse($('#exp-t').value).v === 3), 'Kopieer als tekst shows the backup'); await p.evaluate(() => closeSheet());
 
