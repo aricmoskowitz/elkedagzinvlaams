@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "0a69142157";</script>
+<script>const APP_VERSION = "b2205a194b";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -308,6 +308,19 @@ details.narc{display:flex;flex-direction:column}
 #update{white-space:nowrap;position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;padding:6px 8px 6px 16px;border-radius:12px;font-size:14px;box-shadow:0 6px 18px rgba(30,27,22,.2)}
 #update .link{color:#fff;text-decoration:underline;min-height:40px;padding:0 10px}
 a.btn{text-decoration:none;text-align:center;box-sizing:border-box}
+
+/* 2.1: Woorden tab groups */
+.btn.sm{min-height:40px;padding:8px 12px;font-size:15px}
+.wgroup{border-bottom:1px solid var(--line)}
+.whead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0}
+.wtoggle{flex:1 1 170px;display:flex;align-items:center;gap:8px;min-height:52px;padding:6px 0;background:none;border:0;text-align:left;color:var(--ink);font:inherit;cursor:pointer;-webkit-touch-callout:none}
+.wtoggle .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.wtoggle .wname{font-size:18px;line-height:1.25}
+.wtoggle .chev{color:var(--go);font-size:22px;line-height:1;transition:transform .15s}
+.wtoggle .chev.open{transform:rotate(90deg)}
+.wacts{display:flex;gap:8px;margin-left:auto}
+.wbody{padding:0 0 10px}
+.wbody > .row{margin:2px 0 6px}
 
 </style>
 </head>
@@ -1267,6 +1280,49 @@ LEX.push(
 // words that belong to no square: the app's Algemeen group
 const ALGEMEEN_WORDS = LEX.filter(l => !l.u).map(l => l.id);
 
+/* ===== 2.1: themes. Every word gets one theme, so the Woorden tab can group by theme.
+   The tag is matched on the lemma, so Ari's own words with the same lemma get it too
+   (this list also covers the set "Mijn woorden 1"). A word list may bring its own
+   "thema"; Ari can change any word's theme on its card (S.themes). */
+const THEMES = [
+  {id: 'eten', name: 'Eten en drinken', en: 'Food and drink'},
+  {id: 'winkelen', name: 'Winkelen en geld', en: 'Shopping and money'},
+  {id: 'onderweg', name: 'Onderweg en reizen', en: 'Getting around and travel'},
+  {id: 'stad', name: 'In de stad', en: 'In town'},
+  {id: 'wonen', name: 'Thuis en wonen', en: 'Home'},
+  {id: 'weer', name: 'Het weer', en: 'The weather'},
+  {id: 'natuur', name: 'Natuur en dieren', en: 'Nature and animals'},
+  {id: 'werk', name: 'Werk', en: 'Work'},
+  {id: 'mensen', name: 'Mensen', en: 'People'},
+  {id: 'tijd', name: 'Tijd en plannen', en: 'Time and plans'},
+  {id: 'gevoel', name: 'Gevoelens en meningen', en: 'Feelings and opinions'},
+  {id: 'lichaam', name: 'Lichaam en gezondheid', en: 'Body and health'},
+  {id: 'taal', name: 'Taal en school', en: 'Language and school'},
+  {id: 'vrij', name: 'Vrije tijd en cultuur', en: 'Free time and culture'},
+  {id: 'beschrijven', name: 'Beschrijven', en: 'Describing things'},
+  {id: 'basis', name: 'Basiswoorden', en: 'Core words'},
+];
+const THEME_BY_W = {};
+Object.entries({
+  eten: 'friet frietkot pak mayonaise saus broodje wafel pint terras koffie bier stoofvlees soep ei appel vork mes bord mossel vlees koekje lekker bestellen eten drinken brood taart bakker glas thee melk suiker café koken brooddoos',
+  winkelen: 'pot zak prijs verkoper goedkoop duur meenemen afrekenen uitkiezen kosten kopen betalen kaart rekening bewijs overschot voorraad',
+  onderweg: 'tram station halte fiets links rechts rechtdoor ver dichtbij fietsen uitstappen aankomen vertrekken wachten boot haven trein reizen vakantie weg zeil hijsen matroos vaart',
+  stad: 'hoek straat plein brug kathedraal markt gebouw kerk toren gevel buurt stad rand periferie',
+  wonen: 'huis deur raam tuin kamer trap appartement dak thuis wonen tafel opstaan kalken naaien goot kraan afsluiten zetten plooien vouwen',
+  weer: 'regenen zon weer paraplu schijnen warm koud',
+  natuur: 'plant bloem stekje cactus vogel zee zweven pauw sluw schuw vos gieten jagen',
+  werk: 'werk werken arbeid voortbrengen meten inschatten vennoot hernoemen drager hergebruiken herzien hervatten herstarten',
+  mensen: 'meisje vriend buur buurvrouw bezoeker uitnodigen krijger iemand karaktereigenschap redden',
+  tijd: 'morgen vandaag vaak altijd zondag vroeg straks gisteren weekend vorig toen wanneer dag week vrij ooit pas verandering voorspelbaarheid voorspelbaar onvoorspelbaar voorspellen herdenken',
+  gevoel: 'mening vinden denken hopen zeker moe druk gezellig goed leuk geloven geduld wens verwarring meeleven peinzen lachen nadenken',
+  lichaam: 'blaas slapen rennen lopen',
+  taal: 'les taal nederlands leren lezen schrijven vragen begrijpen zeggen niveau mededeling herhalen gedicht',
+  vrij: 'spelen wandelen museum boek schilderij film kijken speelbaar',
+  beschrijven: 'oud nieuw groot klein mooi hoog smal rood wit donker licht breed scherp rond zwaar gevaarlijk voorzichtig verschillend',
+  basis: 'zijn hebben nemen gaan komen zoeken zien liggen krijgen willen kunnen mogen moeten zullen maken blijven waar hoe waarom omdat want als graag samen alstublieft weten terugkomen ophalen opbellen weinig genoeg delen klaar alleen maar bewijzen beeld halen gebruiken vatten kennen herkennen starten blijkbaar gewoon kans doen geven sluiten',
+}).forEach(([t, ws]) => ws.split(' ').forEach(w => { THEME_BY_W[w] = t; }));
+const THEME = Object.fromEntries(THEMES.map(t => [t.id, t]));
+
 /* ===== UTIL ===== */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1365,13 +1421,13 @@ function personRule(p) {
    migrate() accepts a 1.5 state (v 2) unchanged and adds the 2.0 fields. */
 const LS_KEY = 'edz.v2';
 const LS_OLD = 'goesting.v1';
-const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', vertaling:true, verbeteren:'beurt', beurten:'6–8'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[], drip:{ids:[], day:0}});
+const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', vertaling:true, verbeteren:'beurt', beurten:'6–8'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[], drip:{ids:[], day:0}, themes:{}});
 function migrate() {
   if (!S.v || S.v < 2) { S.v = 2; S.sq = S.sq || {}; S.cur = 'u1q1'; S.coach = S.coach || {}; S.settings = Object.assign(blankState().settings, S.settings || {}, {test: true}); delete S.units; }
   if (!SQ[S.cur]) S.cur = 'u1q1';
   ['log', 'talks', 'extras', 'imports', 'sets'].forEach(k => { if (!Array.isArray(S[k])) S[k] = []; });
   if (!S.drip || !Array.isArray(S.drip.ids)) S.drip = {ids: [], day: 0};
-  ['fix', 'sic', 'seenAt', 'items', 'sq', 'seen', 'activity', 'custom', 'coach', 'mission'].forEach(k => { if (!S[k] || typeof S[k] !== 'object') S[k] = {}; });
+  ['fix', 'sic', 'seenAt', 'items', 'sq', 'seen', 'activity', 'custom', 'coach', 'mission', 'themes'].forEach(k => { if (!S[k] || typeof S[k] !== 'object') S[k] = {}; });
   const def = blankState().settings;
   S.settings = Object.assign({}, def, S.settings || {});
   S.settings.praten = Object.assign({}, def.praten, S.settings.praten || {});
@@ -2143,32 +2199,9 @@ function viewSquare(q) {
       return `<button class="tapline" data-act="step" data-q="${q}" data-step="${st}" ${built && open ? '' : 'aria-disabled="true"'}><div class="t"><div style="font-weight:600;${built && open ? '' : 'color:var(--faint)'}">${STEP_NAME[st]}${sc ? ` <span class="small">· ${sc === 'test' ? 'getest' : sc === 1 ? 'gelezen' : sc + '%'}</span>` : ''}</div><div class="small">${STEP_DESC[st]}${built ? '' : ' · later'}</div></div><span class="chev" ${built && open ? '' : 'style="color:var(--faint)"'}>›</span></button>`; }).join('')}</div>
   </div>`;
 }
-function viewNaslag() {
-  const segs = [['grammatica', 'Grammatica', 'Grammar'], ['werkwoorden', 'Werkwoorden', 'Verbs'], ['woorden', 'Woorden', 'Words'], ['sets', 'Sets', 'Word sets']];
-  let body = '';
-  if (NASLAG === 'grammatica') {
-    body = `<div>${SQUARES.map(q => `<button class="tapline" data-act="lesson-ro" data-q="${q.id}"><div class="t"><div class="nl" style="font-size:18px">${esc(q.title)}</div><div class="small">${esc(UNIT[q.u].name)} · ${esc(q.name)}</div></div><span class="chev">›</span></button>`).join('')}</div>
-      ${extrasBlock()}
-      <div class="card stack" style="gap:8px"><div class="eyebrow">Het zinsschema</div><div class="small">Elke hoofdzin past hierin. Goud is het werkwoord.</div>${frameHTML(SX.u2s2)}</div>`;
-  } else if (NASLAG === 'werkwoorden') {
-    body = `<div class="list">${LEX.filter(l => l.v).map(l => `<div class="li" data-act="word" data-id="${l.id}" role="button" tabindex="0"><span class="w">${esc(l.w)}</span><span class="d"><span class="verbword">${esc(vForms(l).hij)}</span> · ${esc(l.v.im[0])} · ${esc((l.v.sep || '') + l.v.pp)}</span></div>`).join('')}</div>`;
-  } else if (NASLAG === 'woorden') {
-    body = `<input type="search" id="wsearch" placeholder="Zoek een woord" aria-label="Zoek een woord" value="${esc(WQ)}"><div class="row wrap">${[['alle', 'alle'], ['de', 'de'], ['het', 'het'], ['v', 'werkwoorden'], ['eigen', 'eigen']].map(f => `<button class="chip${WF === f[0] ? ' on' : ''}" data-act="wfilter" data-f="${f[0]}">${f[1]}</button>`).join('')}</div><div id="wlist">${wordList()}</div>`;
-  } else {
-    const unitSets = UNITS.filter(u => u.built).map(u => ({id: 'unit-' + u.id, name: u.name, ids: lexOfUnit(u.n).map(l => l.id), unit: true}));
-    body = coachTip('sets', 'Een set is een lijst woorden om te studeren: als kaarten (omdraaien) of door te typen. Elke stad heeft een set; je kunt ook je eigen sets en woorden maken.') +
-      `<div>${unitSets.concat(S.sets).map(s => `<div class="tapline" style="cursor:default"><div class="t"><div class="nl" style="font-size:18px">${esc(s.name)}</div><div class="small">${s.ids.length} woorden${s.unit ? '' : ' · eigen set'}</div></div><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="set-study" data-id="${s.id}" data-mode="flip" ${s.ids.length ? '' : 'disabled'}>Kaarten</button><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="set-study" data-id="${s.id}" data-mode="type" ${s.ids.length ? '' : 'disabled'}>Typen</button>${s.unit ? '' : `<button class="iconbtn" data-act="set-edit" data-id="${s.id}" aria-label="Bewerk set" style="color:var(--go)">✎</button>`}</div>`).join('')}</div>
-      <div class="grid2"><button class="btn line" data-act="set-new">Nieuwe set</button><button class="btn line" data-act="word-new">Nieuw woord</button></div>`;
-  }
-  return `<div class="stack"><h1 data-en="Reference">Naslag</h1><div class="row wrap">${segs.map(s => `<button class="chip${NASLAG === s[0] ? ' on' : ''}" data-act="naslag" data-seg="${s[0]}" data-en="${s[2]}">${s[1]}</button>`).join('')}</div>${body}</div>`;
-}
-let WQ = '', WF = 'alle';
-function wordList() {
-  const all = LEX.concat(Object.values(S.custom || {})); const q = norm(WQ);
-  const res = all.filter(l => (WF === 'alle' || (WF === 'v' ? l.p === 'v' : WF === 'eigen' ? l.custom : l.g === WF)) && (!q || norm(l.w).includes(q) || norm(l.d || '').includes(q)));
-  if (!res.length) return `<div class="small" style="padding:12px 0">Geen woorden gevonden.</div>`;
-  return `<div class="list">${res.map(l => `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">${esc(l.d || '')}</span></div>`).join('')}</div>`;
-}
+/* viewNaslag: see app13 */
+let WQ = '';
+/* wordList: see app15 */
 function viewIk() {
   const bars = [['Woordenschat', 'Vocabulary', skillStat(k => /:(rec|prod)$/.test(k))], ['De / het', 'Articles', skillStat(k => k.endsWith(':gen'))], ['Vervoegen', 'Conjugation', skillStat(k => k.endsWith(':conj'))], ['Grammatica', 'Word order', skillStat(k => k.endsWith(':ord'))], ['Luisteren', 'Listening', skillStat(k => k.endsWith(':lis'))], ['Lezen', 'Reading', null], ['Spreken', 'Speaking', null], ['Schrijven', 'Writing', null]];
   const voices = Audio.voices;
@@ -2193,6 +2226,10 @@ function viewIk() {
       <button class="link" data-act="say" data-text="Morgen neem ik de tram naar de Groenplaats.">Test de stem ›</button>
       <div class="small">Op iPhone: download <i>Ellen (verbeterd)</i> via Instellingen → Toegankelijkheid → Gesproken materiaal → Stemmen → Nederlands (België).</div>
       <label class="f" for="set-cap">Herhalingen per dag<select id="set-cap">${[30, 60, 90, 150].map(n => `<option value="${n}" ${S.settings.cap === n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+    </div>
+    <div class="stack" style="gap:6px"><div class="eyebrow" data-en="Word lists">Woordenlijsten</div>
+      <div class="small">Een lijst woorden uit Claude of uit een andere app (EDZ-WOORDEN v1) wordt een set in Woorden. Je kiest de naam bij het importeren.</div>
+      <button class="btn line" data-act="word-import" data-en="Import a word list">Importeer woordenlijst</button>
     </div>
     <div class="stack" style="gap:6px"><div class="eyebrow" data-en="Backup">Back-up</div>
       <div class="small">Je voortgang staat alleen op dit toestel. Bewaar af en toe een back-up in Bestanden.${S.settings.lastBackup ? ' Laatste back-up: ' + esc(dateKey(new Date(S.settings.lastBackup))) + '.' : ''}</div>
@@ -2601,7 +2638,8 @@ function viewPad() {
 function getSet(id) {
   if (id.startsWith('unit-')) { const u = UNIT[id.slice(5)]; return {id, name: u.name, ids: lexOfUnit(u.n).map(l => l.id), unit: true}; }
   if (id === 'alg') return {id, name: 'Algemeen · basiswoorden', ids: ALGEMEEN_WORDS.slice(), unit: true};
-  if (id === 'mine') return {id, name: 'Mijn woorden', ids: Object.keys(S.custom || {})};
+  if (id.startsWith('g:')) { const g = groupDefs(id.split(':')[1]).find(x => x.key === id); return g && {id, name: g.name, ids: g.ids, unit: true}; } // a group of the Woorden tab
+  if (id === 'mine') return {id, name: 'Alle eigen woorden', ids: Object.keys(S.custom || {})};
   return S.sets.find(s => s.id === id);
 }
 let FLASH = null;
@@ -2634,18 +2672,7 @@ function newSet(thenAdd) {
     if (thenAdd) toast('Toegevoegd aan ' + name); else setEditor(set.id);
   };
 }
-function setEditor(id) {
-  const set = S.sets.find(s => s.id === id); if (!set) return;
-  const s = openSheet(`<div class="stack"><div class="spread"><h2>${esc(set.name)}</h2><button class="btn line" data-act="set-delete" data-id="${id}">Verwijder</button></div>
-    <div class="list">${set.ids.map(x => LX(x)).filter(Boolean).map(l => `<div class="li"><span class="w" data-act="word" data-id="${esc(l.id)}">${wordHTML(l)}</span><span class="d"></span><button class="iconbtn" data-act="set-remove" data-set="${id}" data-id="${esc(l.id)}" aria-label="Haal weg">✕</button></div>`).join('') || '<div class="small">Nog leeg.</div>'}</div>
-    <input type="search" id="set-q" placeholder="Zoek een woord om toe te voegen" aria-label="Zoek een woord"><div id="set-res"></div>
-    <button class="btn line block" data-act="word-new" data-set="${id}">+ Nieuw woord maken</button></div>`);
-  const q = s.querySelector('#set-q');
-  q.oninput = () => {
-    const v = norm(q.value); const res = !v ? [] : LEX.concat(Object.values(S.custom)).filter(l => !set.ids.includes(l.id) && norm(l.w).includes(v)).slice(0, 8);
-    s.querySelector('#set-res').innerHTML = `<div class="list">${res.map(l => `<div class="li" data-act="set-add" data-set="${id}" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">+ toevoegen</span></div>`).join('')}</div>`;
-  };
-}
+/* setEditor: see app15 (a set has its own page) */
 function addToSetSheet(wordId) {
   const own = S.sets;
   openSheet(`<div class="stack"><h2>Aan welke set?</h2>${own.map(s => `<button class="btn line block" data-act="set-add" data-set="${s.id}" data-id="${esc(wordId)}" data-close="1">${esc(s.name)}</button>`).join('')}<button class="btn block" data-act="set-new-with" data-id="${esc(wordId)}">+ Nieuwe set</button></div>`);
@@ -3236,8 +3263,8 @@ function quickAdd(w) {
   const sets = S.sets;
   const s = openSheet(`<div class="stack">
     <div class="eyebrow">Nieuw woord</div><div class="wc-word">${esc(w)}</div>
-    <div class="small">Dit woord staat nog niet in je woorden. Voeg het toe aan <b>Mijn woorden</b>${sets.length ? ' of aan een set' : ''}; vul de kaart nu of later aan.</div>
-    <label class="f">Zet ook in set<select id="qa-set"><option value="">Alleen Mijn woorden</option>${sets.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label>
+    <div class="small">Dit woord staat nog niet in je woorden. Voeg het toe aan <b>je eigen woorden</b>${sets.length ? ' of aan een set' : ''}; vul de kaart nu of later aan.</div>
+    <label class="f">Zet ook in set<select id="qa-set"><option value="">Geen set (alleen bij je eigen woorden)</option>${sets.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label>
     <button class="btn block" id="qa-go">Vul de kaart in</button>
   </div>`);
   s.querySelector('#qa-go').onclick = () => { const set = s.querySelector('#qa-set').value; closeSheet(); wordForm(set || null, w); };
@@ -3254,7 +3281,7 @@ function wordForm(setId, prefill) {
     <label class="f">Uitleg in het Nederlands<textarea id="nw-d" rows="2" lang="nl"></textarea></label>
     <label class="f">Voorbeeldzin<input id="nw-s" type="text" lang="nl"></label>
     <label class="f">Engels<input id="nw-en" type="text"></label>
-    <label class="f">Set<select id="nw-set"><option value="">Alleen Mijn woorden</option>${S.sets.map(x => `<option value="${x.id}" ${x.id === setId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
+    <label class="f">Set<select id="nw-set"><option value="">Geen set (alleen bij je eigen woorden)</option>${S.sets.map(x => `<option value="${x.id}" ${x.id === setId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
     <button class="btn block" type="submit">Bewaar</button>
   </form>`);
   s.querySelector('#nw-p').onchange = e => { s.querySelector('#nw-noun').hidden = e.target.value !== 'n'; };
@@ -3323,6 +3350,7 @@ function wordCardHTML(l, opts = {}) {
     ${l.v ? `<details class="more"><summary>Alle vervoegingen</summary>${conjTable(l)}</details>` : ''}
     ${!l.v && l.why ? `<div class="why small">${l.why}</div>` : ''}
     ${l.note ? `<div class="why small" style="border-left:3px solid var(--line);padding-left:10px">${l.note}</div>` : ''}
+    ${opts.actions === false ? '' : themeLine(l)}
     <div><button class="en-hidden" data-act="reveal-en" data-en-text="${esc(l.en || '')}">Toon Engels</button></div>
     ${opts.actions === false ? '' : `${inSets.length ? `<div class="small">In: ${inSets.map(x => esc(x.name)).join(', ')}</div>` : ''}<div class="row wrap"><button class="btn line" data-act="add-to-set" data-id="${esc(l.id)}">+ Aan een set</button></div>`}
   </div>`;
@@ -3331,39 +3359,8 @@ function addToSetSheet(wordId) {
   openSheet(`<div class="stack"><h2>Aan welke set?</h2>${S.sets.map(s => `<button class="btn line block" data-act="set-add" data-set="${s.id}" data-id="${esc(wordId)}" data-close="1" ${s.ids.includes(wordId) ? 'disabled' : ''}>${esc(s.name)}${s.ids.includes(wordId) ? ' · zit erin' : ''}</button>`).join('') || '<div class="small">Je hebt nog geen eigen sets.</div>'}<button class="btn block" data-act="set-new-with" data-id="${esc(wordId)}">+ Nieuwe set</button></div>`);
 }
 
-/* ---------- WOORDEN tab ---------- */
-let WSEG = 'woorden';
+/* ---------- WOORDEN tab: see app15 ---------- */
 const allWords = () => LEX.concat(Object.values(S.custom || {}));
-function viewWoorden() {
-  const segs = [['woorden', 'Woorden', 'Words'], ['werkwoorden', 'Werkwoorden', 'Verbs'], ['sets', 'Sets', 'Word sets']];
-  let body = '';
-  if (WSEG === 'woorden') body = `<input type="search" id="wsearch" placeholder="Zoek een woord of betekenis" aria-label="Zoek een woord" value="${esc(WQ)}"><div class="row wrap">${[['alle', 'alle'], ['de', 'de'], ['het', 'het'], ['adj', 'bijv. nw.'], ['eigen', 'mijn woorden']].map(f => `<button class="chip${WF === f[0] ? ' on' : ''}" data-act="wfilter" data-f="${f[0]}">${f[1]}</button>`).join('')}</div><div id="wlist">${wordList()}</div>`;
-  else if (WSEG === 'werkwoorden') body = `<div class="small">ik · wij (nu) · ik (verleden) · voltooid deelwoord</div><div class="list">${allWords().filter(l => l.v).map(l => { const f = vForms(l); return `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${esc(l.w)}</span><span class="d"><span class="verbword">${esc(f.ik)} · ${esc(f.pl)} · ${esc(f.im[0])} · ${esc(f.sep + f.pp)}</span></span></div>`; }).join('')}</div>`;
-  else {
-    const unitSets = UNITS.filter(u => u.built).map(u => getSet('unit-' + u.id)).concat([getSet('alg')]);
-    const mine = Object.keys(S.custom || {});
-    body = `<div class="eyebrow">Mijn sets</div><div>${[{id: 'mine', name: 'Mijn woorden', ids: mine, own: true}].concat(S.sets.map(s => ({...s, own: true}))).map(setRow).join('')}</div>
-      <div class="grid2"><button class="btn line" data-act="set-new">Nieuwe set</button><button class="btn line" data-act="word-new">Nieuw woord</button></div>
-      <div class="eyebrow" style="margin-top:8px">Per stad</div><div>${unitSets.map(setRow).join('')}</div>`;
-  }
-  return `<div class="stack">
-    <div class="spread"><h1 data-en="Words">Woorden</h1><button class="btn" data-act="cards" style="min-height:42px;padding:8px 16px">Kaarten</button></div>
-    ${coachTip('woorden', 'Al je woorden: zoek, tik voor alle vormen en zet ze in een set. Met Kaarten oefen je ze: veeg naar rechts als je het weet, naar links als je het nog niet weet.')}
-    <div class="row wrap">${segs.map(s => `<button class="chip${WSEG === s[0] ? ' on' : ''}" data-act="wseg" data-seg="${s[0]}" data-en="${s[2]}">${s[1]}</button>`).join('')}</div>
-    ${body}
-  </div>`;
-}
-function setRow(s) {
-  const wait = s.own ? setWaiting(s) : 0;
-  return `<div class="tapline" style="cursor:default;flex-wrap:wrap;row-gap:8px"><div class="t" style="flex:1 1 150px"><div class="nl" style="font-size:18px">${esc(s.name)}</div><div class="small">${s.ids.length} woorden${s.bron ? ' · ' + esc(s.bron) : ''}${wait ? ` · <span data-en="${wait} not yet in Herhalen">${wait} wachten</span>` : ''}</div></div><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="set-review" data-id="${s.id}" data-en="Review this set" ${s.ids.length ? '' : 'disabled'}>Herhaal</button><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="cards" data-set="${s.id}" ${s.ids.length ? '' : 'disabled'}>Kaarten</button>${s.own && s.id !== 'mine' ? `<button class="iconbtn" data-act="set-edit" data-id="${s.id}" aria-label="Bewerk set" style="color:var(--go)">✎</button>` : ''}</div>`;
-}
-function wordList() {
-  const q = norm(WQ);
-  const res = allWords().filter(l => (WF === 'alle' || (WF === 'adj' ? l.p === 'adj' : WF === 'eigen' ? l.custom : l.g === WF)) && (!q || norm(l.w).includes(q) || norm(l.d || '').includes(q) || norm(l.en || '').includes(q)));
-  if (!res.length) return `<div class="small" style="padding:12px 0">Geen woorden gevonden. ${WQ ? `<button class="link" data-act="word-add" data-w="${esc(WQ)}">Voeg “${esc(WQ)}” toe ›</button>` : ''}</div>`;
-  return `<div class="list">${res.map(l => `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">${esc(l.d || '')}</span></div>`).join('')}</div>`;
-}
-
 /* ---------- FLASHCARDS: simple or full, swipe right = I know it ---------- */
 const MODAL_EN = new Set(['can', 'may', 'must', 'shall', 'will', 'should']);
 function enBase(l) {
@@ -3390,7 +3387,7 @@ function verbPair(l) {
 }
 let CARDS = null;
 function deckOptions() {
-  const own = [{id: 'mine', name: 'Mijn woorden', ids: Object.keys(S.custom || {})}].concat(S.sets);
+  const own = [{id: 'mine', name: 'Alle eigen woorden', ids: Object.keys(S.custom || {})}].concat(S.sets);
   const units = UNITS.filter(u => u.built).map(u => getSet('unit-' + u.id));
   return [{id: 'seen', name: 'Woorden die ik al zag', ids: Object.keys(S.seen || {}).filter(id => LX(id))},
     {id: 'weak', name: 'Moeilijke woorden', ids: allWords().filter(l => { const it = S.items['w:' + l.id + ':rec']; return it && (it.l > 0 || it.e < 2.4); }).map(l => l.id)},
@@ -3400,6 +3397,7 @@ function deckOptions() {
 }
 function openCards(setId) {
   const decks = deckOptions(); const pre = S.settings.cards || {mode: 'simple', dir: 'nl', n: 20};
+  if (setId && !decks.some(d => d.id === setId)) { const g = getSet(setId); if (g) decks.unshift(g); } // a group of the Woorden tab
   const s = openSheet(`<div class="stack">
     <h2>Kaarten</h2>
     <label class="f">Welke woorden?<select id="cd-deck">${decks.map(d => `<option value="${d.id}" ${d.id === (setId || 'seen') ? 'selected' : ''} ${d.ids.length ? '' : 'disabled'}>${esc(d.name)} (${d.ids.length})</option>`).join('')}</select></label>
@@ -3551,8 +3549,9 @@ function openPlan(focus) {
 /* ===== VERSION 2.0: Home Screen app (service worker + update toast) ===== */
 function registerSW() {
   if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
-  let reloading = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (reloading) return; reloading = true; location.reload(); });
+  // reload only when a new version replaces the running one, not when the first worker takes over
+  let reloading = false; const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (reloading || !hadController) return; reloading = true; location.reload(); });
   navigator.serviceWorker.register('sw.js').then(reg => {
     const offer = w => { if (w && navigator.serviceWorker.controller) updateToast(w); };
     if (reg.waiting) offer(reg.waiting);
@@ -3844,7 +3843,7 @@ function migrated() {
   openOverlay('welcome', `<span style="flex:1"></span><button class="iconbtn" data-act="overlay-close" data-id="welcome" aria-label="Sluiten">✕</button>`, `<div class="stack">
     <div class="eyebrow">Back-up teruggezet</div><h1>Je voortgang is hier</h1>
     <div class="grid2">${migrationSummary().map(([n, l]) => `<div><div class="big-num">${n}</div><div class="small">${l}</div></div>`).join('')}</div>
-    <div class="card soft stack" style="gap:4px"><b>Kijk even na</b><div class="small">· Pad toont je steden en pleinen<br>· Woorden → Sets → Mijn woorden toont je eigen woorden<br>· Naslag toont je correcties op hun plein</div></div>
+    <div class="card soft stack" style="gap:4px"><b>Kijk even na</b><div class="small">· Pad toont je steden en pleinen<br>· Woorden → Set → Alle eigen woorden toont je eigen woorden<br>· Naslag toont je correcties op hun plein</div></div>
     <div class="small">Upload daarna de nieuwe <b>Woorden.md</b> naar je Claude Project: daar staan nu ook je eigen woorden in.</div>
     <button class="btn block" data-act="docs">Documenten voor Claude</button>
     <button class="btn line block" data-act="overlay-close" data-id="welcome">Naar het pad</button>
@@ -3876,8 +3875,7 @@ function parseWords(text) {
   const raw = body.slice(a, b + 1); let d = null;
   try { d = JSON.parse(raw); } catch (err) { try { d = JSON.parse(raw.replace(/[“”„‟″]/g, '"').replace(/[‘’‚‛′]/g, "'")); } catch (err2) { d = null; } }
   if (!d || typeof d !== 'object' || Array.isArray(d)) return {error: 'De woordenlijst is geen geldige JSON.', hint: 'Vraag Claude: ‘geef de woordenlijst opnieuw als geldige JSON’.'};
-  const set = str(d.set, 80);
-  if (!set) return {error: 'De woordenlijst heeft geen naam (set).', hint: 'Elke lijst heeft een naam nodig, bv. "set":"Mijn woorden 1".'};
+  const set = str(d.set, 80) || 'Geïmporteerd ' + dateKey(); // Ari names it in the preview
   if (!Array.isArray(d.words) || !d.words.length) return {error: 'De woordenlijst heeft geen woorden.', hint: 'Het veld "words" moet 1 tot 200 woorden bevatten.'};
   const ix = wordIndex(); const seen = new Set();
   const out = {set, datum: /^\d{4}-\d\d-\d\d$/.test(d.datum) ? d.datum : dateKey(), bron: str(d.bron, 120), fresh: [], existing: [], rejected: []};
@@ -3893,11 +3891,13 @@ function parseWords(text) {
     const k = wordKey(w, p);
     if (seen.has(k)) { out.rejected.push({nr, w, why: 'staat twee keer in de lijst'}); return; } seen.add(k);
     if (ix.has(k)) { out.existing.push({w, id: ix.get(k)}); return; }
-    out.fresh.push({w, p, g: p === 'n' ? g : undefined, pl: p === 'n' ? str(x.pl, 60) || null : null, dim: p === 'n' ? str(x.dim, 60) || null : null, d: str(x.d, 200), s: str(x.s, 200), en: str(x.en, 120), plan: planId(x.plan)});
+    out.fresh.push({w, p, g: p === 'n' ? g : undefined, pl: p === 'n' ? str(x.pl, 60) || null : null, dim: p === 'n' ? str(x.dim, 60) || null : null, d: str(x.d, 200), s: str(x.s, 200), en: str(x.en, 120), plan: planId(x.plan), th: themeId(x.thema)});
   });
   if (d.words.length > 200) out.rejected.push({nr: 201, w: '…', why: `alleen de eerste 200 woorden (${d.words.length} in de lijst)`});
   return {data: out};
 }
+// "thema": a theme id or its Dutch name; anything else is ignored
+const themeId = t => typeof t !== 'string' ? '' : THEME[t.trim().toLowerCase()] ? t.trim().toLowerCase() : (THEMES.find(x => norm(x.name) === norm(t)) || {}).id || '';
 const findSet = name => (S.sets || []).find(x => norm(x.name) === norm(name));
 function importWords(text) {
   let res; try { res = parseWords(text); } catch (e) { res = {error: 'Deze woordenlijst kon ik niet lezen.'}; }
@@ -3905,18 +3905,35 @@ function importWords(text) {
   closeSheet(); previewWords(res.data); return {ok: true, data: res.data};
 }
 function previewWords(r) {
-  const set = findSet(r.set); const inSet = set ? r.existing.filter(x => set.ids.includes(x.id)).length : 0;
   const alg = r.fresh.filter(x => !x.plan).length;
-  const ov = openOverlay('wimport', `<button class="iconbtn" data-act="overlay-close" data-id="wimport" aria-label="Sluiten">✕</button><span class="small">Woordenlijst</span>`, `<div class="stack">
-    <div class="eyebrow">${set ? 'Bestaande set bijwerken' : 'Nieuwe set'}${r.bron ? ' · ' + esc(r.bron) : ''}</div>
-    <h1>${esc(r.set)}</h1>
+  const ov = openOverlay('wimport', `<button class="iconbtn" data-act="overlay-close" data-id="wimport" aria-label="Sluiten">✕</button><span class="small">Woordenlijst${r.bron ? ' · ' + esc(r.bron) : ''}</span>`, `<div class="stack">
+    <label class="f" for="wi-name">Naam van de set<input id="wi-name" type="text" value="${esc(r.set)}" maxlength="80" autocomplete="off"></label>
+    <div id="wi-same"></div>
     <div class="procsum" id="wi-sum"><b>${r.fresh.length}</b> ${r.fresh.length === 1 ? 'nieuw woord' : 'nieuwe woorden'} · <b>${r.existing.length}</b> al in de app · <b>${alg}</b> naar Algemeen</div>
-    <div class="small">Nieuwe woorden komen in de set en op hun plein (of in Algemeen). Woorden die al in de app staan, worden aan de set gekoppeld; hun kaart blijft zoals ze is.${set && inSet ? ` ${inSet} ${inSet === 1 ? 'woord zit' : 'woorden zitten'} al in deze set.` : ''} Nieuwe woorden komen ${DRIP_PER_DAY} per dag in Herhalen; oefen de set om ze sneller te krijgen.</div>
+    <div class="small">Nieuwe woorden komen in de set en op hun plein (of in Algemeen). Woorden die al in de app staan, worden aan de set gekoppeld; hun kaart blijft zoals ze is. Nieuwe woorden komen ${DRIP_PER_DAY} per dag in Herhalen; oefen de set om ze sneller te krijgen.</div>
     ${r.rejected.length ? `<div class="card soft stack" style="gap:4px" id="wi-rej"><b>${r.rejected.length} niet ingelezen</b>${r.rejected.map(x => `<div class="small">${x.nr}. <b class="nl">${esc(x.w)}</b>: ${esc(x.why)}</div>`).join('')}</div>` : ''}
     ${r.fresh.length ? `<details class="card"><summary class="small" style="cursor:pointer">Toon de nieuwe woorden</summary><div class="small" style="margin-top:8px">${r.fresh.map(x => `${x.g ? `<span class="${x.g}">${x.g}</span> ` : ''}<b class="nl">${esc(x.w)}</b> · ${esc(x.plan ? placeLine(x.plan).replace(/^\S+ · /, '') : 'Algemeen')}`).join('<br>')}</div></details>` : ''}
+    <div id="wi-err" class="small" style="color:var(--warn)" hidden>Geef de set een naam.</div>
     <div class="grid2"><button class="btn line" type="button" data-act="overlay-close" data-id="wimport">Annuleer</button><button class="btn" type="button" id="wi-go" ${r.fresh.length || r.existing.length ? '' : 'disabled'}>Importeer</button></div>
   </div>`);
-  $('#wi-go', ov).onclick = () => { const n = saveWords(r); closeOverlay('wimport'); render(); toast(n.added || n.linked ? `${r.set}: ${n.added} nieuw, ${n.linked} gekoppeld` : 'Niets nieuws: alles stond al in de set'); };
+  const name = $('#wi-name', ov);
+  // the same name as an existing set: add to it (default) or make a new one
+  const same = () => {
+    const set = findSet(name.value.trim()); const box = $('#wi-same', ov);
+    if (!set) { box.innerHTML = '<div class="small">Een nieuwe set.</div>'; return; }
+    const inSet = r.existing.filter(x => set.ids.includes(x.id)).length;
+    box.innerHTML = `<div class="card soft stack" style="gap:6px"><div class="small">Er is al een set <b>${esc(set.name)}</b> (${plural(set.ids.length, 'woord', 'woorden')}${inSet ? `; ${inSet} van deze woorden zitten er al in` : ''}).</div>
+      <label class="small"><input type="radio" name="wi-mode" value="add" checked> Voeg toe aan die set</label>
+      <label class="small"><input type="radio" name="wi-mode" value="new"> Maak een nieuwe set: <b>${esc(uniqueSetName(name.value.trim()))}</b></label></div>`;
+  };
+  name.oninput = same; same();
+  $('#wi-go', ov).onclick = () => {
+    const v = name.value.trim().replace(/\s+/g, ' '); if (!v) { $('#wi-err', ov).hidden = false; return; }
+    const mode = ($('input[name="wi-mode"]:checked', ov) || {}).value;
+    r.set = mode === 'new' ? uniqueSetName(v) : (findSet(v) || {}).name || v;
+    const n = saveWords(r); closeOverlay('wimport'); render();
+    toast(n.added || n.linked ? `${r.set}: ${n.added} nieuw, ${n.linked} gekoppeld` : 'Niets nieuws: alles stond al in de set');
+  };
 }
 function saveWords(r) {
   let set = findSet(r.set);
@@ -3925,7 +3942,7 @@ function saveWords(r) {
   const ix = wordIndex(); let added = 0, linked = 0;
   r.fresh.forEach(x => {
     let id = ix.get(wordKey(x.w, x.p)); // pasted twice before saving: still one word
-    if (!id) { id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: x.w, p: x.p, g: x.g, pl: x.pl, dim: x.dim, d: x.d, s: x.s, en: x.en, plan: x.plan, src: 'woorden', date: r.datum}; ix.set(wordKey(x.w, x.p), id); S.drip.ids.push(id); added++; }
+    if (!id) { id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: x.w, p: x.p, g: x.g, pl: x.pl, dim: x.dim, d: x.d, s: x.s, en: x.en, plan: x.plan, src: 'woorden', date: r.datum}; if (x.th) S.custom[id].th = x.th; ix.set(wordKey(x.w, x.p), id); S.drip.ids.push(id); added++; }
     if (!set.ids.includes(id)) set.ids.push(id);
   });
   r.existing.forEach(x => { if (!set.ids.includes(x.id)) { set.ids.push(x.id); linked++; } });
@@ -3957,6 +3974,187 @@ function reviewSet(id) {
   closeSheet(); toast('Herhaal: ' + set.name); startSession({keys, intros: true});
 }
 function setWaiting(set) { const ids = new Set(S.drip.ids); return set.ids.filter(id => ids.has(id)).length; }
+
+/* ===== VERSION 2.1: the Woorden tab, sets and themes =====
+   One list with "Bekijk per": Soort · Stad · Thema · Set. Every group can be studied the
+   same way (Herhaal, Kaarten). Own sets have their own page: rename, add or remove
+   words, share as an EDZ-WOORDEN v1 block, delete. Word lists are imported under Ik. */
+const VIEWS = [['soort', 'Soort', 'Part of speech'], ['stad', 'Stad', 'Town'], ['thema', 'Thema', 'Theme'], ['set', 'Set', 'Set']];
+const SOORTEN = [['n', 'Zelfstandige naamwoorden', 'Nouns'], ['v', 'Werkwoorden', 'Verbs'], ['adj', 'Bijvoeglijke naamwoorden', 'Adjectives'], ['adv', 'Bijwoorden', 'Adverbs'], ['x', 'Andere woorden', 'Other words: question words, conjunctions, pronouns']];
+let WOPEN = new Set(), WNG = '';
+const wview = () => VIEWS.some(v => v[0] === S.settings.wview) ? S.settings.wview : 'soort';
+const themeOf = l => (S.themes || {})[l.id] || l.th || THEME_BY_W[norm(l.w)] || '';
+const townOfWord = l => l.custom ? (l.plan && PSQ[l.plan] ? PSQ[l.plan].u : null) : (l.u ? 'u' + l.u : null);
+const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
+
+/* the groups of one view: {key, name, en, sub, ids} */
+function groupDefs(view) {
+  const all = allWords();
+  if (view === 'soort') return SOORTEN.map(([p, name, en]) => ({key: 'g:soort:' + p, name, en, ids: all.filter(l => p === 'x' ? !['n', 'v', 'adj', 'adv'].includes(l.p) : l.p === p).map(l => l.id)})).filter(g => g.ids.length);
+  if (view === 'stad') {
+    const by = {}; all.forEach(l => { const u = townOfWord(l) || ''; (by[u] = by[u] || []).push(l.id); });
+    return PLAN_TOWNS.filter(t => by[t.id]).map(t => ({key: 'g:stad:' + t.id, name: t.name, en: t.gramEn, sub: `Boog ${arcOf(t.id).n} · Stad ${townIndexInArc(t.id)} · ${t.gram}${t.built ? '' : ' · later'}`, ids: by[t.id]}))
+      .concat(by[''] ? [{key: 'g:stad:alg', name: 'Algemeen', en: 'No town', sub: 'Woorden zonder plein', ids: by['']}] : []);
+  }
+  if (view === 'thema') {
+    const by = {}; all.forEach(l => { const t = themeOf(l); (by[t] = by[t] || []).push(l.id); });
+    return THEMES.filter(t => by[t.id]).map(t => ({key: 'g:thema:' + t.id, name: t.name, en: t.en, ids: by[t.id]}))
+      .concat(by[''] ? [{key: 'g:thema:geen', name: 'Zonder thema', en: 'No theme yet', sub: 'Tik op een woord om een thema te kiezen', ids: by['']}] : []);
+  }
+  return [getSet('mine')].concat(S.sets).map(x => ({key: x.id, name: x.name, own: x.id !== 'mine', sub: setSub(x), ids: x.ids.filter(id => LX(id))}));
+}
+function setSub(x) {
+  const bits = [plural(x.ids.length, 'woord', 'woorden')];
+  if (x.bron) bits.push(esc(x.bron)); if (x.datum) bits.push(esc(x.datum));
+  const wait = x.id === 'mine' ? 0 : setWaiting(x); if (wait) bits.push(`<span data-en="${wait} not yet in Herhalen">${wait} wachten</span>`);
+  return bits.join(' · ');
+}
+
+/* ---------- the tab ---------- */
+// replaces the 1.5 viewWoorden (app13): segments and filter chips are gone
+function viewWoorden() {
+  const v = wview();
+  return `<div class="stack">
+    <h1 data-en="Words">Woorden</h1>
+    ${coachTip('woorden2', 'Bekijk je woorden per soort, per stad, per thema of per set. Open een groep om de woorden te zien. Met Herhaal en Kaarten oefen je precies die groep. Je eigen sets beheer je onder Set.')}
+    <input type="search" id="wsearch" placeholder="Zoek een woord of betekenis" aria-label="Zoek een woord" value="${esc(WQ)}">
+    <div class="row wrap" role="tablist" aria-label="Bekijk per"><span class="small" style="align-self:center">Bekijk per</span>${VIEWS.map(x => `<button class="chip${v === x[0] ? ' on' : ''}" data-act="wview" data-v="${x[0]}" role="tab" aria-selected="${v === x[0]}" data-en="${x[2]}">${x[1]}</button>`).join('')}</div>
+    <div id="wlist">${wordList()}</div>
+  </div>`;
+}
+// replaces app13 wordList: search results, or the groups of the current view
+function wordList() {
+  const q = norm(WQ);
+  if (q) {
+    const res = allWords().filter(l => norm(l.w).includes(q) || norm(l.d || '').includes(q) || norm(l.en || '').includes(q));
+    if (!res.length) return `<div class="small" style="padding:12px 0">Geen woorden gevonden. <button class="link" data-act="word-add" data-w="${esc(WQ)}">Voeg “${esc(WQ)}” toe ›</button></div>`;
+    return `<div class="small">${plural(res.length, 'woord', 'woorden')}</div>${wordRows(res)}`;
+  }
+  const v = wview(); const gs = groupDefs(v);
+  return gs.map(g => groupHTML(g, v)).join('') + (v === 'set' ? `<div class="grid2" style="margin-top:12px"><button class="btn line" data-act="set-new">Nieuwe set</button><button class="btn line" data-act="word-new">Nieuw woord</button></div>` : '');
+}
+function groupHTML(g, v) {
+  const n = g.ids.length; const open = WOPEN.has(g.key);
+  const head = v === 'set'
+    ? `<button class="wtoggle" data-act="set-edit" data-id="${esc(g.key)}"><span class="t"><span class="nl wname">${esc(g.name)}</span><span class="small">${g.sub}</span></span><span class="chev">›</span></button>`
+    : `<button class="wtoggle" data-act="wgroup" data-id="${esc(g.key)}" aria-expanded="${open}"${g.en ? ` data-en="${esc(g.en)}"` : ''}><span class="t"><span class="nl wname">${esc(g.name)}</span><span class="small">${plural(n, 'woord', 'woorden')}${g.sub ? ' · ' + esc(g.sub) : ''}</span></span><span class="chev${open ? ' open' : ''}">›</span></button>`;
+  return `<section class="wgroup"><div class="whead">${head}<div class="wacts">${studyButtons(g.key, n)}</div></div>${open ? groupBody(g) : ''}</section>`;
+}
+const studyButtons = (id, n) => `<button class="btn line sm" data-act="set-review" data-id="${esc(id)}" data-en="Review these words" ${n ? '' : 'disabled'}>Herhaal</button><button class="btn line sm" data-act="cards" data-set="${esc(id)}" data-en="Flashcards" ${n ? '' : 'disabled'}>Kaarten</button>`;
+function groupBody(g) {
+  let ls = g.ids.map(LX).filter(Boolean);
+  let chips = '';
+  if (g.key === 'g:soort:n') {
+    chips = `<div class="row wrap">${[['', 'alle'], ['de', 'de'], ['het', 'het']].map(([k, l]) => `<button class="chip${WNG === k ? ' on' : ''}" data-act="wng" data-g="${k}">${k ? `<b class="${k}">${l}</b>` : l}</button>`).join('')}</div>`;
+    if (WNG) ls = ls.filter(l => l.g === WNG);
+  }
+  return `<div class="wbody">${chips}${wordRows(ls, g.key === 'g:soort:v')}</div>`;
+}
+function wordRows(ls, verbs) {
+  return `<div class="list">${ls.map(l => { const f = verbs && l.v ? vForms(l) : null;
+    return `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">${f ? `<span class="verbword">${esc(f.ik)} · ${esc(f.pl)} · ${esc(f.im[0])} · ${esc(f.sep + f.pp)}</span>` : esc(l.d || '')}</span></div>`; }).join('')}</div>`;
+}
+
+/* ---------- a set's own page ---------- */
+const ownSet = id => (S.sets || []).find(x => x.id === id);
+// replaces the 1.5 setEditor sheet (app5); set-add / set-remove still call setEditor
+function setEditor(id) { openSetPage(id); }
+function openSetPage(id) {
+  const set = getSet(id); if (!set) return; const own = !!ownSet(id);
+  closeSheet();
+  const ls = set.ids.map(LX).filter(Boolean);
+  const ov = openOverlay('setpage', `<button class="iconbtn" data-act="overlay-close" data-id="setpage" aria-label="Sluiten">✕</button><span class="small">Set</span>`, `<div class="stack">
+    <div><div class="eyebrow">${own ? 'Eigen set' : 'Al je eigen woorden'}</div><h1 id="sp-name">${esc(set.name)}</h1>
+      <div class="small">${setSub(set)}</div>
+      ${own ? `<button class="link sm" data-act="set-rename" data-id="${esc(id)}" style="padding-left:0">Hernoem ›</button>` : ''}</div>
+    <div class="grid2">${studyButtons(id, ls.length)}</div>
+    ${ls.length ? `<button class="link sm" data-act="set-export" data-id="${esc(id)}" style="padding-left:0" data-en="Share as a word list (EDZ-WOORDEN v1)">Deel als woordenlijst ›</button>` : ''}
+    <div class="list">${ls.map(l => `<div class="li"><span class="w" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0">${wordHTML(l)}</span><span class="d">${esc(l.d || '')}</span>${own ? `<button class="iconbtn" data-act="set-remove" data-set="${esc(id)}" data-id="${esc(l.id)}" aria-label="Haal ${esc(l.w)} uit de set">✕</button>` : ''}</div>`).join('') || '<div class="small" style="padding:10px 0">Nog leeg.</div>'}</div>
+    ${own ? `<input type="search" id="set-q" placeholder="Zoek een woord om toe te voegen" aria-label="Zoek een woord om toe te voegen"><div id="set-res"></div>
+      <button class="btn line block" data-act="word-new" data-set="${esc(id)}">+ Nieuw woord in deze set</button>
+      <button class="link" data-act="set-delete" data-id="${esc(id)}" style="color:var(--warn)">Verwijder deze set</button>` : ''}
+  </div>`);
+  const q = $('#set-q', ov);
+  if (q) q.oninput = () => {
+    const v = norm(q.value); const res = !v ? [] : allWords().filter(l => !set.ids.includes(l.id) && norm(l.w).includes(v)).slice(0, 8);
+    $('#set-res', ov).innerHTML = `<div class="list">${res.map(l => `<div class="li" data-act="set-add" data-set="${esc(id)}" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">+ toevoegen</span></div>`).join('')}</div>`;
+  };
+}
+const uniqueSetName = (name, except) => { let n = name, i = 2; while ((S.sets || []).some(x => x.id !== except && norm(x.name) === norm(n))) n = `${name} (${i++})`; return n; };
+function renameSet(id) {
+  const set = ownSet(id); if (!set) return;
+  const s = openSheet(`<form class="stack" id="rn-form" autocomplete="off"><h2>Hernoem de set</h2>
+    <label class="f">Naam<input id="rn-name" type="text" value="${esc(set.name)}" maxlength="80"></label>
+    <div id="rn-err" class="small" style="color:var(--warn)" hidden></div>
+    <div class="grid2"><button class="btn line" type="button" data-act="sheet-close">Annuleer</button><button class="btn" type="submit">Bewaar</button></div></form>`);
+  const inp = $('#rn-name', s); setTimeout(() => { inp.focus(); inp.select(); }, 50);
+  $('#rn-form', s).onsubmit = e => {
+    e.preventDefault(); const v = inp.value.trim().replace(/\s+/g, ' '); const err = $('#rn-err', s);
+    if (!v) { err.textContent = 'Geef de set een naam.'; err.hidden = false; return; }
+    if ((S.sets || []).some(x => x.id !== id && norm(x.name) === norm(v))) { err.textContent = 'Er is al een set met die naam.'; err.hidden = false; return; }
+    set.name = v; Store.mark('words'); closeSheet(); openSetPage(id); render(); toast('Hernoemd: ' + v);
+  };
+}
+function deleteSet(id) {
+  confirmBox('Deze set verwijderen? De woorden blijven bewaard.', 'Verwijder', () => { S.sets = S.sets.filter(s => s.id !== id); Store.mark('words'); closeOverlay('setpage'); render(); toast('Set verwijderd'); });
+}
+
+/* ---------- a set as an EDZ-WOORDEN v1 block (the reverse of the import) ---------- */
+function wordsBlock(id) {
+  const set = getSet(id); if (!set) return '';
+  const ws = set.ids.map(LX).filter(Boolean).map(l => {
+    const o = {w: l.w, p: l.p};
+    if (l.p === 'n') { o.g = l.g; if (l.pl) o.pl = l.pl; if (l.dim) o.dim = l.dim; }
+    Object.assign(o, {d: l.d || '', s: l.s || '', en: l.en || '', plan: (l.custom ? l.plan : SQ_OF_WORD[l.id]) || null});
+    const t = themeOf(l); if (t) o.thema = t;
+    return JSON.stringify(o);
+  });
+  const head = JSON.stringify({v: 1, set: set.name, datum: dateKey(), bron: 'Elke Dag Zin'}).slice(0, -1);
+  return `EDZ-WOORDEN v1\n${head},"words":[\n${ws.join(',\n')}]}\nEDZ-EINDE\n`;
+}
+function exportSet(id) {
+  const set = getSet(id); const text = wordsBlock(id); if (!text) return;
+  const s = openSheet(`<div class="stack"><h2>Deel als woordenlijst</h2>
+    <div class="small">${esc(set.name)} als <b>EDZ-WOORDEN v1</b>: plak het in Claude, in een notitie, of importeer het later opnieuw onder Ik.</div>
+    <textarea id="ex-w" rows="7" readonly style="font-family:ui-monospace,Menlo,monospace;font-size:12px">${esc(text)}</textarea>
+    <div class="grid2"><button class="btn line" type="button" id="ex-copy">Kopieer</button><button class="btn line" type="button" id="ex-file">Bewaar als bestand</button></div></div>`);
+  $('#ex-copy', s).onclick = () => copyText(text, $('#ex-w', s), 'Woordenlijst gekopieerd');
+  $('#ex-file', s).onclick = async () => { const r = await saveFile(set.name.replace(/[\\/:*?"<>|]+/g, '-') + '.txt', text, 'text/plain'); if (r === 'downloaded') toast('Bestand gedownload'); else if (r === 'shared') toast('Bewaard'); };
+}
+
+/* ---------- a word's theme, on its card ---------- */
+function themePicker(id) {
+  const l = LX(id); if (!l) return; const cur = themeOf(l);
+  openSheet(`<div class="stack"><h2>Thema van <span class="nl">${esc(l.w)}</span></h2>
+    <div class="row wrap">${THEMES.map(t => `<button class="chip${cur === t.id ? ' on' : ''}" data-act="theme-set" data-id="${esc(id)}" data-t="${t.id}" data-en="${esc(t.en)}">${esc(t.name)}</button>`).join('')}</div></div>`);
+}
+function setTheme(id, t) {
+  if (!THEME[t]) return; S.themes = S.themes || {}; S.themes[id] = t; Store.mark('words');
+  closeSheet(); showWord(id); render(); toast('Thema: ' + THEME[t].name);
+}
+const themeLine = l => { const t = themeOf(l); return `<button class="link sm" data-act="theme-pick" data-id="${esc(l.id)}" style="padding-left:0">Thema: ${t ? esc(THEME[t].name) : 'kies een thema'} ›</button>`; };
+
+/* ---------- import a word list: Ik → Woordenlijsten ---------- */
+function openWordImport() {
+  const s = openSheet(`<div class="stack">
+    <h2 data-en="Import a word list">Woordenlijst importeren</h2>
+    <div class="small">Plak een <b>EDZ-WOORDEN v1</b>-blok, van de eerste regel tot <b>EDZ-EINDE</b>, of kies een .txt-bestand. Je ziet eerst wat er binnenkomt, en je kiest de naam van de set.</div>
+    <textarea id="wim-t" rows="8" aria-label="Woordenlijst" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="EDZ-WOORDEN v1&#10;{…}&#10;EDZ-EINDE"></textarea>
+    <div id="wim-err" role="alert"></div>
+    <div class="grid2"><button class="btn line" type="button" id="wim-paste">Plak</button><button class="btn line" type="button" id="wim-file">Kies bestand</button></div>
+    <input type="file" id="wim-f" accept=".txt,text/plain" hidden>
+    <button class="btn block" type="button" id="wim-go">Verder</button>
+  </div>`);
+  const ta = $('#wim-t', s);
+  const go = () => {
+    const res = whichBlock(ta.value) === 'verslag' && !/EDZ-WOORDEN v1/.test(ta.value) && /EDZ-VERSLAG v1/.test(ta.value) ? importReport(ta.value) : importWords(ta.value);
+    if (res.error) $('#wim-err', s).innerHTML = `<div class="fb no"><b>${esc(res.error)}</b>${res.hint ? `<div class="small">${esc(res.hint)}</div>` : ''}</div>`;
+  };
+  $('#wim-paste', s).onclick = async () => { try { const t = await navigator.clipboard.readText(); if (t) ta.value = t; else toast('Het klembord is leeg'); } catch (e) { ta.focus(); toast('Houd het vak ingedrukt en kies Plak'); } };
+  $('#wim-file', s).onclick = () => $('#wim-f', s).click();
+  $('#wim-f', s).onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { ta.value = String(r.result || ''); go(); }; r.onerror = () => toast('Het bestand kon niet gelezen worden'); r.readAsText(f); };
+  $('#wim-go', s).onclick = go;
+}
 
 /* ===== LONG-PRESS ENGLISH ===== */
 (function () {
@@ -4020,13 +4218,19 @@ document.addEventListener('click', e => {
     case 'mission': { const wk = String(weekStartDay()); S.mission[wk] = S.mission[wk] === d.u ? null : d.u; Store.mark('state'); render(); if (S.mission[wk]) toast('Goed gedaan. Amai!'); break; }
     case 'town': goTown(d.u); break;
     case 'naslag': NASLAG = d.seg; render(); break;
-    case 'wseg': WSEG = d.seg; render(); break;
-    case 'cards': openCards(d.set); break;
-    case 'set-review': reviewSet(d.id); break;
+    case 'cards': closeOverlay('setpage'); openCards(d.set); break;
+    case 'set-review': closeOverlay('setpage'); reviewSet(d.id); break;
+    case 'wview': S.settings.wview = d.v; Store.mark('state'); render(); break;
+    case 'wgroup': if (WOPEN.has(d.id)) WOPEN.delete(d.id); else WOPEN.add(d.id); render(); break;
+    case 'wng': WNG = d.g; render(); break;
+    case 'set-rename': renameSet(d.id); break;
+    case 'set-export': exportSet(d.id); break;
+    case 'theme-pick': themePicker(d.id); break;
+    case 'theme-set': setTheme(d.id, d.t); break;
+    case 'word-import': openWordImport(); break;
     case 'card-grade': cardGrade(d.ok === '1'); break;
     case 'cards-again': startCards(shuffle(CARDS.unknown), {mode: CARDS.mode, dir: CARDS.dir, name: CARDS.name}); break;
     case 'word-add': closeSheet(); quickAdd(d.w); break;
-    case 'wfilter': WF = d.f; render(); break;
     case 'word': showWord(d.id); break;
     case 'lesson-ro': openLesson(d.q, true); break;
     case 'lesson-done': closeOverlay('lesson'); startStep(d.q, 'oefen'); break;
@@ -4045,8 +4249,8 @@ document.addEventListener('click', e => {
     case 'reveal-en': el.textContent = d.enText || '—'; el.style.borderStyle = 'solid'; el.style.color = 'var(--ink)'; break;
     case 'add-to-set': addToSetSheet(d.id); break;
     case 'set-add': { const set = S.sets.find(s => s.id === d.set); if (set && !set.ids.includes(d.id)) { set.ids.push(d.id); Store.mark('words'); toast('Toegevoegd aan ' + set.name); } if (d.close) closeSheet(); else setEditor(d.set); render(); break; }
-    case 'set-remove': { const set = S.sets.find(s => s.id === d.set); if (set) { set.ids = set.ids.filter(x => x !== d.id); Store.mark('words'); setEditor(d.set); render(); } break; }
-    case 'set-delete': confirmBox('Deze set verwijderen? De woorden blijven bewaard.', 'Verwijder', () => { S.sets = S.sets.filter(s => s.id !== d.id); Store.mark('words'); render(); }); break;
+    case 'set-remove': { const set = S.sets.find(s => s.id === d.set); if (set) { set.ids = set.ids.filter(x => x !== d.id); Store.mark('words'); openSetPage(d.set); render(); } break; }
+    case 'set-delete': deleteSet(d.id); break;
     case 'set-new': newSet(); break;
     case 'set-new-with': newSet(d.id); break;
     case 'set-edit': setEditor(d.id); break;

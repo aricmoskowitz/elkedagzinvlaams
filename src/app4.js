@@ -175,32 +175,9 @@ function viewSquare(q) {
       return `<button class="tapline" data-act="step" data-q="${q}" data-step="${st}" ${built && open ? '' : 'aria-disabled="true"'}><div class="t"><div style="font-weight:600;${built && open ? '' : 'color:var(--faint)'}">${STEP_NAME[st]}${sc ? ` <span class="small">· ${sc === 'test' ? 'getest' : sc === 1 ? 'gelezen' : sc + '%'}</span>` : ''}</div><div class="small">${STEP_DESC[st]}${built ? '' : ' · later'}</div></div><span class="chev" ${built && open ? '' : 'style="color:var(--faint)"'}>›</span></button>`; }).join('')}</div>
   </div>`;
 }
-function viewNaslag() {
-  const segs = [['grammatica', 'Grammatica', 'Grammar'], ['werkwoorden', 'Werkwoorden', 'Verbs'], ['woorden', 'Woorden', 'Words'], ['sets', 'Sets', 'Word sets']];
-  let body = '';
-  if (NASLAG === 'grammatica') {
-    body = `<div>${SQUARES.map(q => `<button class="tapline" data-act="lesson-ro" data-q="${q.id}"><div class="t"><div class="nl" style="font-size:18px">${esc(q.title)}</div><div class="small">${esc(UNIT[q.u].name)} · ${esc(q.name)}</div></div><span class="chev">›</span></button>`).join('')}</div>
-      ${extrasBlock()}
-      <div class="card stack" style="gap:8px"><div class="eyebrow">Het zinsschema</div><div class="small">Elke hoofdzin past hierin. Goud is het werkwoord.</div>${frameHTML(SX.u2s2)}</div>`;
-  } else if (NASLAG === 'werkwoorden') {
-    body = `<div class="list">${LEX.filter(l => l.v).map(l => `<div class="li" data-act="word" data-id="${l.id}" role="button" tabindex="0"><span class="w">${esc(l.w)}</span><span class="d"><span class="verbword">${esc(vForms(l).hij)}</span> · ${esc(l.v.im[0])} · ${esc((l.v.sep || '') + l.v.pp)}</span></div>`).join('')}</div>`;
-  } else if (NASLAG === 'woorden') {
-    body = `<input type="search" id="wsearch" placeholder="Zoek een woord" aria-label="Zoek een woord" value="${esc(WQ)}"><div class="row wrap">${[['alle', 'alle'], ['de', 'de'], ['het', 'het'], ['v', 'werkwoorden'], ['eigen', 'eigen']].map(f => `<button class="chip${WF === f[0] ? ' on' : ''}" data-act="wfilter" data-f="${f[0]}">${f[1]}</button>`).join('')}</div><div id="wlist">${wordList()}</div>`;
-  } else {
-    const unitSets = UNITS.filter(u => u.built).map(u => ({id: 'unit-' + u.id, name: u.name, ids: lexOfUnit(u.n).map(l => l.id), unit: true}));
-    body = coachTip('sets', 'Een set is een lijst woorden om te studeren: als kaarten (omdraaien) of door te typen. Elke stad heeft een set; je kunt ook je eigen sets en woorden maken.') +
-      `<div>${unitSets.concat(S.sets).map(s => `<div class="tapline" style="cursor:default"><div class="t"><div class="nl" style="font-size:18px">${esc(s.name)}</div><div class="small">${s.ids.length} woorden${s.unit ? '' : ' · eigen set'}</div></div><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="set-study" data-id="${s.id}" data-mode="flip" ${s.ids.length ? '' : 'disabled'}>Kaarten</button><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="set-study" data-id="${s.id}" data-mode="type" ${s.ids.length ? '' : 'disabled'}>Typen</button>${s.unit ? '' : `<button class="iconbtn" data-act="set-edit" data-id="${s.id}" aria-label="Bewerk set" style="color:var(--go)">✎</button>`}</div>`).join('')}</div>
-      <div class="grid2"><button class="btn line" data-act="set-new">Nieuwe set</button><button class="btn line" data-act="word-new">Nieuw woord</button></div>`;
-  }
-  return `<div class="stack"><h1 data-en="Reference">Naslag</h1><div class="row wrap">${segs.map(s => `<button class="chip${NASLAG === s[0] ? ' on' : ''}" data-act="naslag" data-seg="${s[0]}" data-en="${s[2]}">${s[1]}</button>`).join('')}</div>${body}</div>`;
-}
-let WQ = '', WF = 'alle';
-function wordList() {
-  const all = LEX.concat(Object.values(S.custom || {})); const q = norm(WQ);
-  const res = all.filter(l => (WF === 'alle' || (WF === 'v' ? l.p === 'v' : WF === 'eigen' ? l.custom : l.g === WF)) && (!q || norm(l.w).includes(q) || norm(l.d || '').includes(q)));
-  if (!res.length) return `<div class="small" style="padding:12px 0">Geen woorden gevonden.</div>`;
-  return `<div class="list">${res.map(l => `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">${esc(l.d || '')}</span></div>`).join('')}</div>`;
-}
+/* viewNaslag: see app13 */
+let WQ = '';
+/* wordList: see app15 */
 function viewIk() {
   const bars = [['Woordenschat', 'Vocabulary', skillStat(k => /:(rec|prod)$/.test(k))], ['De / het', 'Articles', skillStat(k => k.endsWith(':gen'))], ['Vervoegen', 'Conjugation', skillStat(k => k.endsWith(':conj'))], ['Grammatica', 'Word order', skillStat(k => k.endsWith(':ord'))], ['Luisteren', 'Listening', skillStat(k => k.endsWith(':lis'))], ['Lezen', 'Reading', null], ['Spreken', 'Speaking', null], ['Schrijven', 'Writing', null]];
   const voices = Audio.voices;
@@ -225,6 +202,10 @@ function viewIk() {
       <button class="link" data-act="say" data-text="Morgen neem ik de tram naar de Groenplaats.">Test de stem ›</button>
       <div class="small">Op iPhone: download <i>Ellen (verbeterd)</i> via Instellingen → Toegankelijkheid → Gesproken materiaal → Stemmen → Nederlands (België).</div>
       <label class="f" for="set-cap">Herhalingen per dag<select id="set-cap">${[30, 60, 90, 150].map(n => `<option value="${n}" ${S.settings.cap === n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+    </div>
+    <div class="stack" style="gap:6px"><div class="eyebrow" data-en="Word lists">Woordenlijsten</div>
+      <div class="small">Een lijst woorden uit Claude of uit een andere app (EDZ-WOORDEN v1) wordt een set in Woorden. Je kiest de naam bij het importeren.</div>
+      <button class="btn line" data-act="word-import" data-en="Import a word list">Importeer woordenlijst</button>
     </div>
     <div class="stack" style="gap:6px"><div class="eyebrow" data-en="Backup">Back-up</div>
       <div class="small">Je voortgang staat alleen op dit toestel. Bewaar af en toe een back-up in Bestanden.${S.settings.lastBackup ? ' Laatste back-up: ' + esc(dateKey(new Date(S.settings.lastBackup))) + '.' : ''}</div>

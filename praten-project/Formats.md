@@ -104,7 +104,7 @@ Several photos in one session are fine: write one report that covers them all.
 
 ## 4. EDZ-WOORDEN v1 (Project → app)
 
-A named word set: Ari's own list, the words of a class, a text. Ari pastes it into the same box as a report (*Verslag plakken*), or picks a `.txt` file there. Between the markers there must be exactly one JSON object.
+A named word set: Ari's own list, the words of a class, a text. Ari imports it under Ik → *Woordenlijsten* (paste or a `.txt` file); the report box (*Verslag plakken*) accepts it too. The app can also write a set back out in this format (*Deel als woordenlijst* on the set's page). Between the markers there must be exactly one JSON object.
 
 ```
 EDZ-WOORDEN v1
@@ -117,10 +117,12 @@ EDZ-EINDE
 | Field | Required | Meaning |
 |---|---|---|
 | `v` | yes | always `1` |
-| `set` | yes | set name; importing the same name again updates that set |
+| `set` | yes | set name; Ari can change it in the preview. Importing into an existing set's name adds to that set |
 | `datum` | yes | `YYYY-MM-DD` |
 | `bron` | no | where the words came from ("eigen lijst", "les 12 oktober") |
-| `words[]` | yes | 1–200 entries, same fields as `words[]` in EDZ-VERSLAG |
+| `words[]` | yes | 1–200 entries, same fields as `words[]` in EDZ-VERSLAG, plus an optional `thema` |
+
+- **`thema` (optional, per word):** one of `eten`, `winkelen`, `onderweg`, `stad`, `wonen`, `weer`, `natuur`, `werk`, `mensen`, `tijd`, `gevoel`, `lichaam`, `taal`, `vrij`, `beschrijven`, `basis` (or its Dutch name, e.g. "Natuur en dieren"). Without it the app uses its own tag for that lemma, or leaves the word "Zonder thema".
 
 - **`p` values:** `n`, `v`, `adj`, `adv`, and in this block only also `pron`, `conj` and `prep`. EDZ-VERSLAG v1 stays unchanged.
 - **Non-noun fields:** `g`, `pl` and `dim` may be missing for non-nouns.

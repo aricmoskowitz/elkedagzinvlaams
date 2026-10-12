@@ -2,7 +2,8 @@
 function getSet(id) {
   if (id.startsWith('unit-')) { const u = UNIT[id.slice(5)]; return {id, name: u.name, ids: lexOfUnit(u.n).map(l => l.id), unit: true}; }
   if (id === 'alg') return {id, name: 'Algemeen · basiswoorden', ids: ALGEMEEN_WORDS.slice(), unit: true};
-  if (id === 'mine') return {id, name: 'Mijn woorden', ids: Object.keys(S.custom || {})};
+  if (id.startsWith('g:')) { const g = groupDefs(id.split(':')[1]).find(x => x.key === id); return g && {id, name: g.name, ids: g.ids, unit: true}; } // a group of the Woorden tab
+  if (id === 'mine') return {id, name: 'Alle eigen woorden', ids: Object.keys(S.custom || {})};
   return S.sets.find(s => s.id === id);
 }
 let FLASH = null;
@@ -35,18 +36,7 @@ function newSet(thenAdd) {
     if (thenAdd) toast('Toegevoegd aan ' + name); else setEditor(set.id);
   };
 }
-function setEditor(id) {
-  const set = S.sets.find(s => s.id === id); if (!set) return;
-  const s = openSheet(`<div class="stack"><div class="spread"><h2>${esc(set.name)}</h2><button class="btn line" data-act="set-delete" data-id="${id}">Verwijder</button></div>
-    <div class="list">${set.ids.map(x => LX(x)).filter(Boolean).map(l => `<div class="li"><span class="w" data-act="word" data-id="${esc(l.id)}">${wordHTML(l)}</span><span class="d"></span><button class="iconbtn" data-act="set-remove" data-set="${id}" data-id="${esc(l.id)}" aria-label="Haal weg">✕</button></div>`).join('') || '<div class="small">Nog leeg.</div>'}</div>
-    <input type="search" id="set-q" placeholder="Zoek een woord om toe te voegen" aria-label="Zoek een woord"><div id="set-res"></div>
-    <button class="btn line block" data-act="word-new" data-set="${id}">+ Nieuw woord maken</button></div>`);
-  const q = s.querySelector('#set-q');
-  q.oninput = () => {
-    const v = norm(q.value); const res = !v ? [] : LEX.concat(Object.values(S.custom)).filter(l => !set.ids.includes(l.id) && norm(l.w).includes(v)).slice(0, 8);
-    s.querySelector('#set-res').innerHTML = `<div class="list">${res.map(l => `<div class="li" data-act="set-add" data-set="${id}" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">+ toevoegen</span></div>`).join('')}</div>`;
-  };
-}
+/* setEditor: see app15 (a set has its own page) */
 function addToSetSheet(wordId) {
   const own = S.sets;
   openSheet(`<div class="stack"><h2>Aan welke set?</h2>${own.map(s => `<button class="btn line block" data-act="set-add" data-set="${s.id}" data-id="${esc(wordId)}" data-close="1">${esc(s.name)}</button>`).join('')}<button class="btn block" data-act="set-new-with" data-id="${esc(wordId)}">+ Nieuwe set</button></div>`);

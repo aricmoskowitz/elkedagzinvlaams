@@ -62,7 +62,8 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   await p.click('#tabs [data-tab=woorden]'); await p.waitForTimeout(150); await shot('09_woorden');
   await p.evaluate(() => showWord('nemen')); await p.waitForTimeout(100);
   ok(!(await p.$('[data-act=zeg]')), 'word card has no Zeg het anders'); await shot('10_word'); await p.evaluate(() => closeSheet());
-  await p.click('[data-act=cards]'); await p.waitForTimeout(100); await p.selectOption('#cd-deck', 'verbs'); await p.click('#cd-go'); await p.waitForTimeout(150);
+  await p.click('[data-act=wview][data-v=soort]'); await p.click('[data-act=cards][data-set="g:soort:v"]'); await p.waitForTimeout(100);
+  ok(await p.inputValue('#cd-deck') === 'g:soort:v', 'Kaarten on the Werkwoorden group opens the cards with that group'); await p.click('#cd-go'); await p.waitForTimeout(150);
   const box = await (await p.$('#fcard')).boundingBox();
   await p.mouse.move(box.x + box.width / 2, box.y + 100); await p.mouse.down(); await p.mouse.move(box.x + box.width / 2 + 160, box.y + 110, {steps: 8}); await p.mouse.up(); await p.waitForTimeout(400);
   ok(await p.evaluate(() => CARDS.known.length === 1), 'swipe right counts as known'); await p.evaluate(() => closeOverlay('cards'));

@@ -36,9 +36,9 @@ render_icons()
 
 css = open(os.path.join(D, 'src', 'style.css')).read()
 js = ''
-for n in ['content', 'content2', 'content4', 'content5', 'content3', 'content6', 'content7']:
+for n in ['content', 'content2', 'content4', 'content5', 'content3', 'content6', 'content7', 'content8']:
     js += open(os.path.join(D, 'src', n + '.js')).read() + '\n'
-for n in ['app1', 'app2', 'app3', 'app4', 'app8', 'app5', 'app7', 'app9', 'app10', 'app12', 'app13', 'app14', 'app6']:
+for n in ['app1', 'app2', 'app3', 'app4', 'app8', 'app5', 'app7', 'app9', 'app10', 'app12', 'app13', 'app14', 'app15', 'app6']:
     js += open(os.path.join(D, 'src', n + '.js')).read() + '\n'
 
 body = f'''<style>

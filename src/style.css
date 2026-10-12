@@ -288,3 +288,16 @@ details.narc{display:flex;flex-direction:column}
 #update{white-space:nowrap;position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;padding:6px 8px 6px 16px;border-radius:12px;font-size:14px;box-shadow:0 6px 18px rgba(30,27,22,.2)}
 #update .link{color:#fff;text-decoration:underline;min-height:40px;padding:0 10px}
 a.btn{text-decoration:none;text-align:center;box-sizing:border-box}
+
+/* 2.1: Woorden tab groups */
+.btn.sm{min-height:40px;padding:8px 12px;font-size:15px}
+.wgroup{border-bottom:1px solid var(--line)}
+.whead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0}
+.wtoggle{flex:1 1 170px;display:flex;align-items:center;gap:8px;min-height:52px;padding:6px 0;background:none;border:0;text-align:left;color:var(--ink);font:inherit;cursor:pointer;-webkit-touch-callout:none}
+.wtoggle .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.wtoggle .wname{font-size:18px;line-height:1.25}
+.wtoggle .chev{color:var(--go);font-size:22px;line-height:1;transition:transform .15s}
+.wtoggle .chev.open{transform:rotate(90deg)}
+.wacts{display:flex;gap:8px;margin-left:auto}
+.wbody{padding:0 0 10px}
+.wbody > .row{margin:2px 0 6px}
