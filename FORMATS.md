@@ -25,7 +25,7 @@ scène: sc-u7 · Jij bent een nieuwsgierige buurvrouw in de trappenhal · opener
 doel: zeg 3 keer waarom (omdat/want) en gebruik 1 keer "als"
 recent: vinden, weten, denken, hopen, buurt, zeker, mening, druk, regenen, paraplu
 zwak: u1q2 werkwoord op plaats 2 (4×) · u7q2 dat-zin (2×) · Algemeen: in het Nederlands (1×)
-instellingen: vertaling ja · verbeteren per beurt · beurten 8–10
+instellingen: verbeteren per beurt · beurten 8–10
 EDZ-EINDE
 ```
 
@@ -38,7 +38,9 @@ EDZ-EINDE
 | `scène`, `doel` | opdracht | the town's scene from `Scenes.md` and a measurable goal |
 | `recent` | all | up to 30 words learned in the last 14 days (not new in the report) |
 | `zwak` | all | up to 5 open corrections, grouped by square, with counts |
-| `instellingen` | all | translation yes/no · corrections `per beurt` or `op het einde` · target turns |
+| `instellingen` | all | corrections `per beurt` or `op het einde` · target turns |
+
+**No translations.** Conversation practice stays in Dutch: Claude never puts an English translation under its replies. A `vertaling` value in `instellingen` (from an older app version) is ignored, so the block stays v1.
 
 ---
 
@@ -57,7 +59,7 @@ EDZ-VERSLAG v1
  {"wrong":"Ik heb gaan naar de markt.","right":"Ik ben naar de markt gegaan.","why":"Gaan (movement to a place) takes zijn; the participle is gegaan.","type":"verb form","plan":"u5q3"},
  {"wrong":"Ik zou graag hebben een koffie.","right":"Ik had graag een koffie.","why":"Flemish polite ordering uses 'ik had graag'.","type":"word choice","plan":null,
   "newTopic":{"title":"Beleefd bestellen: ik had graag (polite ordering)","town":"u4","rule":"Flemish uses the past 'ik had graag' to order politely.","examples":[{"nl":"Ik had graag een koffie.","en":"I'd like a coffee."},{"nl":"We hadden graag de rekening.","en":"We'd like the bill."}]}}],
-"words":[{"w":"trappenhal","p":"n","g":"de","pl":"trappenhallen","dim":"","d":"de ruimte met de trap in een gebouw","s":"Ik zie de buurvrouw in de trappenhal.","en":"stairwell","plan":"u6q3"}]}
+"words":[{"w":"trappenhal","p":"n","g":"de","pl":"trappenhallen","dim":"","d":"de ruimte met de trap in een gebouw","s":"Ik zie de buurvrouw in de trappenhal.","en":"stairwell","plan":"u6q3","thema":"wonen"}]}
 EDZ-EINDE
 ```
 
@@ -76,12 +78,12 @@ EDZ-EINDE
 | `bron` | foto | what the photo was ("les 12 oktober, whiteboard") |
 | `goed[]` | no | up to 3 constructions used correctly: `topic`, `plan`, `mastered` |
 | `corrections[]` | no | up to 8: `wrong` (Ari's exact words), `right`, `why` (short English), `type` (`word order`, `article`, `verb form`, `adjective`, `spelling`, `word choice`, `other`), `plan` (square id or null), optional `newTopic` |
-| `words[]` | no | up to 10 new words: `w` lemma, `p` (`n`/`v`/`adj`/`adv`), `g` (`de`/`het`, nouns), `pl`, `dim`, `d` (simple Dutch definition), `s` (example), `en`, `plan` |
+| `words[]` | no | up to 10 new words: `w` lemma, `p` (`n`/`v`/`adj`/`adv`), `g` (`de`/`het`, nouns), `pl`, `dim`, `d` (simple Dutch definition), `s` (example), `en`, `plan`, `thema` (always, see §4), and `syn`/`ant` only where a good one exists |
 | `newTopic` | no | `title`, `town` (town id like `u4`), `rule`, `examples[]` (`nl`, `en`) |
 
 **Rules the app checks.** Breaking one makes the item land under *Algemeen* instead of being lost.
 - `plan` must be a square id from `Curriculum.md`.
-- A word already in the app is skipped.
+- A word already in the app is not added again; empty fields on its card (`thema`, `syn`, `ant`) are filled in.
 - Smart quotes (“ ”) are turned into straight quotes before reading.
 - Text outside the markers is ignored.
 
@@ -108,9 +110,9 @@ A named word set: Ari's own list, the words of a class, a text. Ari imports it u
 
 ```
 EDZ-WOORDEN v1
-{"v":1,"set":"Mijn woorden 1","datum":"2026-10-12","bron":"eigen lijst","words":[
-{"w":"rand","p":"n","g":"de","pl":"randen","dim":"randje","d":"de buitenkant of het einde van iets","s":"We wonen aan de rand van de stad.","en":"edge, rim; outskirts","plan":"u13q1"},
-{"w":"kennen","p":"v","d":"weten wie iemand is, of iets goed kennen","s":"Ken jij mijn buurvrouw?","en":"to know (be familiar with)","plan":"u12q4"}]}
+{"v":1,"set":"Mijn woorden","datum":"2026-10-12","bron":"eigen lijst","words":[
+{"w":"rand","p":"n","g":"de","pl":"randen","dim":"randje","d":"de buitenkant of het einde van iets","s":"We wonen aan de rand van de stad.","en":"edge, rim; outskirts","plan":"u13q1","thema":"beschrijven"},
+{"w":"vrolijk","p":"adj","d":"blij en opgewekt","s":"Zij is altijd vrolijk, zelfs als het regent.","en":"cheerful","plan":"u6q1","thema":"gevoel","syn":["opgewekt","blij"],"ant":["somber"]}]}
 EDZ-EINDE
 ```
 
@@ -120,18 +122,82 @@ EDZ-EINDE
 | `set` | yes | set name; Ari can change it in the preview. Importing into an existing set's name adds to that set |
 | `datum` | yes | `YYYY-MM-DD` |
 | `bron` | no | where the words came from ("eigen lijst", "les 12 oktober") |
-| `words[]` | yes | 1–200 entries, same fields as `words[]` in EDZ-VERSLAG, plus an optional `thema` |
+| `words[]` | yes | 1–200 entries, same fields as `words[]` in EDZ-VERSLAG |
 
-- **`thema` (optional, per word):** one of `eten`, `winkelen`, `onderweg`, `stad`, `wonen`, `weer`, `natuur`, `werk`, `mensen`, `tijd`, `gevoel`, `lichaam`, `taal`, `vrij`, `beschrijven`, `basis` (or its Dutch name, e.g. "Natuur en dieren"). Without it the app uses its own tag for that lemma, or leaves the word "Zonder thema".
+- **`thema` (per word):** one of `eten`, `winkelen`, `onderweg`, `stad`, `wonen`, `weer`, `natuur`, `werk`, `mensen`, `tijd`, `gevoel`, `lichaam`, `taal`, `vrij`, `beschrijven`, `basis` (or its Dutch name, e.g. "Natuur en dieren"). **Required in every block the Project writes.** Optional in sets the app exports. Without it the app uses its own tag for that lemma, or leaves the word "Zonder thema".
 - **`syn` and `ant` (optional, per word):** synonyms and antonyms, as a list (`["vrolijk","opgewekt"]`) or comma-separated text. Only where a good one exists, in Belgian Dutch. They show on the word card and feed the synonym and antonym cards in Scroll.
-
-- **`p` values:** `n`, `v`, `adj`, `adv`, and in this block only also `pron`, `conj` and `prep`. EDZ-VERSLAG v1 stays unchanged.
+- **`p` values:** `n`, `v`, `adj`, `adv`, and in this block only also `pron`, `conj` and `prep`.
 - **Non-noun fields:** `g`, `pl` and `dim` may be missing for non-nouns.
 - **Required per word:** `w`, `d`, `s`, `en`, and for a noun `g` (`de`/`het`).
 
 **What the app does.**
 - Same normalising as reports: smart quotes become straight quotes, code fences and text outside the markers are ignored.
-- It shows a preview first: the set name, how many words are new, how many are already in the app, how many go to *Algemeen* (`plan` null or not a square id from `Curriculum.md`), and every rejected entry with its reason. Then *Importeer* or *Annuleer*.
-- Words are matched on lemma (`w`, case-insensitive) plus `p`. A word already in the app is linked into the set and its card is not overwritten. Pasting the same block twice adds nothing.
+- It shows a preview first: the set name, how many words are new, how many are already in the app, how many existing words get empty fields filled in (*aangevuld*), how many go to *Algemeen* (`plan` null or not a square id from `Curriculum.md`), and every rejected entry with its reason. Then *Importeer* or *Annuleer*.
+- Words are matched on lemma (`w`, case-insensitive) plus `p`. A word already in the app is linked into the set. Its filled-in fields are never overwritten, but empty ones (`thema`, `syn`, `ant`, `g`, `pl`, `dim`) are filled from the block. Pasting the same block twice changes nothing the second time.
 - A new word belongs to the set and to its `plan` square (or *Algemeen*). New words enter the review queue 12 a day; drilling the set brings them in at once.
 - A bad entry (missing `w`, `d`, `s` or `en`; a noun without a valid `g`; an unknown `p`; the same word twice) is skipped and listed. It never blocks the rest.
+
+---
+
+## 5. Preparing a word list (Project only)
+
+Use this whenever Ari gives words to add to the app: a typed list, a file (CSV or export from another app), a photo of a vocabulary list, or one word from the app's Woordenboek. Don't start a session for it.
+
+**1. Read and filter.**
+- Read the whole list first. Keep only Dutch entries; leave out other languages and say how many.
+- Leave out words the app already has: check `Woorden.md` (squares, sets, *Eigen woorden*, *Woordenboek*) and the own words in the newest backup. Leave out duplicates within the list. Name what was skipped.
+
+**2. Clean each word.**
+- Fix spelling and use the base form: infinitive, singular noun, adjective without -e (*zweefde* → *zweven*, *matrozen* → *matroos*, *heerlijke* → *heerlijk*).
+- Correct a wrong *de/het*.
+- Keep a phrase only when the phrase itself is the point (*in elkaar steken*, *laten trekken*). Otherwise reduce it to the key word, or skip it when that word is already in the app.
+- Prefer the Belgian word and mention the Netherlands one in `en` or `d` where they differ (*de selder* / NL *selderij*, *de frigo*, *kuisen*).
+
+**3. Check the meaning.**
+- When the Dutch doesn't match the English (*dobbelsteen* for "to dice", *saai* for "dull"), use the right Dutch word and say so.
+- When a word has a vulgar, rude or very different second meaning (*naaien*, *eikel*, *het meer* / *meer*), say so in `en`.
+- When you can't identify a word, ask. Never guess it into the set.
+
+**4. Fill every field.**
+- `w`, `p`, and for nouns `g`, `pl` and `dim` (leave `dim` empty when nobody uses one).
+- `d`: one simple Dutch definition at A2 level that doesn't use the word itself.
+- `s`: one short, natural Belgian Dutch sentence, preferably about Antwerp, coffee, cooking or daily life.
+- `en`: a short English gloss, with a note for tricky meanings.
+- `plan`: the square whose grammar point or theme fits (separable verbs → u2q1, compounds and food nouns → u3q1, adjectives → u6q1…), or `null`.
+- `thema`: **always**. Pick it by what the word is about, independent of `plan`:
+
+| thema | for |
+|---|---|
+| `eten` | food, drink, cooking, kitchen tools, taste |
+| `winkelen` | shopping, prices, comparing products |
+| `onderweg` | travel, transport, the sea, distances, delays |
+| `stad` | the city, neighbourhoods, areas, buildings in town |
+| `wonen` | the home, household tasks, furniture, materials |
+| `weer` | weather |
+| `natuur` | plants, animals, the garden, landscape, the environment |
+| `werk` | work, business, money, meetings, school and study subjects |
+| `mensen` | people, character, relationships |
+| `tijd` | time, history, change, the future |
+| `gevoel` | feelings and emotions |
+| `lichaam` | the body, health, appearance |
+| `taal` | speaking, reading, writing, messages, explaining |
+| `vrij` | hobbies, sport, arts, games |
+| `beschrijven` | colours, shapes, qualities: describing things |
+| `basis` | very general verbs, function words, numbers and fractions |
+
+- `syn` / `ant`: only where a good Belgian Dutch one exists.
+
+**5. Name and size the set.**
+- Use the set name Ari gives, exactly.
+- Without one: a single word from the Woordenboek goes to `Mijn woorden`; a list becomes `Import - <source>` (for example `Import - Karteto`).
+- At most 200 words per block. For more, write several blocks with the **same** set name: each import adds to the set.
+- For more than about 30 words, also give the blocks as `.txt` files.
+
+**6. Report before the block**, briefly, in English:
+- how many new words
+- what was skipped and why
+- what was corrected (wrong → right)
+- anything unclear, with your question
+- warnings about second meanings
+
+Then the block or blocks. `Woorden.md` comes from the app, so don't edit it; Ari uploads a new copy after importing.

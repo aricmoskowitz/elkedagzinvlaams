@@ -64,7 +64,8 @@ function startBlock(o) {
   if (mode === 'foto') lines.push('taak: verwerk de foto');
   const rec = recentWords(); if (rec.length) lines.push('recent: ' + rec.join(', '));
   if (weak.length) lines.push('zwak: ' + weak.map(w => `${w.label} (${w.n}×)`).join(' · '));
-  lines.push(`instellingen: vertaling ${P.vertaling ? 'ja' : 'nee'} · verbeteren ${P.verbeteren === 'einde' ? 'op het einde' : 'per beurt'} · beurten ${P.beurten}`);
+  // 2.7: no translations any more; the Project ignores an old vertaling value (Formats §1)
+  lines.push(`instellingen: verbeteren ${P.verbeteren === 'einde' ? 'op het einde' : 'per beurt'} · beurten ${P.beurten}`);
   lines.push('EDZ-EINDE');
   return lines.join('\n');
 }
@@ -85,7 +86,6 @@ function fillPraten(s) {
   $('#pr-body', s).innerHTML = `<div class="stack" style="gap:12px">
     ${chips('mode', MODES, R.mode)}
     <div class="eyebrow">Instellingen</div>
-    ${chips('vertaling', [['ja', 'vertaling ja'], ['nee', 'vertaling nee']], P.vertaling ? 'ja' : 'nee')}
     ${chips('verbeteren', [['beurt', 'verbeteren per beurt'], ['einde', 'op het einde']], P.verbeteren)}
     ${chips('beurten', BEURTEN.map(b => [b, b + ' beurten']), P.beurten)}
     <textarea id="pr-block" rows="7" readonly aria-label="Startblok" style="font-family:ui-monospace,Menlo,monospace;font-size:12px">${esc(block)}</textarea>
@@ -98,7 +98,7 @@ function fillPraten(s) {
   </div>`;
   $$('[data-pr]', s).forEach(b => b.onclick = () => {
     const k = b.dataset.pr, v = b.dataset.v;
-    if (k === 'mode') { R.mode = v; P.mode = v; } else if (k === 'vertaling') P.vertaling = v === 'ja'; else P[k] = v;
+    if (k === 'mode') { R.mode = v; P.mode = v; } else P[k] = v;
     Store.mark('state'); fillPraten(s);
   });
   $('#pr-copy', s).onclick = () => copyText(block, $('#pr-block', s), 'Startblok gekopieerd');
@@ -147,7 +147,10 @@ function cleanReport(d) {
   // "de kraam" → kraam (de): the lemma without its article
   const words = arr(d.words).filter(w => w && str(w.w)).map(w => { const m = str(w.w, 60).match(/^(de|het)\s+(.+)$/i); return m ? {...w, w: m[2], g: w.g || m[1].toLowerCase(), p: w.p || 'n'} : w; });
   r.wordsKnown = words.filter(w => FORM_IX[norm(w.w)] || have.has(norm(w.w))).map(w => str(w.w, 60));
-  r.words = words.filter(w => !FORM_IX[norm(w.w)] && !have.has(norm(w.w))).slice(0, 12).map(w => ({w: str(w.w, 60), p: ['n', 'v', 'adj', 'adv'].includes(w.p) ? w.p : 'adv', g: w.g === 'de' || w.g === 'het' ? w.g : null, pl: str(w.pl, 60), dim: str(w.dim, 60), d: str(w.d, 200), s: str(w.s, 200), en: str(w.en, 120), plan: planId(w.plan)}));
+  r.words = words.filter(w => !FORM_IX[norm(w.w)] && !have.has(norm(w.w))).slice(0, 12).map(w => ({w: str(w.w, 60), p: ['n', 'v', 'adj', 'adv'].includes(w.p) ? w.p : 'adv', g: w.g === 'de' || w.g === 'het' ? w.g : null, pl: str(w.pl, 60), dim: str(w.dim, 60), d: str(w.d, 200), s: str(w.s, 200), en: str(w.en, 120), plan: planId(w.plan), th: themeId(w.thema), syn: relList(w.syn), ant: relList(w.ant)}));
+  // 2.7: words already in the app: fill their empty fields (lemma + p must match)
+  const wix = wordIndex();
+  r.fill = words.map(w => { const p = ['n', 'v', 'adj', 'adv'].includes(w.p) ? w.p : 'adv'; const id = wix.get(wordKey(str(w.w, 60), p)); return id ? {id, f: fillFor(id, {th: themeId(w.thema), syn: relList(w.syn), ant: relList(w.ant), g: w.g === 'de' || w.g === 'het' ? w.g : null, pl: str(w.pl, 60), dim: str(w.dim, 60)})} : null; }).filter(x => x && Object.keys(x.f).length);
   r.goed = arr(d.goed).filter(g => g && str(g.topic)).slice(0, 5).map(g => { const plan = planId(g.plan); return {topic: str(g.topic, 120), plan, mastered: g.mastered === true, newTopic: plan ? null : topic(g.newTopic)}; });
   return r;
 }
@@ -181,7 +184,7 @@ function importReport(text) {
   const r = res.data; closeSheet();
   openProc({title: (r.modus === 'opdracht' && r.doelBereikt ? 'Doel bereikt! ' : '') + (MODE_TITLE[r.modus] || 'Je verslag in je plan'), head: 'Verslag · ' + r.onderwerp, src: r.modus,
     text: [r.tekst, ...r.corrections.map(c => c.right)].join(' '), corrected: r.tekst, correctedLabel: r.modus === 'foto' ? 'De foto, overgetypt' + (r.bron ? ' · ' + r.bron : '') : 'Je tekst, verbeterd', corrections: r.corrections, words: r.words, grammar: r.goed,
-    note: r.samenvatting, tip: r.tip, setName: 'Uit Claude – week ' + weekNo(),
+    note: r.samenvatting, tip: r.tip, setName: 'Uit Claude – week ' + weekNo(), filled: r.fill.length,
     onSave: () => saveReport(r, res.hash)});
   return {ok: true, data: r};
 }
@@ -191,6 +194,7 @@ function saveReport(r, hash) {
   if (S.talks.length > 120) S.talks.length = 120;
   if (r.tekst) S.log.unshift({id: uid('l'), date: r.datum, mode: r.modus, source: 'claude', bron: r.bron, text: r.tekst, status: 'done'});
   if (r.modus === 'opdracht' && r.doelBereikt && r.plein) sqstate(r.plein).steps.gebruik = 1;
+  (r.fill || []).forEach(x => applyFill(x.id, fillFor(x.id, x.f)));
 }
 
 /* ===== VERSION 2.0: Documents for the Claude Project (Ik → Documenten voor Claude) =====
@@ -213,16 +217,24 @@ const DOCS = {
     return out.join('\n').replace(/\n+$/, '\n');
   },
   'Woorden.md': () => {
+    // 2.7: every lemma once (squares, Algemeen, Woordenboek, sets, own words), themes in the set sections
     const out = ['# Woorden — Elke Dag Zin', '', 'Every word the app already teaches, by square. A word is **new** for a report only if it is not in this list (other forms of these words, like plurals or conjugations, are not new).', ''];
     const wl = l => `${l.p === 'n' && l.g ? l.g + ' ' : ''}${l.w} (${l.en || l.d || ''})`;
-    SQUARES.forEach(q => out.push(`## ${q.id} · ${UNIT[q.u].name} · ${q.name}`, q.words.map(LX).filter(Boolean).map(wl).join('; '), ''));
-    out.push('## Algemeen · basiswoorden zonder plein', "Known words that belong to no single square. They live in the app's *Algemeen* group.", ALGEMEEN_WORDS.map(LX).map(wl).join('; '), '');
+    const key = l => norm(l.w) + '|' + l.p; const shown = new Set(); const first = l => { const k = key(l); if (shown.has(k)) return false; shown.add(k); return true; };
+    SQUARES.forEach(q => out.push(`## ${q.id} · ${UNIT[q.u].name} · ${q.name}`, q.words.map(LX).filter(Boolean).filter(first).map(wl).join('; '), ''));
+    out.push('## Algemeen · basiswoorden zonder plein', "Known words that belong to no single square. They live in the app's *Algemeen* group.", ALGEMEEN_WORDS.map(LX).filter(Boolean).filter(first).map(wl).join('; '), '');
     const sets = (S.sets || []).filter(x => x.src === 'woorden' && x.ids.length); const inSets = new Set(sets.flatMap(x => x.ids));
+    const own = Object.values(S.custom || {});
     const sqOf = l => l.custom ? l.plan : SQ_OF_WORD[l.id];
     const longDate = d => { const [y, m, dd] = String(d || '').split('-').map(Number); return y && m ? `${dd} ${MONTHS[m - 1]} ${y}` : ''; };
-    sets.forEach(x => out.push(`## Set · ${x.name}${x.bron ? ' · ' + x.bron : ''}${x.datum ? ' (' + longDate(x.datum) + ')' : ''}`, 'Taught in their own set. The id after each word is its square in the curriculum (— = Algemeen).', x.ids.map(LX).filter(Boolean).map(l => `${wl(l)} [${sqOf(l) || '—'}]`).join('; '), ''));
-    const own = Object.values(S.custom || {}).filter(l => !inSets.has(l.id));
-    if (own.length) out.push('## Eigen woorden', 'Words Ari added from reports or by hand. They are not new either.', own.map(l => wl(l) + (l.plan ? ' · ' + l.plan : '')).join('; '), '');
+    sets.forEach(x => out.push(`## Set · ${x.name}${x.bron ? ' · ' + x.bron : ''}${x.datum ? ' (' + longDate(x.datum) + ')' : ''}`, 'Taught in their own set. After each word: its square in the curriculum (— = Algemeen) and its theme.', x.ids.map(LX).filter(Boolean).filter(first).map(l => `${wl(l)} [${sqOf(l) || '—'}${themeOf(l) ? ' · ' + themeOf(l) : ''}]`).join('; '), ''));
+    if (typeof DICT !== 'undefined' && DICT) {
+      const taken = new Set([...shown, ...own.map(key)]); // after the sets: own words are never listed as woordenboek words
+      const wb = DICT.filter(l => !taken.has(key(l)));
+      out.push('## Woordenboek · ingebouwd woordenboek', "The app's built-in dictionary: Ari can open these words and add them in one tap, so they are not new either.", wb.map(l => `${l.p === 'n' && l.g ? l.g + ' ' : ''}${l.w}`).join('; '), '');
+    }
+    const rest = own.filter(l => !inSets.has(l.id)).filter(first);
+    if (rest.length) out.push('## Eigen woorden', 'Words Ari added from reports or by hand. They are not new either.', rest.map(l => wl(l) + (l.plan ? ' · ' + l.plan : '')).join('; '), '');
     return out.join('\n').replace(/\n+$/, '\n');
   },
   'Scenes.md': () => {
@@ -242,13 +254,15 @@ const DOCS = {
 async function saveFile(name, text, type) {
   try {
     const file = new File([text], name, {type});
-    if (navigator.canShare && navigator.canShare({files: [file]})) { await navigator.share({files: [file], title: name}); return 'shared'; }
+    // no title: some share targets put it in front of the file's text ("Woorden.md # Woorden …")
+    if (navigator.canShare && navigator.canShare({files: [file]})) { await navigator.share({files: [file]}); return 'shared'; }
   } catch (e) { if (e && e.name === 'AbortError') return 'cancelled'; }
   const url = URL.createObjectURL(new Blob([text], {type}));
   const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000); return 'downloaded';
 }
 function openDocs() {
+  if (typeof DICT !== 'undefined' && !DICT) { loadDict().then(openDocs, openDocs); return; } // Woorden.md lists the woordenboek too
   const rows = Object.keys(DOCS).map(n => { const t = DOCS[n](); return `<div class="tapline" style="cursor:default"><div class="t"><div style="font-weight:600">${n}</div><div class="small">${Math.max(1, Math.round(t.length / 1024))} KB${n === 'Woorden.md' ? ((k => ' · met ' + k + (k === 1 ? ' eigen woord' : ' eigen woorden'))(Object.keys(S.custom || {}).length)) : ''}</div></div><button class="btn line" style="min-height:40px;padding:8px 14px" data-act="doc-save" data-id="${n}">Bewaar</button></div>`; }).join('');
   openOverlay('docs', `<button class="iconbtn" data-act="overlay-close" data-id="docs" aria-label="Sluiten">✕</button><span class="small">Documenten voor Claude</span>`, `<div class="stack">
     <h1 data-en="Documents for Claude">Documenten voor Claude</h1>
@@ -342,7 +356,8 @@ function parseWords(text) {
     if (p === 'n' && g !== 'de' && g !== 'het') { out.rejected.push({nr, w, why: 'zelfstandig naamwoord zonder de/het'}); return; }
     const k = wordKey(w, p);
     if (seen.has(k)) { out.rejected.push({nr, w, why: 'staat twee keer in de lijst'}); return; } seen.add(k);
-    if (ix.has(k)) { out.existing.push({w, id: ix.get(k)}); return; }
+    // 2.7: a word already in the app gets its empty fields filled (thema, syn, ant, g, pl, dim), never overwritten
+    if (ix.has(k)) { const id = ix.get(k); out.existing.push({w, id, fill: fillFor(id, {th: themeId(x.thema), syn: relList(x.syn), ant: relList(x.ant), g: p === 'n' ? g : null, pl: str(x.pl, 60), dim: str(x.dim, 60)})}); return; }
     out.fresh.push({w, p, g: p === 'n' ? g : undefined, pl: p === 'n' ? str(x.pl, 60) || null : null, dim: p === 'n' ? str(x.dim, 60) || null : null, d: str(x.d, 200), s: str(x.s, 200), en: str(x.en, 120), plan: planId(x.plan), th: themeId(x.thema), syn: relList(x.syn), ant: relList(x.ant)});
   });
   if (d.words.length > 200) out.rejected.push({nr: 201, w: '…', why: `alleen de eerste 200 woorden (${d.words.length} in de lijst)`});
@@ -363,8 +378,8 @@ function previewWords(r) {
   const ov = openOverlay('wimport', `<button class="iconbtn" data-act="overlay-close" data-id="wimport" aria-label="Sluiten">✕</button><span class="small">Woordenlijst${r.bron ? ' · ' + esc(r.bron) : ''}</span>`, `<div class="stack">
     <label class="f" for="wi-name">Naam van de set<input id="wi-name" type="text" value="${esc(r.set)}" maxlength="80" autocomplete="off"></label>
     <div id="wi-same"></div>
-    <div class="procsum" id="wi-sum"><b>${r.fresh.length}</b> ${r.fresh.length === 1 ? 'nieuw woord' : 'nieuwe woorden'} · <b>${r.existing.length}</b> al in de app · <b>${alg}</b> naar Algemeen</div>
-    <div class="small">Nieuwe woorden komen in de set en op hun plein (of in Algemeen). Woorden die al in de app staan, worden aan de set gekoppeld; hun kaart blijft zoals ze is. Nieuwe woorden komen ${DRIP_PER_DAY} per dag in Herhalen; oefen de set om ze sneller te krijgen.</div>
+    <div class="procsum" id="wi-sum"><b>${r.fresh.length}</b> ${r.fresh.length === 1 ? 'nieuw woord' : 'nieuwe woorden'} · <b>${r.existing.length}</b> al in de app · <b>${r.existing.filter(x => Object.keys(x.fill || {}).length).length}</b> aangevuld · <b>${alg}</b> naar Algemeen${r.rejected.length ? ` · <b>${r.rejected.length}</b> niet ingelezen` : ''}</div>
+    <div class="small">Nieuwe woorden komen in de set en op hun plein (of in Algemeen). Woorden die al in de app staan, worden aan de set gekoppeld. Wat op hun kaart nog leeg is (thema, synoniemen, meervoud…), wordt aangevuld; wat er al staat, blijft. Nieuwe woorden komen ${DRIP_PER_DAY} per dag in Herhalen; oefen de set om ze sneller te krijgen.</div>
     ${r.rejected.length ? `<div class="card soft stack" style="gap:4px" id="wi-rej"><b>${r.rejected.length} niet ingelezen</b>${r.rejected.map(x => `<div class="small">${x.nr}. <b class="nl">${esc(x.w)}</b>: ${esc(x.why)}</div>`).join('')}</div>` : ''}
     ${r.fresh.length ? `<details class="card"><summary class="small" style="cursor:pointer">Toon de nieuwe woorden</summary><div class="small" style="margin-top:8px">${r.fresh.map(x => `${x.g ? `<span class="${x.g}">${x.g}</span> ` : ''}<b class="nl">${esc(x.w)}</b> · ${esc(x.plan ? placeLine(x.plan).replace(/^\S+ · /, '') : 'Algemeen')}`).join('<br>')}</div></details>` : ''}
     <div id="wi-err" class="small" style="color:var(--warn)" hidden>Geef de set een naam.</div>
@@ -386,7 +401,7 @@ function previewWords(r) {
     const mode = ($('input[name="wi-mode"]:checked', ov) || {}).value;
     r.set = mode === 'new' ? uniqueSetName(v) : (findSet(v) || {}).name || v;
     const n = saveWords(r); closeOverlay('wimport'); render();
-    toast(n.added || n.linked ? `${r.set}: ${n.added} nieuw, ${n.linked} gekoppeld` : 'Niets nieuws: alles stond al in de set');
+    toast(n.added || n.linked || n.filled ? `${r.set}: ${n.added} nieuw, ${n.linked} gekoppeld, ${n.filled} aangevuld` : 'Niets nieuws: alles stond al in de set');
   };
 }
 function saveWords(r) {
@@ -399,10 +414,11 @@ function saveWords(r) {
     if (!id) { id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: x.w, p: x.p, g: x.g, pl: x.pl, dim: x.dim, d: x.d, s: x.s, en: x.en, plan: x.plan, src: 'woorden', date: r.datum}; if (x.th) S.custom[id].th = x.th; if (x.syn.length) S.custom[id].syn = x.syn; if (x.ant.length) S.custom[id].ant = x.ant; ix.set(wordKey(x.w, x.p), id); S.drip.ids.push(id); added++; }
     if (!set.ids.includes(id)) set.ids.push(id);
   });
-  r.existing.forEach(x => { if (!set.ids.includes(x.id)) { set.ids.push(x.id); linked++; } });
+  let filled = 0;
+  r.existing.forEach(x => { if (!set.ids.includes(x.id)) { set.ids.push(x.id); linked++; } filled += applyFill(x.id, fillFor(x.id, x.fill)); });
   dripRelease(true);
   Store.mark('words', 'items', 'state');
-  return {added, linked};
+  return {added, linked, filled};
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && dripRelease()) render(); });
 // a few new words a day into Herhalen; drilling a set releases its words at once
