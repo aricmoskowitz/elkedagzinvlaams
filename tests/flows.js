@@ -77,7 +77,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
     feedListen('ftest', c.opts.indexOf(c.s.en)); const r = {n, hidden, pill, right: !!$('.opt.right', sec), shown: !$('.fback', sec).hidden, ok: /Juist/.test($('.ffb', sec).textContent)}; sec.remove(); return r; });
   ok(lis.n === 3 && lis.hidden && lis.shown && lis.right && lis.ok && lis.pill, 'Scroll Luister: three meanings to choose from, then the sentence; the card label is a clear pill');
   const tr = await p.evaluate(() => { const ex = makeEx('s:u1s2:tr'); return {sub: ex.sub, ok: check(ex, ex.answer).ok, sv: check(ex, 'Ik neem morgen de tram.').kind}; });
-  ok(/Begin met/.test(tr.sub) && /inversie/.test(tr.sub) && tr.ok && tr.sv === 'order', 'Vertaal asks for inversion when the sentence has it, and subject-first is "Andere volgorde": ' + tr.sub.replace(/<[^>]+>/g, ''));
+  ok(/Begin met <b>de tijd<\/b>/.test(tr.sub) && !/Morgen/i.test(tr.sub) && /inversie/.test(tr.sub) && tr.ok && tr.sv === 'order', 'Vertaal asks for inversion (the kind of slot 1, not its words) when the sentence has it, and subject-first is "Andere volgorde": ' + tr.sub.replace(/<[^>]+>/g, ''));
 
   // Grote Markt review + Gebruik sheet (no tutor any more)
   await p.evaluate(() => { PAD.lvl = 'markt'; PAD.u = 'u7'; render(); }); await shot('07_markt');

@@ -104,7 +104,22 @@ function orderVariants(s) {
 function trAsk(s) {
   const c = s.ch; const first = c[0];
   if (s.q || first.sl === '2' || first.sl === 's') return {sub: '', accept: orderVariants(s).map(norm)};
-  return {sub: `Begin met <b class="nl">${esc(first.t)}</b> … <span data-en="inversion: verb in slot 2, then the subject">(inversie)</span>`, accept: [norm(s.nl)]};
+  const k = voorveldKind(s);
+  return {sub: `<span data-en="${VV_ASK[k][1]}">${VV_ASK[k][0]}</span> <span data-en="inversion: verb in slot 2, then the subject">(inversie)</span>`, accept: [norm(s.nl)]};
+}
+// what kind of thing stands in slot 1, so the card can ask for it without giving the words away
+const VV_TIME = /^(morgen|vandaag|gisteren|gisteravond|overmorgen|eergisteren|dan|nu|straks|later|vroeger|soms|altijd|vanavond|vanmorgen|vanmiddag|[’']s|om\b|elke|iedere|vorig|vorige|volgend|volgende|maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag|in (de|het) (vakantie|weekend|zomer|winter|lente|herfst|ochtend|avond|middag|nacht)|op (maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag)|na (de|het) (les|werk|middag|vakantie|film)|voor (de|het) (les|werk))\b/i;
+const VV_PLACE = /^(hier|daar|overal|binnen|buiten|thuis|(in|op|aan|bij|naast|achter|voor|onder|boven|na|tegenover|langs|tussen|rond) \S)/i;
+const VV_ASK = {tijd: ['Begin met <b>de tijd</b>', 'Start with the time'], plaats: ['Begin met <b>de plaats</b>', 'Start with the place'], bijzin: ['Begin met <b>de bijzin</b>', 'Start with the clause (als, wanneer, toen…)'],
+  voorwerp: ['Begin met <b>het voorwerp</b>', 'Start with the object'], engels: ['Begin <b>zoals de Engelse zin</b>', 'Start like the English sentence']};
+const VV_KIND = {u3s19: 'engels'}; // bij de koffie: neither a time nor a place
+function voorveldKind(s) {
+  const t = s.ch[0].t;
+  if (VV_KIND[s.id]) return VV_KIND[s.id];
+  if (SUBORD.has(t.toLowerCase().split(' ')[0])) return 'bijzin';
+  if (VV_TIME.test(t)) return 'tijd';
+  if (VV_PLACE.test(t)) return 'plaats';
+  return 'voorwerp';
 }
 const DAYWORD = {fix: 'Verbeter je zin', rec: 'Kies het woord', prod: 'Vul in', gen: 'De of het?', conj: 'Vervoeg', ord: 'Zet in de juiste volgorde', tr: 'Vertaal naar het Nederlands', lisMc: 'Welke zin hoor je?', lisType: 'Luister en typ'};
 const DAYWORD_EN = {fix: 'Correct your sentence', rec: 'Pick the word', prod: 'Fill in', gen: 'De or het?', conj: 'Conjugate', ord: 'Put in the right order', tr: 'Translate into Dutch', lisMc: 'Which sentence do you hear?', lisType: 'Listen and type'};

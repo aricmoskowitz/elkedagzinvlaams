@@ -127,6 +127,35 @@ function sign(cx, y, text, dim) {
   const t = text.toUpperCase(); const w = t.length * 7 + 14;
   return `<g transform="translate(${cx - w / 2},${y})"><rect width="${w}" height="17" fill="${dim ? '#EEEAE2' : '#fff'}" stroke="${dim ? '#A9A49A' : '#2A2620'}" stroke-width="2"/><text x="${w / 2}" y="12.5" text-anchor="middle" class="px" style="fill:${dim ? '#8C877E' : '#2A2620'}">${esc(t)}</text></g>`;
 }
+/* 2.5: names never cover houses, flags or each other. Each sign tries a few spots around its square (the usual one
+   first) and takes the one that covers least: a house or the flag row above it most, then a square, then a road. */
+const signW = text => text.length * 7 + 14;
+function signCost(g, r, taken) {
+  const [x0, y0, w, h] = r; if (x0 < 2 || y0 < 2 || x0 + w > g[0].length * TS - 2 || y0 + h > g.length * TS - 2) return Infinity;
+  let c = 0;
+  for (let cy = Math.floor(y0 / TS); cy <= Math.floor((y0 + h - 1) / TS); cy++) for (let cx = Math.floor(x0 / TS); cx <= Math.floor((x0 + w - 1) / TS); cx++) {
+    const ov = (Math.min(x0 + w, (cx + 1) * TS) - Math.max(x0, cx * TS)) * (Math.min(y0 + h, (cy + 1) * TS) - Math.max(y0, cy * TS));
+    const t = g[cy][cx], flagRow = g[cy + 1] && g[cy + 1][cx] === 'house'; // a house's flag stands in the row above it
+    c += ov * (t === 'house' ? 20 : flagRow ? 12 : t === 'plaza' ? 4 : t === 'road' ? 1 : t === 'tree' || t === 'treeX' ? .2 : 0);
+  }
+  taken.forEach(o => { c += 40 * Math.max(0, Math.min(x0 + w, o[0] + o[2]) - Math.max(x0, o[0])) * Math.max(0, Math.min(y0 + h, o[1] + o[3]) - Math.max(y0, o[1])); });
+  return c;
+}
+// spots around a square (centre x, y; half size hp), the preferred side first
+function signSpots(x, y, hp, w, first) {
+  const out = [];
+  [0, 18, 36].forEach(d => [0, 1, -1, 2, -2].forEach(k => {
+    const sx = k * (w / 4 + 6), sy = k * 10; // a little further out and a little sideways, step by step
+    const at = {N: [x + sx, y - hp - 21 - d], S: [x + sx, y + hp + 4 + d], W: [x - hp - 6 - w / 2 - d, y - 8 + sy], E: [x + hp + 6 + w / 2 + d, y - 8 + sy]};
+    [first].concat(['N', 'S', 'W', 'E'].filter(q => q !== first)).forEach((q, n) => out.push({p: at[q], rank: d * 4 + Math.abs(k) * 6 + (n ? 10 + n : 0)}));
+  }));
+  return out.sort((a, b) => a.rank - b.rank).map(o => o.p);
+}
+function placeSign(g, text, spots, taken) {
+  const w = signW(text); let best = null;
+  spots.forEach(([cx, y], i) => { const r = [cx - w / 2, y, w, 17]; const c = signCost(g, r, taken) + i; if (!best || c < best.c) best = {c, x: cx, y, r}; });
+  taken.push(best.r); return best;
+}
 const arrow = (x, y, next) => `<g transform="translate(${x},${y})"><g class="bob"><path d="M-6,-5 H6 L0,3 Z" fill="${next ? '#2F6B3A' : '#2A2620'}" stroke="#fff" stroke-width="1.5"/></g></g>`;
 const flag = (x, y) => `<g transform="translate(${x},${y})" shape-rendering="crispEdges"><rect width="2" height="16" fill="#2A2620"/><rect x="2" width="9" height="6" fill="#F2D35B" stroke="#2A2620" stroke-width="1"/></g>`;
 const blocks = (x, y, n, done) => `<g transform="translate(${x - (n * 12 - 2) / 2},${y})" shape-rendering="crispEdges">${Array.from({length: n}, (_, j) => `<rect x="${j * 12}" width="10" height="5" fill="${j < done ? '#2A2620' : '#fff'}" stroke="#2A2620" stroke-width="1"/>`).join('')}</g>`;
@@ -239,12 +268,17 @@ function worldHouses() {
 }
 const townPx = i => sqCenter(WSQ[i]);
 const standPx = ([x, y]) => [x + 6, y + 8]; // where the cyclist waits on a square
+// where each town's name stands on the Pad (the arrows above the towns are placed first, so names keep clear of them too)
+function worldSigns() {
+  if (!WORLD) buildWorld();
+  const taken = UNITS.map((u, i) => { const [x, y] = townPx(i); return [x - 7, y - 35, 14, 10]; });
+  return UNITS.map((u, i) => { const [x, y] = townPx(i); return placeSign(WORLD.g, u.name, signSpots(x, y, 20, signW(u.name), TOWN_LABEL[i]), taken); });
+}
 function worldOverlay() {
+  const WS = worldSigns();
   const t = UNITS.map((u, i) => {
     const [x, y] = townPx(i); const st = townState(u.id); const dim = st === 'later' || st === 'locked';
-    const L = TOWN_LABEL[i]; const sw = u.name.length * 7 + 14;
-    const lx = Math.max(sw / 2 + 2, Math.min(WGW * TS - sw / 2 - 2, L === 'W' ? x - 24 - sw / 2 : L === 'E' ? x + 24 + sw / 2 : x));
-    const ly = L === 'N' ? y - 44 : L === 'S' ? y + 28 : y - 8;
+    const lx = WS[i].x, ly = WS[i].y;
     const tpw = u.built && !dim ? townProgress(u.id) : null;
     return `<g class="wtown" data-act="town" data-u="${u.id}" role="button" tabindex="0" aria-label="${esc(u.name)}: ${esc(u.gram)}${tpw ? `, ${tpw.complete} van 3 pleinen klaar${tpw.marktDone ? ', Grote Markt gehaald' : ''}${tpw.perfect ? ', perfect' : ''}` : dim ? ', nog dicht' : ''}">
       <rect x="${x - 30}" y="${y - 30}" width="60" height="60" fill="transparent"/>
@@ -253,7 +287,7 @@ function worldOverlay() {
       ${tpw ? worldRoles(i).pleinen.map((h, j) => tpw.pleinen[j] && tpw.pleinen[j].complete ? miniFlag(h.x * TS + 10, h.y * TS - 9, tpw.pleinen[j].perfect) : '').join('') : ''}
       ${tpw && tpw.marktDone ? bunting(x - 24, y - 24, x + 24, y - 24, tpw.perfect) + bunting(x - 24, y + 22, x + 24, y + 22, tpw.perfect) : ''}
       ${tpw && tpw.perfect ? sparkles(x, y, 26) : ''}
-      ${st === 'open' || st === 'next' ? arrow(x, L === 'N' ? ly - 16 : y - 28, st === 'next') : ''}
+      ${st === 'open' || st === 'next' ? arrow(x, y - 30, st === 'next') : ''}
     </g>`;
   }).join('');
   const [px, py] = [(PASS[0] + .5) * TS, (WGH - 1) * TS];
@@ -308,8 +342,17 @@ function buildTown(u) {
   return (TOWN_CACHE[u] = {g, houses, guild, roads: roads.concat([entry]), squares: TSQ.map((s, j) => ({...s, open: usedSides(TROADS, j).concat(j === 0 ? ['N'] : []), fountain: j === 3})),
     legs: TROADS.map((r, k) => legPts(TSQ[r.from], TSQ[r.to], roads[k], r.out, r.in)), entry: entryLeg});
 }
+// where the names stand on a town map: three pleinen (the first one's name below it, off the way in) and the Grote Markt
+function townSigns(u) {
+  const T = buildTown(u); const qs = squaresOf(u); const tp = townProgress(u);
+  const taken = qs.map((q, j) => { const [x, y] = sqCenter(TSQ[j]); return [x - 7, y - 35, 14, 10]; });
+  const out = qs.map((q, j) => { const [x, y] = sqCenter(TSQ[j]); return placeSign(T.g, q.name, signSpots(x, y, TSQ[j].h * TS, signW(q.name), j === 0 ? 'S' : 'N'), taken); });
+  const mt = '★ Grote Markt' + (tp.marktDone ? ' · ' + tp.markt + '%' : ''); const [mx, my] = sqCenter(TSQ[3]);
+  out.markt = placeSign(T.g, mt, signSpots(mx, my, TSQ[3].h * TS, signW(mt), 'N'), taken); out.markt.text = mt;
+  return out;
+}
 function townOverlay(u) {
-  const qs = squaresOf(u); const nq = nextSquare(); const T = buildTown(u); const tp = townProgress(u);
+  const qs = squaresOf(u); const nq = nextSquare(); const T = buildTown(u); const tp = townProgress(u); const TS2 = townSigns(u);
   const pl = qs.map((q, j) => {
     const [x, y] = sqCenter(TSQ[j]); const st = sqState(q.id); const dim = st === 'locked'; const pp = tp.pleinen[j];
     // flags on its guild houses; Ronde 2/3 flags across the square; sparkles when everything is perfect
@@ -318,8 +361,8 @@ function townOverlay(u) {
     return `<g data-act="square" data-q="${q.id}" role="button" tabindex="0" style="cursor:pointer" aria-label="${label}">
       <rect x="${x - 36}" y="${y - 30}" width="72" height="60" fill="${dim ? 'rgba(255,255,255,.55)' : 'transparent'}"/>
       ${flags}${roundsFlags(x - 26, y - 16, x + 26, y - 16, pp.ronde)}${pp.perfect ? sparkles(x, y, 30) : ''}
-      ${sign(x, j === 0 ? y + 34 : y - 46, q.name, dim)}
-      ${st === 'next' || st === 'open' ? arrow(x, j === 0 ? y - 36 : y - 56, st === 'next') : ''}
+      ${sign(TS2[j].x, TS2[j].y, q.name, dim)}
+      ${st === 'next' || st === 'open' ? arrow(x, y - 30, st === 'next') : ''}
     </g>`;
   }).join('');
   const [mx, my] = sqCenter(TSQ[3]); const mh = TSQ[3].h * TS; const mOpen = marktOpen(u);
@@ -327,7 +370,7 @@ function townOverlay(u) {
       <rect x="${mx - 40}" y="${my - 32}" width="80" height="64" fill="${mOpen ? 'transparent' : 'rgba(255,255,255,.55)'}"/>
       ${tp.marktDone ? bunting(mx - mh + 2, my - mh + 4, mx + mh - 2, my - mh + 4, tp.perfect) + bunting(mx - mh + 2, my + 4, mx + mh - 2, my + 4, tp.perfect) : ''}
       ${tp.perfect ? sparkles(mx, my, 40) : ''}
-      ${sign(mx, my - 50, '★ Grote Markt' + (tp.marktDone ? ' · ' + tp.markt + '%' : ''), !mOpen)}</g>` : '';
+      ${sign(TS2.markt.x, TS2.markt.y, TS2.markt.text, !mOpen)}</g>` : '';
   const here = qs.findIndex(q => q.id === nq);
   const hp = here >= 0 ? standPx(sqCenter(TSQ[here])) : [sqSide(TSQ[0], 'N')[0], 14];
   return pl + markt + heroG(...hp);

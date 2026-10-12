@@ -52,8 +52,9 @@ const {openApp} = require('./page');
     // Vertaal: a sentence with inversion asks for it and accepts only that order; the others accept every correct order
     let nt = 0;
     SENT.filter(s => UNITS.some(u => u.built && u.n === s.u)).forEach(s => { nt++; const ex = makeEx('s:' + s.id + ':tr'); const inv = !s.q && !['s', '2'].includes(s.ch[0].sl);
-      if (inv && (!/Begin met/.test(ex.sub) || ex.accept.length !== 1)) bad.push(s.id + ' tr: inversion not asked for');
-      if (!inv && /Begin met/.test(ex.sub)) bad.push(s.id + ' tr: asks for an order it does not need');
+      if (inv && (!/Begin (met|<b>zoals)/.test(ex.sub) || ex.accept.length !== 1)) bad.push(s.id + ' tr: inversion not asked for');
+      if (inv && s.ch[0].t.toLowerCase().split(/\s+/).some(w => w.length > 2 && ex.sub.replace(/<[^>]+>/g, ' ').toLowerCase().split(/[^\p{L}]+/u).includes(w))) bad.push(s.id + ' tr: the prompt gives slot 1 away: ' + ex.sub);
+      if (!inv && /Begin (met|<b>zoals)/.test(ex.sub)) bad.push(s.id + ' tr: asks for an order it does not need');
       if (!check(ex, ex.answer).ok) bad.push(s.id + ' tr: own answer'); });
     // Kies het woord: the English word for the gap is marked in the English sentence (EN_ALSO in app18 adds other words)
     let ne = 0;
@@ -61,6 +62,12 @@ const {openApp} = require('./page');
     // Scroll Luister: three different meanings to choose from, one of them right
     let nl = 0;
     SENT.forEach(s => { nl++; const o = lisOptions(s); if (o.length !== 3 || !o.includes(s.en) || new Set(o.map(norm)).size !== 3) bad.push(s.id + ' listen options ' + o); });
+    // map names: no sign covers a house, the flag row above a house, or another sign (Pad and every town map)
+    const signBad = (g, list, where) => { const rs = list.map(x => x.r);
+      rs.forEach((r, i) => { const hit = signCost(g.map(row => row.map(t => t === 'house' ? 'house' : 'grass')), r, rs.filter((_, k) => k !== i));
+        if (hit > 0) bad.push(where + ': a name covers a house, a flag or another name (' + hit + ')'); }); };
+    signBad(WORLD ? WORLD.g : (buildWorld(), WORLD.g), worldSigns(), 'Pad');
+    [0, 100].forEach(m => UNITS.filter(u => u.built).forEach(u => { S.markt = S.markt || {}; S.markt[u.id] = m; const t = townSigns(u.id); signBad(buildTown(u.id).g, [...t, t.markt], u.id + ' map (Grote Markt ' + m + '%)'); }));
     // underline means "tap for the word card" only: the subject is bold, verbs are gold
     if (/<u>/.test(frameHTML(SENT[0]))) bad.push('frameHTML underlines the subject');
     // synonym/antonym/definition cards for Ari's own words too (an own pronoun like iemand once had a single choice)
