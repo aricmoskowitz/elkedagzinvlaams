@@ -4,7 +4,9 @@
    Claude Project (Elke Dag Zin · Praten) and come back as a pasted report.
    Old talks and log entries stay readable in Toen en nu. */
 function weekNo(d = new Date()) { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return Math.ceil(((t - y0) / 864e5 + 1) / 7); }
-const uid = p => p + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
+// time + a counter, so ids made in the same millisecond (a word list of 94) never collide
+let UIDN = 0;
+const uid = p => p + Date.now().toString(36) + (UIDN++).toString(36) + Math.floor(Math.random() * 1e4).toString(36);
 
 /* ---------- old talks (history) ---------- */
 function viewTalkHistory(id) {

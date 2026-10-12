@@ -86,10 +86,25 @@ function adjForms(l) {
   const w = l.w.toLowerCase();
   if (w in CMP) return CMP[w];
   if (l.p !== 'adj') return null;
-  const e = l.e || w + 'e';
+  const e = l.e || adjE(w);
   const cmp = w.endsWith('r') ? w + 'der' : e + 'r';
   const sup = w.endsWith('s') ? w + 't' : w + 'st';
   return [cmp, sup];
+}
+// the -e form of an adjective by the spelling rules (content words give it as l.e):
+// a long vowel in a closed syllable loses one letter (breed → brede, zwaar → zware),
+// f/s after a long vowel become v/z (lief → lieve, boos → boze),
+// a short stressed vowel doubles the consonant (wit → witte); -ig, -lijk, -isch stay (vriendelijke)
+function adjE(w) {
+  w = String(w).toLowerCase();
+  if (/(ig|lijk|isch|en|er|el)$/.test(w) && w.length > 4) return w + 'e';
+  let m = w.match(/^(.*?)(aa|ee|oo|uu)([^aeiou])$/);
+  if (m) { const c = {f: 'v', s: 'z'}[m[3]] || m[3]; return m[1] + m[2][0] + c + 'e'; }
+  m = w.match(/^(.*[^aeiou])(ie|eu|oe|ei|ij|ui|ou|au)([fs])$/);
+  if (m) return m[1] + m[2] + (m[3] === 'f' ? 'v' : 'z') + 'e';
+  m = w.match(/^([^aeiou]*)([aeiou])([bdfgklmnprst])$/);
+  if (m) return w + m[3] + 'e';
+  return w + 'e';
 }
 const presPart = l => l.w === 'zijn' ? 'zijnde' : l.w + 'd';
 function verbFacts(l) {
@@ -134,7 +149,7 @@ function viewWoorden() {
   if (WSEG === 'woorden') body = `<input type="search" id="wsearch" placeholder="Zoek een woord of betekenis" aria-label="Zoek een woord" value="${esc(WQ)}"><div class="row wrap">${[['alle', 'alle'], ['de', 'de'], ['het', 'het'], ['adj', 'bijv. nw.'], ['eigen', 'mijn woorden']].map(f => `<button class="chip${WF === f[0] ? ' on' : ''}" data-act="wfilter" data-f="${f[0]}">${f[1]}</button>`).join('')}</div><div id="wlist">${wordList()}</div>`;
   else if (WSEG === 'werkwoorden') body = `<div class="small">ik · wij (nu) · ik (verleden) · voltooid deelwoord</div><div class="list">${allWords().filter(l => l.v).map(l => { const f = vForms(l); return `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${esc(l.w)}</span><span class="d"><span class="verbword">${esc(f.ik)} · ${esc(f.pl)} · ${esc(f.im[0])} · ${esc(f.sep + f.pp)}</span></span></div>`; }).join('')}</div>`;
   else {
-    const unitSets = UNITS.filter(u => u.built).map(u => getSet('unit-' + u.id));
+    const unitSets = UNITS.filter(u => u.built).map(u => getSet('unit-' + u.id)).concat([getSet('alg')]);
     const mine = Object.keys(S.custom || {});
     body = `<div class="eyebrow">Mijn sets</div><div>${[{id: 'mine', name: 'Mijn woorden', ids: mine, own: true}].concat(S.sets.map(s => ({...s, own: true}))).map(setRow).join('')}</div>
       <div class="grid2"><button class="btn line" data-act="set-new">Nieuwe set</button><button class="btn line" data-act="word-new">Nieuw woord</button></div>
@@ -148,7 +163,8 @@ function viewWoorden() {
   </div>`;
 }
 function setRow(s) {
-  return `<div class="tapline" style="cursor:default"><div class="t"><div class="nl" style="font-size:18px">${esc(s.name)}</div><div class="small">${s.ids.length} woorden</div></div><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="cards" data-set="${s.id}" ${s.ids.length ? '' : 'disabled'}>Kaarten</button>${s.own && s.id !== 'mine' ? `<button class="iconbtn" data-act="set-edit" data-id="${s.id}" aria-label="Bewerk set" style="color:var(--go)">✎</button>` : ''}</div>`;
+  const wait = s.own ? setWaiting(s) : 0;
+  return `<div class="tapline" style="cursor:default;flex-wrap:wrap;row-gap:8px"><div class="t" style="flex:1 1 150px"><div class="nl" style="font-size:18px">${esc(s.name)}</div><div class="small">${s.ids.length} woorden${s.bron ? ' · ' + esc(s.bron) : ''}${wait ? ` · <span data-en="${wait} not yet in Herhalen">${wait} wachten</span>` : ''}</div></div><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="set-review" data-id="${s.id}" data-en="Review this set" ${s.ids.length ? '' : 'disabled'}>Herhaal</button><button class="btn line" style="min-height:40px;padding:8px 12px" data-act="cards" data-set="${s.id}" ${s.ids.length ? '' : 'disabled'}>Kaarten</button>${s.own && s.id !== 'mine' ? `<button class="iconbtn" data-act="set-edit" data-id="${s.id}" aria-label="Bewerk set" style="color:var(--go)">✎</button>` : ''}</div>`;
 }
 function wordList() {
   const q = norm(WQ);
@@ -189,7 +205,7 @@ function deckOptions() {
     {id: 'weak', name: 'Moeilijke woorden', ids: allWords().filter(l => { const it = S.items['w:' + l.id + ':rec']; return it && (it.l > 0 || it.e < 2.4); }).map(l => l.id)},
     {id: 'verbs', name: 'Alle werkwoorden', ids: allWords().filter(l => l.v).map(l => l.id)},
     {id: 'nouns', name: 'Alle zelfstandige naamwoorden', ids: allWords().filter(l => l.p === 'n').map(l => l.id)},
-    {id: 'adjs', name: 'Alle bijvoeglijke naamwoorden', ids: allWords().filter(l => l.p === 'adj').map(l => l.id)}].concat(own, units);
+    {id: 'adjs', name: 'Alle bijvoeglijke naamwoorden', ids: allWords().filter(l => l.p === 'adj').map(l => l.id)}].concat(own, units, [getSet('alg')]);
 }
 function openCards(setId) {
   const decks = deckOptions(); const pre = S.settings.cards || {mode: 'simple', dir: 'nl', n: 20};

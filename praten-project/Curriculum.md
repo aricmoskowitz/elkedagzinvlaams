@@ -107,6 +107,7 @@ Status: towns marked **(gebouwd)** exist in the app with words, sentences and ex
 - **u12q1** Plein 1 · Zieplein: Hem, haar, ze, het (Object pronouns). Ik zie hem. Ik bel haar. For things: de-word → hem, het-word → het.
 - **u12q2** Plein 2 · Familieplein: Mijn, zijn, haar, hun (Possessives). mijn, jouw/je, uw, zijn, haar, ons/onze, jullie, hun; ons for het-words, onze for de-words.
 - **u12q3** Plein 3 · Vanmijplein: Die van mij (Mine, yours). Is dat jouw fiets? Nee, die van mij is rood. Ook: de mijne (formeler).
+- **u12q4** Plein 4 · Kennenplein: Weten of kennen (Weten or kennen). Weten for facts and clauses: Ik weet dat de halte dichtbij is. Ik weet waar hij woont. Kennen for people, places and things you are familiar with: Ik ken haar. Ken je Antwerpen? Ik ken dat liedje.
 
 #### Stad 6 · Buurtbrug (u13)
 - Grammatica: Voorzetsels — Prepositions of place and time
@@ -115,6 +116,7 @@ Status: towns marked **(gebouwd)** exist in the app with words, sentences and ex
 - **u13q1** Plein 1 · Hoekplein: In, op, aan, bij (Place). in de stad, op de Meir, aan de Schelde, bij de bakker.
 - **u13q2** Plein 2 · Richtingplein: Naar, uit, van, door (Direction). Ik ga naar huis. Ik kom uit Gent. We fietsen door het park.
 - **u13q3** Plein 3 · Sindsplein: Om, sinds, tot, voor, over (Time). om acht uur, sinds 2024, tot vrijdag, twee jaar geleden, over een uur.
+- **u13q4** Plein 4 · Hangplein: Staan, liggen, zitten, hangen (Position verbs). Dutch says how something is placed: de fiets staat in de gang, het boek ligt op tafel, de sleutel zit in mijn zak, de foto hangt aan de muur. Putting something somewhere: zetten (staan), leggen (liggen), stoppen (zitten), hangen.
 
 #### Stad 7 · Nietdok (u14)
 - Grammatica: Ontkenning — Negation

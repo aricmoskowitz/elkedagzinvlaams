@@ -1,6 +1,8 @@
 /* ===== WORD SETS ===== */
 function getSet(id) {
   if (id.startsWith('unit-')) { const u = UNIT[id.slice(5)]; return {id, name: u.name, ids: lexOfUnit(u.n).map(l => l.id), unit: true}; }
+  if (id === 'alg') return {id, name: 'Algemeen · basiswoorden', ids: ALGEMEEN_WORDS.slice(), unit: true};
+  if (id === 'mine') return {id, name: 'Mijn woorden', ids: Object.keys(S.custom || {})};
   return S.sets.find(s => s.id === id);
 }
 let FLASH = null;

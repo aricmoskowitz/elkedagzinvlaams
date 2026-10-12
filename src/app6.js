@@ -62,6 +62,7 @@ document.addEventListener('click', e => {
     case 'naslag': NASLAG = d.seg; render(); break;
     case 'wseg': WSEG = d.seg; render(); break;
     case 'cards': openCards(d.set); break;
+    case 'set-review': reviewSet(d.id); break;
     case 'card-grade': cardGrade(d.ok === '1'); break;
     case 'cards-again': startCards(shuffle(CARDS.unknown), {mode: CARDS.mode, dir: CARDS.dir, name: CARDS.name}); break;
     case 'word-add': closeSheet(); quickAdd(d.w); break;
@@ -136,7 +137,7 @@ document.addEventListener('change', e => {
 /* ===== INIT ===== */
 (function init() {
   let first = false; try { first = !localStorage.getItem(LS_KEY) && !localStorage.getItem(LS_OLD); } catch (e) {}
-  Store.loadLocal(); Audio.load();
+  Store.loadLocal(); Audio.load(); dripRelease();
   if (first) Store.persist();
   registerSW();
   render();

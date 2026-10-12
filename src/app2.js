@@ -113,6 +113,8 @@ function distractorsFor(l, surf) {
   if (l.p === 'n') { if (l.pl && s === l.pl.toLowerCase()) field = 'pl'; else if (l.dim && s === l.dim.toLowerCase()) field = 'dim'; }
   const same = shuffle(pool.filter(x => x.u === l.u && x[field])).concat(shuffle(pool.filter(x => x.u !== l.u && x[field])));
   const out = []; for (const x of same) { const v = x[field].toLowerCase(); if (v !== s && !out.includes(v)) out.push(v); if (out.length === 3) break; }
+  // rare parts of speech (an own pronoun or conjunction): fill up with other words
+  if (out.length < 3) for (const x of shuffle(LEX.filter(x => x.id !== l.id))) { const v = x.w.toLowerCase(); if (v !== s && !out.includes(v)) out.push(v); if (out.length === 3) break; }
   return out;
 }
 function clozeWhy(l, surf) {

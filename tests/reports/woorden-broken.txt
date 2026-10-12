@@ -1,0 +1,13 @@
+Hier is je lijst:
+
+EDZ-WOORDEN v1
+{“v“:1,“set“:“Testset“,“datum“:“2026-10-12“,“words“:[
+{"w":"de kraanvogel","d":"een grote vogel met lange poten","s":"Een kraanvogel vliegt over.","en":"crane (bird)","plan":"u2q3"},
+{"w":"zonder zin","p":"adv","d":"niet bestaand","en":"no sentence","plan":null},
+{"w":"bureau","p":"n","d":"een tafel om aan te werken","s":"Mijn bureau staat bij het raam.","en":"desk","plan":null},
+{"w":"vliegen","p":"v","d":"door de lucht gaan","s":"De vogel vliegt.","en":"to fly","plan":"u99q1"},
+{"w":"Vliegen","p":"v","d":"dubbel","s":"Dubbel.","en":"duplicate","plan":null},
+{"w":"tram","p":"n","g":"de","d":"staat al in de app","s":"De tram komt.","en":"tram","plan":"u1q1"},
+{"w":"onder","p":"prep","d":"lager dan iets","s":"De kat ligt onder de tafel.","en":"under","plan":"u13q1"},
+{"w":"want","p":"conj","d":"staat al in de app","s":"Ik blijf thuis, want het regent.","en":"because","plan":"u7q1"}]}
+EDZ-EINDE
