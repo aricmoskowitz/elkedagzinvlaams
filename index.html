@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "b2205a194b";</script>
+<script>const APP_VERSION = "a35872b6b9";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -321,6 +321,12 @@ a.btn{text-decoration:none;text-align:center;box-sizing:border-box}
 .wacts{display:flex;gap:8px;margin-left:auto}
 .wbody{padding:0 0 10px}
 .wbody > .row{margin:2px 0 6px}
+
+/* 2.2: synonyms/antonyms, the fix card */
+.rel{margin-top:4px;color:var(--ink2)}
+.rel b{color:var(--ink);font-weight:500}
+.fixlab{display:inline-block;background:var(--warn-tint);color:var(--warn);border-radius:6px;padding:1px 8px;font-weight:600;font-size:14px}
+.fixw.hint .fx.d{text-decoration:underline wavy var(--warn);text-underline-offset:5px;text-decoration-thickness:1.5px}
 
 </style>
 </head>
@@ -1323,6 +1329,42 @@ Object.entries({
 }).forEach(([t, ws]) => ws.split(' ').forEach(w => { THEME_BY_W[w] = t; }));
 const THEME = Object.fromEntries(THEMES.map(t => [t.id, t]));
 
+/* ===== 2.2: synonyms (ook) and antonyms (tegenovergestelde), per lemma =====
+   Only where a good one exists, in Belgian Dutch (verlof, plezant, verstaan, wenen).
+   Matched on the lemma, so Ari's own words with the same lemma get them too (this list
+   also covers the set "Mijn woorden 1"). A word list may bring its own "syn" and "ant". */
+const REL_BY_W = {};
+[
+  // [lemma, synonyms, antonyms]
+  ['halte', 'stopplaats', ''], ['fiets', 'rijwiel', ''], ['werk', 'job, arbeid', ''], ['links', '', 'rechts'], ['rechts', '', 'links'],
+  ['ver', 'veraf', 'dichtbij'], ['dichtbij', 'vlakbij', 'ver'], ['vaak', 'dikwijls', 'zelden'], ['morgen', '', 'gisteren'], ['nemen', 'pakken', 'geven'],
+  ['gaan', '', 'komen'], ['komen', '', 'gaan'], ['zoeken', '', 'vinden'], ['zak', 'tas', ''], ['verkoper', 'handelaar', 'koper'],
+  ['goedkoop', '', 'duur'], ['duur', '', 'goedkoop'], ['vroeg', '', 'laat'], ['altijd', '', 'nooit'], ['meenemen', '', 'achterlaten'],
+  ['opbellen', 'bellen, telefoneren', ''], ['afrekenen', 'betalen', ''], ['uitkiezen', 'kiezen', ''], ['terugkomen', 'terugkeren', ''], ['uitstappen', '', 'instappen'],
+  ['ophalen', 'afhalen', 'wegbrengen'], ['aankomen', '', 'vertrekken'], ['opstaan', '', 'gaan liggen'], ['frietkot', 'frituur', ''], ['pak', 'portie', ''],
+  ['meisje', '', 'jongen'], ['koekje', 'biscuit', ''], ['huis', 'woning', ''], ['lekker', 'smakelijk', 'vies'], ['liggen', '', 'staan'],
+  ['krijgen', 'ontvangen', 'geven'], ['taart', 'gebak', ''], ['kopen', '', 'verkopen'], ['vertrekken', 'weggaan', 'aankomen'], ['boot', 'schip', ''],
+  ['straks', 'zo meteen', ''], ['samen', '', 'alleen'], ['gisteren', '', 'morgen'], ['wandelen', 'stappen', ''], ['vorig', '', 'volgend'],
+  ['blijven', '', 'weggaan'], ['vakantie', 'verlof', ''], ['vriend', '', 'vijand'], ['oud', '', 'nieuw, jong'], ['nieuw', '', 'oud'],
+  ['groot', '', 'klein'], ['klein', '', 'groot'], ['mooi', 'prachtig', 'lelijk'], ['hoog', '', 'laag'], ['smal', '', 'breed'],
+  ['wit', '', 'zwart'], ['raam', 'venster', ''], ['donker', '', 'licht'], ['licht', '', 'donker'], ['appartement', 'flat', ''],
+  ['moe', 'vermoeid', 'uitgerust'], ['druk', 'bezig', 'rustig'], ['mening', 'opinie', ''], ['vinden', 'denken', ''], ['denken', 'vinden', ''],
+  ['vragen', '', 'antwoorden'], ['begrijpen', 'snappen, verstaan', ''], ['zeker', '', 'onzeker'], ['vrij', '', 'bezet'], ['stad', '', 'dorp'],
+  ['dag', '', 'nacht'], ['weg', 'baan', ''], ['goed', '', 'slecht'], ['leuk', 'plezant', 'saai'], ['buur', 'buurman', ''],
+  ['warm', '', 'koud'], ['koud', '', 'warm'], ['les', 'cursus', ''],
+  // Mijn woorden 1
+  ['weinig', '', 'veel'], ['rand', 'kant', 'midden'], ['kalken', 'witten', ''], ['verandering', 'wijziging', ''], ['beeld', 'afbeelding', ''],
+  ['niveau', 'peil', ''], ['breed', '', 'smal'], ['geduld', '', 'ongeduld'], ['genoeg', 'voldoende', 'te weinig'], ['klaar', 'gereed', ''],
+  ['wens', 'verlangen', ''], ['periferie', 'rand', 'centrum'], ['sluw', 'listig, slim', ''], ['schuw', 'verlegen, bang', 'tam'], ['arbeid', 'werk', ''],
+  ['gevaarlijk', '', 'veilig'], ['ooit', '', 'nooit'], ['voortbrengen', 'maken, produceren', ''], ['alleen', '', 'samen'], ['inschatten', 'schatten', ''],
+  ['scherp', '', 'bot'], ['mededeling', 'bericht', ''], ['krijger', 'strijder', ''], ['overschot', '', 'tekort'], ['zwaar', '', 'licht'],
+  ['voorspelbaar', '', 'onvoorspelbaar'], ['onvoorspelbaar', '', 'voorspelbaar'], ['halen', 'ophalen', 'brengen'], ['vatten', 'grijpen', 'loslaten'], ['hervatten', 'hernemen', 'onderbreken'],
+  ['starten', 'beginnen', 'stoppen'], ['blijkbaar', 'kennelijk', ''], ['iemand', '', 'niemand'], ['gewoon', 'normaal', 'ongewoon'], ['matroos', 'zeeman', ''],
+  ['peinzen', 'nadenken', ''], ['voorzichtig', '', 'onvoorzichtig'], ['vaart', 'snelheid', ''], ['verschillend', '', 'gelijk'], ['plooien', 'vouwen', ''],
+  ['lachen', '', 'wenen'], ['nadenken', 'peinzen', ''], ['rennen', 'lopen', ''], ['geven', '', 'krijgen'], ['sluiten', 'dichtdoen', 'openen'],
+  ['vouwen', 'plooien', ''],
+].forEach(([w, syn, ant]) => { REL_BY_W[w] = {syn: syn ? syn.split(', ') : [], ant: ant ? ant.split(', ') : []}; });
+
 /* ===== UTIL ===== */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1661,10 +1703,7 @@ function genWhy(l) {
 function makeEx(key, ctx = 'drill') {
   const [t, id, sk] = key.split(':');
   const it = S.items[key];
-  if (t === 'c') {
-    const f = S.fix[id];
-    return {type: 'type', key, label: 'fix', prompt: `<span class="nl" style="font-size:20px">${esc(f.wrong)}</span>`, sub: 'Verbeter deze zin. Hij komt uit je ' + ({log: 'logboek', talk: 'gesprek', write: 'schrijfopdracht', onderwerp: 'gesprek met Claude', opdracht: 'opdracht met Claude', dagboek: 'dagboek', foto: 'foto'}[f.src] || 'oefening') + '.', answer: f.right, accept: [norm(f.right)], whole: true, why: esc(f.why || ''), say: f.right};
-  }
+  if (t === 'c') return fixEx(key, S.fix[id]); // app16: type of mistake, square, hint
   if (t === 'e') {
     const ex = extraSentence(id);
     return {type: 'type', key, label: 'tr', prompt: `<span class="nl">${esc(ex.en)}</span>`, sub: 'Extra plein', answer: ex.nl, accept: [norm(ex.nl)], whole: true, why: esc(ex.why || ''), say: ex.nl};
@@ -1677,6 +1716,9 @@ function makeEx(key, ctx = 'drill') {
       return {type: 'gen', key, lex: l, label: 'gen', prompt: `<span class="nl" style="font-size:34px">${esc(l.w)}</span>`, sub: sent ? `<span class="nl">${sent}</span>` : '', answer: l.g, why: genWhy(l), say: l.g + ' ' + l.w};
     }
     if (sk === 'conj' && l.v) {
+      // app16: half the time (Scroll: always) the verb is conjugated inside a real sentence
+      const cs = conjSentences(l);
+      if (cs.length && (ctx === 'feed' || Math.random() < .5)) return conjSentEx(key, l, pick(cs), ctx);
       const f = vForms(l); const p = pick(['ik', 'jij', 'inv', 'u', 'hij', 'pl', 'pl']);
       const plLab = pick(['wij', 'jullie', 'zij']);
       let form = f[p]; let prompt;
@@ -2754,13 +2796,21 @@ function feedPlan() {
   const glances = [{kind: 'gv', l: verbs[0]}, {kind: 'gf', s: sents[0]}, {kind: 'gn', l: nouns[0]}].filter(g => g.l || g.s);
   const xs = shuffle(EXTRAS.filter(x => !FEED.usedX.has(x.title))).slice(0, 2); xs.forEach(x => FEED.usedX.add(x.title));
   if (FEED.usedX.size >= EXTRAS.length) FEED.usedX.clear();
-  const pattern = ['q', 'q', 'w', 'q', 'x', 'q', 'g', 'q', 'l', 'n', 'q', 'q', 'x', 'q', 'g', 'w', 'q', 'l', 'n', 'q'];
-  const out = []; let qi = 0, xi = 0, gi = 0, li = 0, ni = 0;
+  // 2.2: conjugation in a sentence, synonym/antonym and definition cards for words Ari has met
+  const met = shuffle(metWords());
+  const cj = shuffle(Object.keys(S.items).filter(k => /^w:.*:conj$/.test(k) && keyValid(k) && conjSentences(LX(k.split(':')[1])).length)).slice(0, 2);
+  const rs = met.filter(l => { const r = relOf(l); return r.syn.length || r.ant.length; }).slice(0, 2);
+  const ds = met.filter(l => l.d && !rs.includes(l)).slice(0, 2);
+  const pattern = ['q', 'q', 'w', 'r', 'q', 'x', 'c', 'q', 'g', 'd', 'q', 'l', 'n', 'q', 'r', 'q', 'x', 'c', 'q', 'g', 'w', 'd', 'q', 'l', 'n', 'q'];
+  const out = []; let qi = 0, xi = 0, gi = 0, li = 0, ni = 0, ci = 0, ri = 0, di = 0;
   const gl = shuffle(glances);
   pattern.forEach(p => {
     if (p === 'q' && qs[qi]) out.push({kind: 'q', key: qs[qi++]});
     else if (p === 'w' && qs[qi]) { const id = qs[qi++].split(':')[1]; out.push({kind: 'w', l: LX(id)}); }
     else if (p === 'x' && xs[xi]) out.push({kind: 'x', x: xs[xi++]});
+    else if (p === 'c' && cj[ci]) out.push({kind: 'q', key: cj[ci++]});
+    else if (p === 'r' && rs[ri]) out.push({kind: 'r', l: rs[ri++]});
+    else if (p === 'd' && ds[di]) out.push({kind: 'd', l: ds[di++]});
     else if (p === 'g' && gl[gi]) out.push(gl[gi++]);
     else if (p === 'l' && sents[1 + li]) out.push({kind: 'l', s: sents[1 + li++]});
     else if (p === 'n' && newL[ni]) out.push({kind: 'n', l: newL[ni++]});
@@ -2781,15 +2831,15 @@ function feedAppend() {
 }
 function fcardHTML(c) {
   const hint = '<div class="fhint">veeg omhoog</div>';
-  if (c.kind === 'q') {
-    const ex = c.ex = makeEx(c.key, 'feed');
+  if (c.kind === 'q' || c.kind === 'r' || c.kind === 'd') {
+    const ex = c.ex = c.kind === 'r' ? relEx(c.l) : c.kind === 'd' ? defEx(c.l) : makeEx(c.key, 'feed');
     if (ex.type === 'gen') return `<div class="fin"><div class="kind">De of het?</div><div class="nl" style="font-size:40px;text-align:center">${esc(ex.lex.w)}</div>${ex.sub ? `<div class="nl" style="font-size:17px;text-align:center">${ex.sub}</div>` : ''}<div class="dehet"><button class="d" data-act="fans" data-fid="${c.fid}" data-v="de">de</button><button class="h" data-act="fans" data-fid="${c.fid}" data-v="het">het</button></div><div class="ffb"></div></div>`;
     return `<div class="fin"><div class="kind">${DAYWORD[ex.label] || 'Kies'}</div><div class="ex-prompt" style="font-size:21px">${ex.prompt}</div>${ex.sub ? `<div class="ex-sub">${ex.sub}</div>` : ''}<div class="opts">${ex.options.map(o => `<button class="opt" data-act="fans" data-fid="${c.fid}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div><div class="ffb"></div></div>`;
   }
   if (c.kind === 'w' || c.kind === 'n') {
     const l = c.l; const isNew = c.kind === 'n';
     return `<div class="fin"><div class="kind">${isNew ? 'Nieuw woord' : 'Ken je dit woord?'}</div><div class="spread"><div class="wc-word">${wordHTML(l)}</div>${speakBtn((l.g ? l.g + ' ' : '') + l.w)}</div>${l.s ? `<div class="nl" style="font-size:18px">${highlight(l.s, l.w)}</div>` : ''}
-      <div class="fback" ${isNew ? '' : 'hidden'}><div class="nl" style="font-size:17px">${esc(l.d)}</div>${l.pl ? `<div class="small">mv: de ${esc(l.pl)}${l.dim ? ' · het ' + esc(l.dim) : ''}</div>` : ''}<button class="en-hidden" data-act="reveal-en" data-en-text="${esc(l.en)}" style="margin-top:8px">Toon Engels</button></div>
+      <div class="fback" ${isNew ? '' : 'hidden'}><div class="nl" style="font-size:17px">${esc(l.d)}</div>${relHTML(l)}${l.pl ? `<div class="small">mv: de ${esc(l.pl)}${l.dim ? ' · het ' + esc(l.dim) : ''}</div>` : ''}<button class="en-hidden" data-act="reveal-en" data-en-text="${esc(l.en)}" style="margin-top:8px">Toon Engels</button></div>
       ${isNew ? '' : `<button class="btn line fshow" data-act="freveal" data-fid="${c.fid}">Toon betekenis</button><div class="grid2 fgrade" hidden><button class="btn line" data-act="fknew" data-fid="${c.fid}" data-ok="0">Nog niet</button><button class="btn" data-act="fknew" data-fid="${c.fid}" data-ok="1">Wist ik</button></div>`}</div>`;
   }
   if (c.kind === 'x') {
@@ -3345,7 +3395,7 @@ function wordCardHTML(l, opts = {}) {
   return `<div class="stack">
     <div class="spread"><div><div class="eyebrow">${POS[l.p] || ''}${l.custom ? ' · mijn woord' : ''}</div><div class="wc-word">${wordHTML(l)}</div></div>${speakBtn((l.g ? l.g + ' ' : '') + l.w)}</div>
     ${wordFacts(l)}
-    <div><div class="eyebrow">Betekenis</div><div class="nl" style="font-size:18px;line-height:1.45">${esc(l.d || '—')}</div></div>
+    <div><div class="eyebrow">Betekenis</div><div class="nl" style="font-size:18px;line-height:1.45">${esc(l.d || '—')}</div>${relHTML(l)}</div>
     ${s ? `<div><div class="eyebrow">Voorbeeld</div>${s}</div>` : ''}
     ${l.v ? `<details class="more"><summary>Alle vervoegingen</summary>${conjTable(l)}</details>` : ''}
     ${!l.v && l.why ? `<div class="why small">${l.why}</div>` : ''}
@@ -3891,11 +3941,13 @@ function parseWords(text) {
     const k = wordKey(w, p);
     if (seen.has(k)) { out.rejected.push({nr, w, why: 'staat twee keer in de lijst'}); return; } seen.add(k);
     if (ix.has(k)) { out.existing.push({w, id: ix.get(k)}); return; }
-    out.fresh.push({w, p, g: p === 'n' ? g : undefined, pl: p === 'n' ? str(x.pl, 60) || null : null, dim: p === 'n' ? str(x.dim, 60) || null : null, d: str(x.d, 200), s: str(x.s, 200), en: str(x.en, 120), plan: planId(x.plan), th: themeId(x.thema)});
+    out.fresh.push({w, p, g: p === 'n' ? g : undefined, pl: p === 'n' ? str(x.pl, 60) || null : null, dim: p === 'n' ? str(x.dim, 60) || null : null, d: str(x.d, 200), s: str(x.s, 200), en: str(x.en, 120), plan: planId(x.plan), th: themeId(x.thema), syn: relList(x.syn), ant: relList(x.ant)});
   });
   if (d.words.length > 200) out.rejected.push({nr: 201, w: '…', why: `alleen de eerste 200 woorden (${d.words.length} in de lijst)`});
   return {data: out};
 }
+// "syn" / "ant": a list or a comma-separated string
+const relList = v => (Array.isArray(v) ? v : typeof v === 'string' ? v.split(',') : []).map(x => str(x, 60)).filter(Boolean).slice(0, 6);
 // "thema": a theme id or its Dutch name; anything else is ignored
 const themeId = t => typeof t !== 'string' ? '' : THEME[t.trim().toLowerCase()] ? t.trim().toLowerCase() : (THEMES.find(x => norm(x.name) === norm(t)) || {}).id || '';
 const findSet = name => (S.sets || []).find(x => norm(x.name) === norm(name));
@@ -3942,7 +3994,7 @@ function saveWords(r) {
   const ix = wordIndex(); let added = 0, linked = 0;
   r.fresh.forEach(x => {
     let id = ix.get(wordKey(x.w, x.p)); // pasted twice before saving: still one word
-    if (!id) { id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: x.w, p: x.p, g: x.g, pl: x.pl, dim: x.dim, d: x.d, s: x.s, en: x.en, plan: x.plan, src: 'woorden', date: r.datum}; if (x.th) S.custom[id].th = x.th; ix.set(wordKey(x.w, x.p), id); S.drip.ids.push(id); added++; }
+    if (!id) { id = uid('u-'); S.custom[id] = {id, custom: true, u: 0, w: x.w, p: x.p, g: x.g, pl: x.pl, dim: x.dim, d: x.d, s: x.s, en: x.en, plan: x.plan, src: 'woorden', date: r.datum}; if (x.th) S.custom[id].th = x.th; if (x.syn.length) S.custom[id].syn = x.syn; if (x.ant.length) S.custom[id].ant = x.ant; ix.set(wordKey(x.w, x.p), id); S.drip.ids.push(id); added++; }
     if (!set.ids.includes(id)) set.ids.push(id);
   });
   r.existing.forEach(x => { if (!set.ids.includes(x.id)) { set.ids.push(x.id); linked++; } });
@@ -4107,6 +4159,7 @@ function wordsBlock(id) {
     if (l.p === 'n') { o.g = l.g; if (l.pl) o.pl = l.pl; if (l.dim) o.dim = l.dim; }
     Object.assign(o, {d: l.d || '', s: l.s || '', en: l.en || '', plan: (l.custom ? l.plan : SQ_OF_WORD[l.id]) || null});
     const t = themeOf(l); if (t) o.thema = t;
+    const r = relOf(l); if (r.syn.length) o.syn = r.syn; if (r.ant.length) o.ant = r.ant;
     return JSON.stringify(o);
   });
   const head = JSON.stringify({v: 1, set: set.name, datum: dateKey(), bron: 'Elke Dag Zin'}).slice(0, -1);
@@ -4154,6 +4207,111 @@ function openWordImport() {
   $('#wim-file', s).onclick = () => $('#wim-f', s).click();
   $('#wim-f', s).onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { ta.value = String(r.result || ''); go(); }; r.onerror = () => toast('Het bestand kon niet gelezen worden'); r.readAsText(f); };
   $('#wim-go', s).onclick = go;
+}
+
+/* ===== VERSION 2.2: cards =====
+   Herhalen tests (typing), Scroll practises with one tap, Kaarten studies a chosen group.
+   New here: conjugation inside a real sentence (Herhalen and Scroll), synonym, antonym and
+   definition cards (Scroll only), synonyms and antonyms on the word card, and a clearer
+   "Verbeter de zin" card (what kind of mistake, which square, a hint on request). */
+
+/* ---------- synonyms and antonyms ---------- */
+function relOf(l) {
+  const r = REL_BY_W[norm(l.w)] || {};
+  return {syn: (l.syn && l.syn.length ? l.syn : r.syn) || [], ant: (l.ant && l.ant.length ? l.ant : r.ant) || []};
+}
+function relHTML(l) {
+  const r = relOf(l); if (!r.syn.length && !r.ant.length) return '';
+  return `<div class="rel small">${r.syn.length ? `<span data-en="Also: synonyms">ook:</span> <b class="nl">${r.syn.map(esc).join(', ')}</b>` : ''}${r.syn.length && r.ant.length ? ' · ' : ''}${r.ant.length ? `<span data-en="Opposite">tegenovergestelde:</span> <b class="nl">${r.ant.map(esc).join(', ')}</b>` : ''}</div>`;
+}
+
+/* ---------- conjugation in a sentence ----------
+   The gap is a conjugated verb in one of the app's own sentences. The choices stay in
+   one tense (neem/neemt/nemen or nam/namen/genomen), so only one answer fits. */
+function conjSentences(l) {
+  const f = vForms(l); if (!f) return [];
+  const now = uniq([f.ik, f.jij, f.hij, f.pl, f.inv, f.u].filter(Boolean).map(x => x.toLowerCase()));
+  const past = uniq([f.im[0], f.im[1]].filter(Boolean).map(x => x.toLowerCase()));
+  return (lexSent[l.id] || []).map(o => { const s = o.surf.toLowerCase(); return now.includes(s) ? {...o, tense: 'nu'} : past.includes(s) ? {...o, tense: 'verleden'} : null; }).filter(Boolean);
+}
+function conjOptions(l, o) {
+  const f = vForms(l); const ans = o.surf.toLowerCase();
+  const pool = o.tense === 'nu' ? [f.ik, f.hij, f.pl] : [f.im[0], f.im[1], f.pp];
+  const opts = uniq([ans].concat(pool.filter(Boolean).map(x => x.toLowerCase())));
+  if (opts.length < 3) uniq([f.ik, f.hij, f.pl, f.im[0], f.im[1], l.w].map(x => x.toLowerCase())).forEach(x => { if (opts.length < 3 && !opts.includes(x)) opts.push(x); });
+  return shuffle(opts.slice(0, 4));
+}
+function conjSentEx(key, l, o, ctx) {
+  const s = o.s; const ans = o.surf.toLowerCase();
+  const base = {key, lex: l, sent: s, label: 'conjS', prompt: `<span class="nl">${blankOut(s.nl, o.surf)}</span>`, sub: `${esc(s.en)} · <span class="nl">(${esc(l.w)} · ${o.tense === 'nu' ? 'nu' : 'verleden tijd'})</span>`, answer: ans, why: clozeWhy(l, o.surf), say: s.nl};
+  if (ctx === 'feed') return {...base, type: 'mc', options: conjOptions(l, o)};
+  return {...base, type: 'type', accept: [norm(ans)]};
+}
+
+/* ---------- Scroll only: synonym / antonym and definition cards (they count as 'recognise') ---------- */
+function relEx(l) {
+  const r = relOf(l); const kind = r.syn.length && (!r.ant.length || Math.random() < .5) ? 'syn' : 'ant';
+  const ans = pick(r[kind]); const avoid = new Set([l.w, ...r.syn, ...r.ant].map(norm));
+  const pool = shuffle(allWords().filter(x => x.id !== l.id && x.p === l.p && !avoid.has(norm(x.w)))).map(x => x.w);
+  const opts = shuffle(uniq([ans].concat(pool)).slice(0, 4));
+  return {type: 'mc', key: 'w:' + l.id + ':rec', lex: l, label: kind, prompt: `<span class="nl" style="font-size:30px">${wordHTML(l)}</span>`,
+    sub: kind === 'syn' ? 'Welk woord betekent ongeveer hetzelfde?' : 'Wat is het tegenovergestelde?', options: opts, answer: ans,
+    why: `${wordHTML(l)}: ${esc(l.d || '')}. ${relHTML(l).replace(/<\/?div[^>]*>/g, '')}`, say: ans};
+}
+function defEx(l) {
+  const opts = shuffle(uniq([l.w].concat(distractorsFor(l, l.w))).slice(0, 4));
+  return {type: 'mc', key: 'w:' + l.id + ':rec', lex: l, label: 'def', prompt: `<span class="nl" style="font-size:21px">${esc(l.d)}</span>`, sub: POS[l.p] || '', options: opts, answer: l.w,
+    why: `${wordHTML(l)}: ${esc(l.d)}. <span class="muted">(${esc(l.en || '')})</span>`, say: (l.g ? l.g + ' ' : '') + l.w};
+}
+// words Ari has met that can carry these cards
+const metWords = () => allWords().filter(l => S.items['w:' + l.id + ':rec'] || S.seen[l.id]);
+Object.assign(DAYWORD, {conjS: 'Vervoeg in de zin', syn: 'Zelfde betekenis', ant: 'Tegenovergestelde', def: 'Welk woord is het?'});
+Object.assign(DAYWORD_EN, {conjS: 'Conjugate in the sentence', syn: 'Same meaning', ant: 'Opposite', def: 'Which word is it?'});
+HOWTO.fix = ['Typ de zin opnieuw, maar nu juist.', 'Het label zegt wat voor fout het is (woordvolgorde, lidwoord, werkwoordsvorm…). Vast? Tik op <b>Hint</b>: de woorden die niet kloppen worden onderlijnd.'];
+HOWTO.conjS = ['Vul de juiste vorm van het werkwoord in de zin in.', 'Tussen haakjes staan het werkwoord en de tijd: <i>(nemen · nu)</i> → <b class="verbword">neem</b>, <b class="verbword">neemt</b> of <b class="verbword">nemen</b>?'];
+
+/* ---------- Verbeter de zin: what kind of mistake, where, and a hint ---------- */
+const FIX_LABEL = {'word order': ['Woordvolgorde', 'Word order'], article: ['Lidwoord (de/het)', 'Article'], 'verb form': ['Werkwoordsvorm', 'Verb form'], adjective: ['Bijvoeglijk naamwoord', 'Adjective ending'], spelling: ['Spelling', 'Spelling'], 'word choice': ['Woordkeuze', 'Word choice'], other: ['Iets anders', 'Something else']};
+const toks = s => norm(s).split(' ').filter(Boolean);
+function multisetMinus(a, b) { const m = {}; b.forEach(x => { m[x] = (m[x] || 0) + 1; }); return a.filter(x => { if (m[x]) { m[x]--; return false; } return true; }); }
+// the type from the report, or worked out from the two sentences (older corrections have none)
+function fixType(f) {
+  const t = String(f.type || '').toLowerCase();
+  if (FIX_LABEL[t] && t !== 'other') return t;
+  const w = toks(f.wrong), r = toks(f.right);
+  const a = multisetMinus(w, r), b = multisetMinus(r, w);
+  if (!a.length && !b.length) return 'word order';
+  if (a.concat(b).every(x => ['de', 'het', 'een'].includes(x))) return 'article';
+  if (a.length === 1 && b.length === 1) {
+    const [x, y] = [a[0], b[0]];
+    if (x + 'e' === y || y + 'e' === x) return 'adjective';
+    const ix = FORM_IX[x], iy = FORM_IX[y];
+    if ((ix && ix === iy && LX(ix).v) || (LEX.some(l => l.v && allForms(l).includes(x)) && LEX.some(l => l.v && allForms(l).includes(y)))) return 'verb form';
+    if (lev(x, y) <= 2) return 'spelling';
+  }
+  return FIX_LABEL[t] ? t : 'word choice';
+}
+// which words of the wrong sentence are not where the right one has them (longest common subsequence)
+function fixDiff(wrong, right) {
+  const w = toks(wrong), r = toks(right); const n = w.length, m = r.length;
+  const L = Array.from({length: n + 1}, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = w[i] === r[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const keep = new Set(); let i = 0, j = 0;
+  while (i < n && j < m) { if (w[i] === r[j]) { keep.add(i); i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) i++; else j++; }
+  return new Set(w.map((_, k) => k).filter(k => !keep.has(k)));
+}
+const SRC_NAME = {log: 'je logboek', talk: 'je gesprek', write: 'je schrijfopdracht', onderwerp: 'je gesprek met Claude', opdracht: 'je opdracht met Claude', dagboek: 'je dagboek', foto: 'een foto van je les'};
+const shortDate = d => { const [y, m, dd] = String(d || '').split('-').map(Number); return y && m ? `${dd} ${MONTHS[m - 1].slice(0, 3)}` : ''; };
+function fixEx(key, f) {
+  const t = fixType(f); const [lab, labEn] = FIX_LABEL[t];
+  const words = String(f.wrong).trim().split(/\s+/); const diff = fixDiff(f.wrong, f.right);
+  const x = (S.extras || []).find(e => e.id === f.plan);
+  const place = PSQ[f.plan] ? `${PSQ[f.plan].name} · ${PSQ[f.plan].title.toLowerCase()}` : x ? x.title : '';
+  const from = [SRC_NAME[f.src] ? 'uit ' + SRC_NAME[f.src] : '', shortDate(f.date)].filter(Boolean).join(', ');
+  return {type: 'type', key, label: 'fix', fixType: t,
+    prompt: `<span class="nl fixw" style="font-size:20px">${words.map((w, i) => `<span class="fx${diff.has(i) ? ' d' : ''}">${esc(w)}</span>`).join(' ')}</span>`,
+    sub: `<span class="fixlab" data-en="${labEn}">${lab}</span>${place ? ` · <span class="small">${esc(place)}</span>` : ''}<br><span class="small">Verbeter de zin${from ? ' · ' + esc(from) : ''}.</span>${diff.size ? ` <button class="link sm" type="button" data-act="fix-hint" style="padding-left:0">Hint: wat is er mis? ›</button>` : ''}`,
+    answer: f.right, accept: [norm(f.right)], whole: true, why: esc(f.why || ''), say: f.right};
 }
 
 /* ===== LONG-PRESS ENGLISH ===== */
@@ -4228,6 +4386,7 @@ document.addEventListener('click', e => {
     case 'theme-pick': themePicker(d.id); break;
     case 'theme-set': setTheme(d.id, d.t); break;
     case 'word-import': openWordImport(); break;
+    case 'fix-hint': { const w = $('#ses-body .fixw'); if (w) w.classList.add('hint'); el.remove(); break; }
     case 'card-grade': cardGrade(d.ok === '1'); break;
     case 'cards-again': startCards(shuffle(CARDS.unknown), {mode: CARDS.mode, dir: CARDS.dir, name: CARDS.name}); break;
     case 'word-add': closeSheet(); quickAdd(d.w); break;

@@ -301,3 +301,9 @@ a.btn{text-decoration:none;text-align:center;box-sizing:border-box}
 .wacts{display:flex;gap:8px;margin-left:auto}
 .wbody{padding:0 0 10px}
 .wbody > .row{margin:2px 0 6px}
+
+/* 2.2: synonyms/antonyms, the fix card */
+.rel{margin-top:4px;color:var(--ink2)}
+.rel b{color:var(--ink);font-weight:500}
+.fixlab{display:inline-block;background:var(--warn-tint);color:var(--warn);border-radius:6px;padding:1px 8px;font-weight:600;font-size:14px}
+.fixw.hint .fx.d{text-decoration:underline wavy var(--warn);text-underline-offset:5px;text-decoration-thickness:1.5px}

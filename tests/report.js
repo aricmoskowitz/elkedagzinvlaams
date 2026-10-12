@@ -217,6 +217,45 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
     const r = await q.evaluate(t => { try { const x = importWords(t); closeOverlay('wimport'); return x.error || 'preview'; } catch (e) { return 'THROW ' + e.message; } }, bad);
     ok(!r.startsWith('THROW'), 'word list never crashes: ' + r);
   }
+  // ---- 2.2: cards ----
+  const ft = await q.evaluate(() => [['Morgen ik neem de tram.', 'Morgen neem ik de tram.'], ['Ik zie de huis.', 'Ik zie het huis.'], ['Hij neem de tram.', 'Hij neemt de tram.'], ['Ik woon in Antwerpn.', 'Ik woon in Antwerpen.'], ['Een mooi stad.', 'Een mooie stad.'], ['Ik neem de bus.', 'Ik neem de trein.']].map(([wrong, right]) => fixType({wrong, right})).join(',') + '|' + fixType({wrong: 'a', right: 'b', type: 'verb form'}));
+  ok(ft === 'word order,article,verb form,spelling,adjective,word choice|verb form', 'kind of mistake: from the report, or worked out from the two sentences (' + ft + ')');
+  await q.evaluate(() => { closeOverlay('proc'); closeSheet(); S.fix.ftest = {wrong: 'Morgen ik neem de tram.', right: 'Morgen neem ik de tram.', why: 'Time in slot 1, so the verb comes next.', type: 'word order', src: 'onderwerp', date: '2026-10-12', plan: 'u1q2'}; startSession({keys: ['c:ftest:fix'], intros: false}); });
+  await q.waitForTimeout(150);
+  const fc = await q.evaluate(() => ({sub: $('#ses-body .ex-sub').textContent.replace(/\s+/g, ' '), d: $$('#ses-body .fx.d').map(x => x.textContent)}));
+  ok(/Woordvolgorde · Tramplein · inversie/.test(fc.sub) && /uit je gesprek met Claude, 12 okt/.test(fc.sub) && fc.d.length >= 1, 'Verbeter de zin shows the kind of mistake, the square and where it came from: ' + fc.sub.trim());
+  ok(!(await q.evaluate(() => !!$('#ses-body .fixw.hint'))), 'the hint is hidden until asked');
+  await q.click('[data-act=fix-hint]'); await q.waitForTimeout(80);
+  ok(await q.evaluate(() => !!$('#ses-body .fixw.hint') && getComputedStyle($('#ses-body .fx.d')).textDecorationLine.includes('underline') && !$('[data-act=fix-hint]')), 'Hint underlines the words that are wrong: ' + fc.d.join(', '));
+  if (process.env.SHOTS) await q.screenshot({path: path.join(process.env.SHOTS, 'c1_fix.png')});
+  await q.fill('#ex-in', 'Morgen neem ik de tram'); await q.click('#ex-form button'); await q.waitForTimeout(80);
+  ok(await q.evaluate(() => $('#fb .fb.ok') !== null), 'the corrected sentence is accepted');
+  await q.evaluate(() => closeSession());
+  // conjugation in a sentence: Herhalen (type) alongside the bare drill
+  const cs = await q.evaluate(() => { introduce('w:nemen:conj'); const kinds = new Set(); for (let i = 0; i < 40; i++) kinds.add(makeEx('w:nemen:conj', 'drill').label); const ex = conjSentEx('w:nemen:conj', LX('nemen'), conjSentences(LX('nemen'))[0], 'drill'); return {kinds: [...kinds].sort().join(','), sub: ex.sub, prompt: ex.prompt}; });
+  ok(cs.kinds === 'conj,conjS' && /\(nemen · (nu|verleden tijd)\)/.test(cs.sub) && /blank/.test(cs.prompt), 'Herhalen: conjugation comes both as the bare drill and inside a sentence, with infinitive and tense');
+  // Scroll: synonym/antonym, definition and conjugation cards
+  await q.evaluate(() => { ['duur', 'groot', 'vaak', 'links', 'mooi', 'vertrekken'].forEach(id => { S.seen[id] = 1; introduce('w:' + id + ':rec'); }); introduce('w:nemen:conj'); introduce('w:komen:conj'); TAB = 'pad'; render(); openFeed(); });
+  await q.waitForTimeout(300);
+  const fk = await q.evaluate(() => Object.values(FC).filter(c => FEED && $(`.fcard[data-fid="${c.fid}"]`)).map(c => c.ex ? c.ex.label : c.kind));
+  console.log('  scroll cards:', fk.join(' '));
+  ok(fk.includes('syn') || fk.includes('ant'), 'Scroll has synonym/antonym cards'); ok(fk.includes('def'), 'Scroll has "welk woord is het?" definition cards'); ok(fk.includes('conjS'), 'Scroll has conjugation-in-a-sentence cards (multiple choice)');
+  const fa = await q.evaluate(() => { const c = Object.values(FC).find(c => c.kind === 'r' && c.ex); const before = S.items[c.ex.key].r; feedAnswer(c.fid, c.ex.answer); return {ok: !!$(`.fcard[data-fid="${c.fid}"] .fb.ok`), counted: S.items[c.ex.key].r === before + 1, key: c.ex.key}; });
+  ok(fa.ok && fa.counted && /:rec$/.test(fa.key), 'answering a synonym/antonym card counts for that word\'s "recognise" review');
+  await q.evaluate(() => { const c = Object.values(FC).find(c => c.kind === 'r'); $(`.fcard[data-fid="${c.fid}"]`).scrollIntoView(); }); await q.waitForTimeout(200);
+  if (process.env.SHOTS) await q.screenshot({path: path.join(process.env.SHOTS, 'c2_scroll_rel.png')});
+  await q.evaluate(() => { const c = Object.values(FC).find(c => c.ex && c.ex.label === 'conjS'); $(`.fcard[data-fid="${c.fid}"]`).scrollIntoView(); }); await q.waitForTimeout(200);
+  if (process.env.SHOTS) await q.screenshot({path: path.join(process.env.SHOTS, 'c3_scroll_conj.png')});
+  await q.evaluate(() => closeFeed());
+  // synonyms and antonyms on the word card, also for own words and from a word list
+  await q.evaluate(() => showWord('duur')); const wc = (await q.textContent('#sheetback .rel')).replace(/\s+/g, ' ');
+  if (process.env.SHOTS) await q.screenshot({path: path.join(process.env.SHOTS, 'c4_wordcard.png')});
+  await q.evaluate(() => { closeSheet(); showWord(Object.values(S.custom).find(l => l.w === 'lachen').id); }); const wc2 = (await q.textContent('#sheetback .rel')).replace(/\s+/g, ' '); await q.evaluate(() => closeSheet());
+  ok(/tegenovergestelde: goedkoop/.test(wc) && /tegenovergestelde: wenen/.test(wc2), 'word card: "' + wc.trim() + '"; own word lachen: "' + wc2.trim() + '"');
+  await q.evaluate(() => importWords('EDZ-WOORDEN v1\n{"v":1,"set":"Gevoelens","datum":"2026-10-12","words":[{"w":"blij","p":"adj","d":"in een goede stemming","s":"Ik ben blij dat je er bent.","en":"happy, glad","syn":"vrolijk, opgewekt","ant":["verdrietig"],"plan":null}]}\nEDZ-EINDE')); await q.click('#wi-go'); await q.waitForTimeout(100);
+  const bl = await q.evaluate(() => { const l = Object.values(S.custom).find(x => x.w === 'blij'); const set = S.sets.find(x => x.name === 'Gevoelens'); return {r: relOf(l), out: wordsBlock(set.id)}; });
+  ok(bl.r.syn.join('/') === 'vrolijk/opgewekt' && bl.r.ant.join('/') === 'verdrietig' && /"syn":\["vrolijk","opgewekt"\],"ant":\["verdrietig"\]/.test(bl.out), 'a word list can bring "syn" and "ant" (list or text); Deel als woordenlijst writes them back');
+
   // 7. a report still works exactly as before in the same box
   await q.click('[data-act=verslag]'); await q.waitForTimeout(100); await q.fill('#rep-t', fx('valid.txt')); await q.click('#rep-go'); await q.waitForTimeout(250);
   ok(!!(await q.$('#proc #proc-save')) && !(await q.$('#wimport')), 'pasting an EDZ-VERSLAG v1 block still opens the report review');

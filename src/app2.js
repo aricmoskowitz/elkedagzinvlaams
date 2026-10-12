@@ -150,10 +150,7 @@ function genWhy(l) {
 function makeEx(key, ctx = 'drill') {
   const [t, id, sk] = key.split(':');
   const it = S.items[key];
-  if (t === 'c') {
-    const f = S.fix[id];
-    return {type: 'type', key, label: 'fix', prompt: `<span class="nl" style="font-size:20px">${esc(f.wrong)}</span>`, sub: 'Verbeter deze zin. Hij komt uit je ' + ({log: 'logboek', talk: 'gesprek', write: 'schrijfopdracht', onderwerp: 'gesprek met Claude', opdracht: 'opdracht met Claude', dagboek: 'dagboek', foto: 'foto'}[f.src] || 'oefening') + '.', answer: f.right, accept: [norm(f.right)], whole: true, why: esc(f.why || ''), say: f.right};
-  }
+  if (t === 'c') return fixEx(key, S.fix[id]); // app16: type of mistake, square, hint
   if (t === 'e') {
     const ex = extraSentence(id);
     return {type: 'type', key, label: 'tr', prompt: `<span class="nl">${esc(ex.en)}</span>`, sub: 'Extra plein', answer: ex.nl, accept: [norm(ex.nl)], whole: true, why: esc(ex.why || ''), say: ex.nl};
@@ -166,6 +163,9 @@ function makeEx(key, ctx = 'drill') {
       return {type: 'gen', key, lex: l, label: 'gen', prompt: `<span class="nl" style="font-size:34px">${esc(l.w)}</span>`, sub: sent ? `<span class="nl">${sent}</span>` : '', answer: l.g, why: genWhy(l), say: l.g + ' ' + l.w};
     }
     if (sk === 'conj' && l.v) {
+      // app16: half the time (Scroll: always) the verb is conjugated inside a real sentence
+      const cs = conjSentences(l);
+      if (cs.length && (ctx === 'feed' || Math.random() < .5)) return conjSentEx(key, l, pick(cs), ctx);
       const f = vForms(l); const p = pick(['ik', 'jij', 'inv', 'u', 'hij', 'pl', 'pl']);
       const plLab = pick(['wij', 'jullie', 'zij']);
       let form = f[p]; let prompt;
