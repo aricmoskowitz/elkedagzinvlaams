@@ -1,8 +1,8 @@
 # Ik — learner profile
 
-- **Name:** Ari. Lives in Antwerp. First language English.
+- **Home:** lives in Antwerp. First language English.
 - **Level:** Encora course level 2.1, roughly CEFR A2 (early). **Goal: C1**, at ease at work, with the news and in a debate.
-- **Variety:** standard Belgian Dutch. Ari wants to understand Antwerp street speech (*ge/gij*, *-ke*, *amai*, *allez*) but write and speak standard.
+- **Variety:** standard Belgian Dutch. The user wants to understand Antwerp street speech (*ge/gij*, *-ke*, *amai*, *allez*) but write and speak standard.
 - **Daily life themes:** trams and cycling, the Sunday plant market (Vogelmarkt), food and cafés, the neighbourhood and buildings, the weather, Dutch class at Encora.
 - **Learning style:**
   - whole sentences, not lists

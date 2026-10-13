@@ -136,7 +136,7 @@ function feedPlan() {
   const glances = [{kind: 'gv', l: verbs[0]}, {kind: 'gf', s: sents[0]}, {kind: 'gn', l: nouns[0]}].filter(g => g.l || g.s);
   const xs = shuffle(EXTRAS.filter(x => !FEED.usedX.has(x.title))).slice(0, 2); xs.forEach(x => FEED.usedX.add(x.title));
   if (FEED.usedX.size >= EXTRAS.length) FEED.usedX.clear();
-  // 2.2: conjugation in a sentence, synonym/antonym and definition cards for words Ari has met
+  // 2.2: conjugation in a sentence, synonym/antonym and definition cards for words the user has met
   const met = shuffle(metWords());
   const cj = shuffle(Object.keys(S.items).filter(k => /^w:.*:conj$/.test(k) && keyValid(k) && conjSentences(LX(k.split(':')[1])).length)).slice(0, 2);
   const rs = met.filter(l => { const r = relOf(l); return r.syn.length || r.ant.length; }).slice(0, 2);

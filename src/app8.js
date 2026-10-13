@@ -128,7 +128,7 @@ function sign(cx, y, text, dim) {
   return `<g transform="translate(${cx - w / 2},${y})"><rect width="${w}" height="17" fill="${dim ? '#EEEAE2' : '#fff'}" stroke="${dim ? '#A9A49A' : '#2A2620'}" stroke-width="2"/><text x="${w / 2}" y="12.5" text-anchor="middle" class="px" style="fill:${dim ? '#8C877E' : '#2A2620'}">${esc(t)}</text></g>`;
 }
 /* 2.5: names never cover a house, a flag or a road, nor the arrow, the cyclist or another name. They may stand on
-   a square. Each name takes the free spot closest to its square's centre (Ari: close to the centre beats the usual side). */
+   a square. Each name takes the free spot closest to its square's centre (the user: close to the centre beats the usual side). */
 const signW = text => text.length * 7 + 14;
 // how much a sign rect covers what matters: houses, the flag row above a house, roads, and the rects in `taken`
 function signCost(g, r, taken) {

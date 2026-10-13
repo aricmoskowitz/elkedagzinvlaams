@@ -1,7 +1,7 @@
 /* ===== 2.1: themes. Every word gets one theme, so the Woorden tab can group by theme.
-   The tag is matched on the lemma, so Ari's own words with the same lemma get it too
+   The tag is matched on the lemma, so the user's own words with the same lemma get it too
    (this list also covers the set "Mijn woorden 1"). A word list may bring its own
-   "thema"; Ari can change any word's theme on its card (S.themes). */
+   "thema"; the user can change any word's theme on its card (S.themes). */
 const THEMES = [
   {id: 'eten', name: 'Eten en drinken', en: 'Food and drink'},
   {id: 'winkelen', name: 'Winkelen en geld', en: 'Shopping and money'},

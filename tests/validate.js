@@ -1,6 +1,6 @@
 // Every generated exercise must accept its own answer; every reorder variant must contain the original.
 // 2.5: plus the content rules from CLAUDE.md (Writing content): Lees questions, inversion on Vertaal, the English cue,
-// listening choices, the step order and enough choices on every card, also for Ari's own words.
+// listening choices, the step order and enough choices on every card, also for the user's own words.
 const fs = require('fs');
 const {openApp} = require('./page');
 (async () => {
@@ -33,7 +33,7 @@ const {openApp} = require('./page');
       if (r.syn.length || r.ant.length) for (let i = 0; i < 4; i++) { nr++; const ex = relEx(l); if (!ex.options.includes(ex.answer) || new Set(ex.options.map(norm)).size !== ex.options.length || ex.options.length < 3 || ex.options.some(o => o !== ex.answer && (r.syn.includes(o) || r.ant.includes(o)))) bad.push(l.id + ' rel ' + ex.options + ' / ' + ex.answer); }
       if (l.d) { nd++; const ex = defEx(l); if (!ex.options.includes(ex.answer) || new Set(ex.options.map(norm)).size !== ex.options.length || ex.options.length < 3) bad.push(l.id + ' def ' + ex.options); } });
     n += nc + nr + nd;
-    // 2.5 (Ari's review): the rules below keep these mistakes out of every new town and plein
+    // 2.5 (the user's review): the rules below keep these mistakes out of every new town and plein
     const built = UNITS.filter(u => u.built).flatMap(u => squaresOf(u.id));
     // Lees: five questions about the text, three different choices each, never a grammar quiz
     const GRAMMAR_Q = /werkwoord|plaats \d|onderwerp|meervoud|deelwoord|bijvoeglijk|lidwoord|de-woord|het-woord|\bde of het\b|kofschip|inversie|infinitief|\bsterk\b|\bzwak\b|…\s*$|\bstaat “|een bevel|een vraag\b|een belofte/i;
@@ -99,7 +99,7 @@ const {openApp} = require('./page');
     if (noCard.size) bad.push('words in the app texts without a card: ' + [...noCard].join(', '));
     // underline means "tap for the word card" only: the subject is bold, verbs are gold
     if (/<u>/.test(frameHTML(SENT[0]))) bad.push('frameHTML underlines the subject');
-    // synonym/antonym/definition cards for Ari's own words too (an own pronoun like iemand once had a single choice)
+    // synonym/antonym/definition cards for the user's own words too (an own pronoun like iemand once had a single choice)
     saveWords(parseWords(WOORDEN_FIXTURE).data);
     let nw = 0;
     Object.values(S.custom).forEach(l => { const r = relOf(l);

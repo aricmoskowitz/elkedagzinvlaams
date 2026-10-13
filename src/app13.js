@@ -80,7 +80,7 @@ function wordForm(setId, prefill) {
   };
 }
 
-/* ---------- word facts: the forms Ari asked for, per kind of word ---------- */
+/* ---------- word facts: the forms the user asked for, per kind of word ---------- */
 const CMP = {goed: ['beter', 'best'], veel: ['meer', 'meest'], weinig: ['minder', 'minst'], graag: ['liever', 'liefst'], vaak: ['vaker', 'vaakst'], dichtbij: ['dichterbij', 'dichtstbij'], moe: ['moeër', 'moest'], vorig: null};
 function adjForms(l) {
   const w = l.w.toLowerCase();

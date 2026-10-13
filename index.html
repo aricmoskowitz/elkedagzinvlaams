@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "451fc0104a";</script>
+<script>const APP_VERSION = "496d1e3a7c";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -1291,7 +1291,7 @@ Object.entries({
 }).forEach(([id, doel]) => { const sc = SCENARIOS.find(s => s.id === id); if (sc) sc.doel = doel; });
 
 /* ===== 2026-10-12: gap words, Algemeen words, more parts of speech =====
-   Basic words Ari already uses that the plan did not list, so reports kept
+   Basic words the user already uses that the plan did not list, so reports kept
    flagging them as new. New ids only. The square words live in SQUARES;
    the four Algemeen words (u: 0) belong to no square. */
 Object.assign(POS, {pron: 'vnw', conj: 'vw', prep: 'vz', num: 'telw', int: 'tw'});
@@ -1317,9 +1317,9 @@ LEX.push(
 const ALGEMEEN_WORDS = LEX.filter(l => !l.u).map(l => l.id);
 
 /* ===== 2.1: themes. Every word gets one theme, so the Woorden tab can group by theme.
-   The tag is matched on the lemma, so Ari's own words with the same lemma get it too
+   The tag is matched on the lemma, so the user's own words with the same lemma get it too
    (this list also covers the set "Mijn woorden 1"). A word list may bring its own
-   "thema"; Ari can change any word's theme on its card (S.themes). */
+   "thema"; the user can change any word's theme on its card (S.themes). */
 const THEMES = [
   {id: 'eten', name: 'Eten en drinken', en: 'Food and drink'},
   {id: 'winkelen', name: 'Winkelen en geld', en: 'Shopping and money'},
@@ -1361,7 +1361,7 @@ const THEME = Object.fromEntries(THEMES.map(t => [t.id, t]));
 
 /* ===== 2.2: synonyms (ook) and antonyms (tegenovergestelde), per lemma =====
    Only where a good one exists, in Belgian Dutch (verlof, plezant, verstaan, wenen).
-   Matched on the lemma, so Ari's own words with the same lemma get them too (this list
+   Matched on the lemma, so the user's own words with the same lemma get them too (this list
    also covers the set "Mijn woorden 1"). A word list may bring its own "syn" and "ant". */
 const REL_BY_W = {};
 [
@@ -2039,7 +2039,7 @@ function showFeedback(ex, res, val) {
   if (!ex.listen && res.ok && ex.say && ex.type !== 'gen') setTimeout(() => Audio.say(ex.say), 150);
   setTimeout(() => { const n = $('#ses-next'); if (n) { n.focus({preventScroll: true}); n.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest'}); } }, 50);
 }
-// a whole sentence that was not right: show Ari's own sentence with the words that differ struck through
+// a whole sentence that was not right: show the user's own sentence with the words that differ struck through
 function yoursHTML(ex, res, val) {
   if (res.ok || !ex.whole || ex.type === 'order' || !String(val || '').trim()) return '';
   const words = String(val).trim().split(/\s+/); const diff = fixDiff(val, ex.answer);
@@ -2496,7 +2496,7 @@ function sign(cx, y, text, dim) {
   return `<g transform="translate(${cx - w / 2},${y})"><rect width="${w}" height="17" fill="${dim ? '#EEEAE2' : '#fff'}" stroke="${dim ? '#A9A49A' : '#2A2620'}" stroke-width="2"/><text x="${w / 2}" y="12.5" text-anchor="middle" class="px" style="fill:${dim ? '#8C877E' : '#2A2620'}">${esc(t)}</text></g>`;
 }
 /* 2.5: names never cover a house, a flag or a road, nor the arrow, the cyclist or another name. They may stand on
-   a square. Each name takes the free spot closest to its square's centre (Ari: close to the centre beats the usual side). */
+   a square. Each name takes the free spot closest to its square's centre (the user: close to the centre beats the usual side). */
 const signW = text => text.length * 7 + 14;
 // how much a sign rect covers what matters: houses, the flag row above a house, roads, and the rects in `taken`
 function signCost(g, r, taken) {
@@ -3019,7 +3019,7 @@ function feedPlan() {
   const glances = [{kind: 'gv', l: verbs[0]}, {kind: 'gf', s: sents[0]}, {kind: 'gn', l: nouns[0]}].filter(g => g.l || g.s);
   const xs = shuffle(EXTRAS.filter(x => !FEED.usedX.has(x.title))).slice(0, 2); xs.forEach(x => FEED.usedX.add(x.title));
   if (FEED.usedX.size >= EXTRAS.length) FEED.usedX.clear();
-  // 2.2: conjugation in a sentence, synonym/antonym and definition cards for words Ari has met
+  // 2.2: conjugation in a sentence, synonym/antonym and definition cards for words the user has met
   const met = shuffle(metWords());
   const cj = shuffle(Object.keys(S.items).filter(k => /^w:.*:conj$/.test(k) && keyValid(k) && conjSentences(LX(k.split(':')[1])).length)).slice(0, 2);
   const rs = met.filter(l => { const r = relOf(l); return r.syn.length || r.ant.length; }).slice(0, 2);
@@ -3574,7 +3574,7 @@ function wordForm(setId, prefill) {
   };
 }
 
-/* ---------- word facts: the forms Ari asked for, per kind of word ---------- */
+/* ---------- word facts: the forms the user asked for, per kind of word ---------- */
 const CMP = {goed: ['beter', 'best'], veel: ['meer', 'meest'], weinig: ['minder', 'minst'], graag: ['liever', 'liefst'], vaak: ['vaker', 'vaakst'], dichtbij: ['dichterbij', 'dichtstbij'], moe: ['moeër', 'moest'], vorig: null};
 function adjForms(l) {
   const w = l.w.toLowerCase();
@@ -4022,7 +4022,7 @@ function saveReport(r, hash) {
 }
 
 /* ===== VERSION 2.0: Documents for the Claude Project (Ik → Documenten voor Claude) =====
-   The same text as praten-project/*.md, generated from the app's data. Woorden.md adds Ari's own words. */
+   The same text as praten-project/*.md, generated from the app's data. Woorden.md adds the user's own words. */
 function mdText(h) { const t = document.createElement('textarea'); t.innerHTML = String(h || '').replace(/<[^>]+>/g, ''); return t.value.replace(/\s+/g, ' ').trim(); }
 const DOCS = {
   'Curriculum.md': () => {
@@ -4055,10 +4055,10 @@ const DOCS = {
     if (typeof DICT !== 'undefined' && DICT) {
       const taken = new Set([...shown, ...own.map(key)]); // after the sets: own words are never listed as woordenboek words
       const wb = DICT.filter(l => !taken.has(key(l)));
-      out.push('## Woordenboek · ingebouwd woordenboek', "The app's built-in dictionary: Ari can open these words and add them in one tap, so they are not new either.", wb.map(l => `${l.p === 'n' && l.g ? l.g + ' ' : ''}${l.w}`).join('; '), '');
+      out.push('## Woordenboek · ingebouwd woordenboek', "The app's built-in dictionary: the user can open these words and add them in one tap, so they are not new either.", wb.map(l => `${l.p === 'n' && l.g ? l.g + ' ' : ''}${l.w}`).join('; '), '');
     }
     const rest = own.filter(l => !inSets.has(l.id)).filter(first);
-    if (rest.length) out.push('## Eigen woorden', 'Words Ari added from reports or by hand. They are not new either.', rest.map(l => wl(l) + (l.plan ? ' · ' + l.plan : '')).join('; '), '');
+    if (rest.length) out.push('## Eigen woorden', 'Words the user added from reports or by hand. They are not new either.', rest.map(l => wl(l) + (l.plan ? ' · ' + l.plan : '')).join('; '), '');
     return out.join('\n').replace(/\n+$/, '\n');
   },
   'Scenes.md': () => {
@@ -4140,10 +4140,10 @@ function migrated() {
   </div>`);
 }
 
-/* ===== EDZ-WOORDEN v1: a named word set from the Project or Ari's own list (FORMATS.md §4) =====
+/* ===== EDZ-WOORDEN v1: a named word set from the Project or the user's own list (FORMATS.md §4) =====
    Same paste box and normalising as the report. Words are matched on lemma + part of speech:
    a word already in the app is linked into the set and never overwritten. New words enter
-   Herhalen a few a day (S.drip), or straight away when Ari drills the set. */
+   Herhalen a few a day (S.drip), or straight away when the user drills the set. */
 const WORD_P = ['n', 'v', 'adj', 'adv', 'pron', 'conj', 'prep'];
 const DRIP_PER_DAY = 12;
 const wordKey = (w, p) => norm(w) + '|' + p;
@@ -4165,7 +4165,7 @@ function parseWords(text) {
   const raw = body.slice(a, b + 1); let d = null;
   try { d = JSON.parse(raw); } catch (err) { try { d = JSON.parse(raw.replace(/[“”„‟″]/g, '"').replace(/[‘’‚‛′]/g, "'")); } catch (err2) { d = null; } }
   if (!d || typeof d !== 'object' || Array.isArray(d)) return {error: 'De woordenlijst is geen geldige JSON.', hint: 'Vraag Claude: ‘geef de woordenlijst opnieuw als geldige JSON’.'};
-  const set = str(d.set, 80) || 'Geïmporteerd ' + dateKey(); // Ari names it in the preview
+  const set = str(d.set, 80) || 'Geïmporteerd ' + dateKey(); // the user names it in the preview
   if (!Array.isArray(d.words) || !d.words.length) return {error: 'De woordenlijst heeft geen woorden.', hint: 'Het veld "words" moet 1 tot 200 woorden bevatten.'};
   const ix = wordIndex(); const seen = new Set();
   const out = {set, datum: /^\d{4}-\d\d-\d\d$/.test(d.datum) ? d.datum : dateKey(), bron: str(d.bron, 120), fresh: [], existing: [], rejected: []};
@@ -4507,7 +4507,7 @@ function defEx(l) {
   return {type: 'mc', key: 'w:' + l.id + ':rec', lex: l, label: 'def', prompt: `<span class="nl" style="font-size:21px">${esc(l.d)}</span>`, sub: POS[l.p] || '', options: opts, answer: l.w,
     why: `${wordHTML(l)}: ${esc(l.d)}. <span class="muted">(${esc(l.en || '')})</span>`, say: (l.g ? l.g + ' ' : '') + l.w};
 }
-// words Ari has met that can carry these cards
+// words the user has met that can carry these cards
 const metWords = () => allWords().filter(l => S.items['w:' + l.id + ':rec'] || S.seen[l.id]);
 Object.assign(DAYWORD, {conjS: 'Vervoeg in de zin', syn: 'Zelfde betekenis', ant: 'Tegenovergestelde', def: 'Welk woord is het?'});
 Object.assign(DAYWORD_EN, {conjS: 'Conjugate in the sentence', syn: 'Same meaning', ant: 'Opposite', def: 'Which word is it?'});
@@ -4659,7 +4659,7 @@ function progressLegend() {
   </div><div class="small">Op het Pad heeft elke stad drie huizen (één per plein) en een stadhuis voor de Grote Markt. Is alles perfect, ook de opdracht in de stad, dan wordt de hele stad goud.</div></div>`;
 }
 
-/* ===== VERSION 2.5: clearer cards (from Ari's review) =====
+/* ===== VERSION 2.5: clearer cards (from the user's review) =====
    - every card says what kind of card it is in one clear label (kindLabel)
    - a fill-in card marks the English word that belongs in the gap (enCue), so only one choice fits
    - the Scroll listening card asks what the sentence means before it shows it
@@ -4743,7 +4743,7 @@ function feedListen(fid, j) {
    - tap a word the app has no card for: the filled-in card opens, one tap adds it (to a set if you like)
    - the Nieuw woord form fills itself in when the word is in the woordenboek
    - searching in Woorden also finds woordenboek words
-   - Ari's own words (imported lists) get their missing forms from it
+   - The user's own words (imported lists) get their missing forms from it
    The file loads a few seconds after start (never while the app opens) and the service worker keeps it offline. */
 
 let DICT = null, DICT_IX = null, DICT_P = null;
@@ -4764,7 +4764,7 @@ function loadDict() {
 }
 // a word as it stands in a text → its woordenboek entry (or null)
 const dictFind = w => (DICT_IX && DICT_IX[norm(w)]) || null;
-// one of Ari's own words with the same lemma and part of speech
+// one of the user's own words with the same lemma and part of speech
 const ownFor = l => Object.values(S.custom || {}).find(c => norm(c.w) === norm(l.w) && (c.p === l.p || !c.p));
 
 /* ---------- tapping a word ---------- */
@@ -4787,7 +4787,7 @@ function openDictCard(l) {
   </div>`);
   s.querySelector('#dc-add').onclick = () => { const id = addDictWord(l, s.querySelector('#dc-set').value); closeSheet(); toast('Bewaard: ' + l.w); render(); return id; };
 }
-// copy the entry into Ari's own words (with every form), straight into Herhalen
+// copy the entry into the user's own words (with every form), straight into Herhalen
 function addDictWord(l, setId) {
   const own = ownFor(l); let id = own && own.id;
   if (!id) {
@@ -4835,7 +4835,7 @@ document.addEventListener('submit', e => {
     if (c) { ['v', 'e', 'f', 'se', 'vl', 'syn', 'ant'].forEach(k => { if (l[k] !== undefined && c[k] === undefined) c[k] = l[k]; }); Store.mark('words'); } }, 0);
 });
 
-/* ---------- Ari's own words get what is missing ---------- */
+/* ---------- the user's own words get what is missing ---------- */
 function enrichCustom() {
   let n = 0;
   Object.values(S.custom || {}).forEach(c => { const l = DICT.find(x => norm(x.w) === norm(c.w) && x.p === c.p); if (!l) return;

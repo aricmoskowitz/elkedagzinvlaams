@@ -1,4 +1,4 @@
-/* ===== VERSION 2.5: clearer cards (from Ari's review) =====
+/* ===== VERSION 2.5: clearer cards (from the user's review) =====
    - every card says what kind of card it is in one clear label (kindLabel)
    - a fill-in card marks the English word that belongs in the gap (enCue), so only one choice fits
    - the Scroll listening card asks what the sentence means before it shows it

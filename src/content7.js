@@ -1,5 +1,5 @@
 /* ===== 2026-10-12: gap words, Algemeen words, more parts of speech =====
-   Basic words Ari already uses that the plan did not list, so reports kept
+   Basic words the user already uses that the plan did not list, so reports kept
    flagging them as new. New ids only. The square words live in SQUARES;
    the four Algemeen words (u: 0) belong to no square. */
 Object.assign(POS, {pron: 'vnw', conj: 'vw', prep: 'vz', num: 'telw', int: 'tw'});
