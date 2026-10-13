@@ -1,9 +1,9 @@
 # SPEC 2.0 — Elke Dag Zin on GitHub Pages + a Claude Project for speaking
 
-Status: approved direction (Option 2), 2026-10-11. Source of truth for the 2.0 build. Companion docs: `FORMATS.md` (the two copy-paste blocks), `REFERENCE.md` (terms, data model, sizing), `CLAUDE.md` (build rules), `MIGRATION.md` (moving Ari's data).
+Status: approved direction (Option 2), 2026-10-11. Source of truth for the 2.0 build. Companion docs: `FORMATS.md` (the two copy-paste blocks), `REFERENCE.md` (terms, data model, sizing), `CLAUDE.md` (build rules), `MIGRATION.md` (moving the user's data).
 
 ## 1. Why
-Version 1.5 runs as a claude.ai artifact. On iPhone it always shows Safari's "Open in Claude" banner, the claude.ai header and Safari's toolbar, which waste space and feel like a web page. Ari's other learning apps run from GitHub Pages as full-screen Home Screen apps. Speaking practice is better in the Claude app itself (voice mode, photos of class material) than inside the page.
+Version 1.5 runs as a claude.ai artifact. On iPhone it always shows Safari's "Open in Claude" banner, the claude.ai header and Safari's toolbar, which waste space and feel like a web page. The user's other learning apps run from GitHub Pages as full-screen Home Screen apps. Speaking practice is better in the Claude app itself (voice mode, photos of class material) than inside the page.
 
 **Decision:**
 - The practice app moves to **GitHub Pages**: full screen, offline, data on the phone.
@@ -90,7 +90,7 @@ How the fields are built:
 - **Duplicates:** importing the same report twice is detected by a hash of the JSON and refused.
 
 ### 4.5 Documents for the Project (Ik → "Documenten voor Claude")
-- Generates `Curriculum.md`, `Woorden.md` and `Scenes.md` from the app's data, the same generator that produced the first versions. `Woorden.md` includes Ari's own words.
+- Generates `Curriculum.md`, `Woorden.md` and `Scenes.md` from the app's data, the same generator that produced the first versions. `Woorden.md` includes the user's own words.
 - Each can be shared/downloaded. A note says to re-upload them to the Project after new towns are built or every month.
 
 ### 4.6 Tabs

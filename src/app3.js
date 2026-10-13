@@ -149,7 +149,7 @@ function showFeedback(ex, res, val) {
   if (!ex.listen && res.ok && ex.say && ex.type !== 'gen') setTimeout(() => Audio.say(ex.say), 150);
   setTimeout(() => { const n = $('#ses-next'); if (n) { n.focus({preventScroll: true}); n.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest'}); } }, 50);
 }
-// a whole sentence that was not right: show Ari's own sentence with the words that differ struck through
+// a whole sentence that was not right: show the user's own sentence with the words that differ struck through
 function yoursHTML(ex, res, val) {
   if (res.ok || !ex.whole || ex.type === 'order' || !String(val || '').trim()) return '';
   const words = String(val).trim().split(/\s+/); const diff = fixDiff(val, ex.answer);

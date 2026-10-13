@@ -66,7 +66,7 @@
 {"w":"alsjeblieft","p":"adv","f":["alstublieft"],"d":"beleefd woord als je iets vraagt of geeft, tegen iemand die je met 'jij' aanspreekt","en":"please, here you are","s":"Geef me het zout eens, alsjeblieft.","se":"Pass me the salt, please."}
 {"w":"zonder","p":"prep","d":"niet met; als iets ontbreekt","en":"without","s":"Ik drink mijn koffie zonder suiker.","se":"I drink my coffee without sugar."}
 {"w":"steeds","p":"adv","d":"altijd, telkens weer; ook: meer en meer","en":"always, more and more","s":"Het wordt steeds drukker op de Meir.","se":"It's getting busier and busier on the Meir."}
-{"w":"hallo","p":"int","d":"een groet als je iemand ziet of aan de telefoon hebt","en":"hello","s":"Hallo, met Ari!","se":"Hello, it's Ari!"}
+{"w":"hallo","p":"int","d":"een groet als je iemand ziet of aan de telefoon hebt","en":"hello","s":"Hallo, met Tom!","se":"Hello, it's Tom!"}
 {"w":"houden","p":"v","f":["hou"],"d":"iets in je hand hebben en niet loslaten; ook: graag zien (met 'van')","en":"to hold, to keep","s":"Ik hou van Antwerpen.","se":"I love Antwerp.","v":{"t":"s","st":"houd","im":["hield","hielden"],"pp":"gehouden","aux":"h","imp":"hou"}}
 {"w":"vertellen","p":"v","d":"aan iemand zeggen wat er gebeurd is","en":"to tell","s":"Vertel eens, hoe was je weekend?","se":"So tell me, how was your weekend?","v":{"t":"w","st":"vertel","im":["vertelde","vertelden"],"pp":"verteld","aux":"h"}}
 {"w":"helemaal","p":"adv","d":"volledig, voor de volle honderd procent","en":"completely, totally","s":"De tram is helemaal vol.","se":"The tram is completely full."}

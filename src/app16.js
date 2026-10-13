@@ -54,7 +54,7 @@ function defEx(l) {
   return {type: 'mc', key: 'w:' + l.id + ':rec', lex: l, label: 'def', prompt: `<span class="nl" style="font-size:21px">${esc(l.d)}</span>`, sub: POS[l.p] || '', options: opts, answer: l.w,
     why: `${wordHTML(l)}: ${esc(l.d)}. <span class="muted">(${esc(l.en || '')})</span>`, say: (l.g ? l.g + ' ' : '') + l.w};
 }
-// words Ari has met that can carry these cards
+// words the user has met that can carry these cards
 const metWords = () => allWords().filter(l => S.items['w:' + l.id + ':rec'] || S.seen[l.id]);
 Object.assign(DAYWORD, {conjS: 'Vervoeg in de zin', syn: 'Zelfde betekenis', ant: 'Tegenovergestelde', def: 'Welk woord is het?'});
 Object.assign(DAYWORD_EN, {conjS: 'Conjugate in the sentence', syn: 'Same meaning', ant: 'Opposite', def: 'Which word is it?'});

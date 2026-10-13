@@ -32,7 +32,7 @@ EDZ-EINDE
 | Field | Modes | Meaning |
 |---|---|---|
 | `modus` | all | `onderwerp`, `opdracht`, `dagboek` or `foto` |
-| `niveau` | all | Ari's current place in the curriculum (the next open square) |
+| `niveau` | all | The user's current place in the curriculum (the next open square) |
 | `focus` | all | the grammar of that square, plus the town's can-do |
 | `taak` | all | **onderwerp**: a suggested theme from the current town and weak spots. **opdracht**: the scene in one sentence. **dagboek**: `vertel over je dag of je les`. **foto**: `verwerk de foto` |
 | `scène`, `doel` | opdracht | the town's scene from `Scenes.md` and a measurable goal |
@@ -74,10 +74,10 @@ EDZ-EINDE
 | `doelBereikt` | opdracht | `true`/`false`: the app marks that square's **Gebruik** house done when true |
 | `samenvatting` | yes | 1–3 sentences in simple Dutch |
 | `tip` | no | one concrete tip in English |
-| `tekst` | dagboek, foto | dagboek: Ari's text, corrected. foto: the transcription of the photo |
+| `tekst` | dagboek, foto | dagboek: the user's text, corrected. foto: the transcription of the photo |
 | `bron` | foto | what the photo was ("les 12 oktober, whiteboard") |
 | `goed[]` | no | up to 3 constructions used correctly: `topic`, `plan`, `mastered` |
-| `corrections[]` | no | up to 8: `wrong` (Ari's exact words), `right`, `why` (short English), `type` (`word order`, `article`, `verb form`, `adjective`, `spelling`, `word choice`, `other`), `plan` (square id or null), optional `newTopic` |
+| `corrections[]` | no | up to 8: `wrong` (the user's exact words), `right`, `why` (short English), `type` (`word order`, `article`, `verb form`, `adjective`, `spelling`, `word choice`, `other`), `plan` (square id or null), optional `newTopic` |
 | `words[]` | no | up to 10 new words: `w` lemma, `p` (`n`/`v`/`adj`/`adv`), `g` (`de`/`het`, nouns), `pl`, `dim`, `d` (simple Dutch definition), `s` (example), `en`, `plan`, `thema` (always, see §4), and `syn`/`ant` only where a good one exists |
 | `newTopic` | no | `title`, `town` (town id like `u4`), `rule`, `examples[]` (`nl`, `en`) |
 
@@ -91,14 +91,14 @@ EDZ-EINDE
 
 ## 3. Foto mode (Project only)
 
-When Ari uploads a photo (class handout, whiteboard, textbook page, a sign, a menu, a letter):
+When the user uploads a photo (class handout, whiteboard, textbook page, a sign, a menu, a letter):
 
 1. **Transcribe** the Dutch text faithfully. Mark anything unreadable with […].
 2. **Explain** in 3–6 short lines: what it is about, the grammar point it shows, and the key words.
 3. **Place** the grammar and words in `Curriculum.md`, as for a conversation.
-4. **Offer one practice** and do it if Ari wants: 3 quick questions about the text, a short conversation using its words, or making own sentences with its grammar.
-5. **Correct only Ari's own writing.** If the photo shows Ari's handwriting (homework, notes), correct those sentences and put them in `corrections`.
-6. **End with EDZ-VERSLAG v1:** `modus: "foto"`, `bron`, `tekst` (the transcription, up to about 1,500 characters), `words`, `goed` (grammar points seen) and `corrections` (only for Ari's writing).
+4. **Offer one practice** and do it if the user wants: 3 quick questions about the text, a short conversation using its words, or making own sentences with its grammar.
+5. **Correct only the user's own writing.** If the photo shows the user's handwriting (homework, notes), correct those sentences and put them in `corrections`.
+6. **End with EDZ-VERSLAG v1:** `modus: "foto"`, `bron`, `tekst` (the transcription, up to about 1,500 characters), `words`, `goed` (grammar points seen) and `corrections` (only for the user's writing).
 
 Several photos in one session are fine: write one report that covers them all.
 
@@ -106,7 +106,7 @@ Several photos in one session are fine: write one report that covers them all.
 
 ## 4. EDZ-WOORDEN v1 (Project → app)
 
-A named word set: Ari's own list, the words of a class, a text. Ari imports it under Ik → *Woordenlijsten* (paste or a `.txt` file); the report box (*Verslag plakken*) accepts it too. The app can also write a set back out in this format (*Deel als woordenlijst* on the set's page). Between the markers there must be exactly one JSON object.
+A named word set: the user's own list, the words of a class, a text. The user imports it under Ik → *Woordenlijsten* (paste or a `.txt` file); the report box (*Verslag plakken*) accepts it too. The app can also write a set back out in this format (*Deel als woordenlijst* on the set's page). Between the markers there must be exactly one JSON object.
 
 ```
 EDZ-WOORDEN v1
@@ -119,7 +119,7 @@ EDZ-EINDE
 | Field | Required | Meaning |
 |---|---|---|
 | `v` | yes | always `1` |
-| `set` | yes | set name; Ari can change it in the preview. Importing into an existing set's name adds to that set |
+| `set` | yes | set name; the user can change it in the preview. Importing into an existing set's name adds to that set |
 | `datum` | yes | `YYYY-MM-DD` |
 | `bron` | no | where the words came from ("eigen lijst", "les 12 oktober") |
 | `words[]` | yes | 1–200 entries, same fields as `words[]` in EDZ-VERSLAG |
@@ -141,7 +141,7 @@ EDZ-EINDE
 
 ## 5. Preparing a word list (Project only)
 
-Use this whenever Ari gives words to add to the app: a typed list, a file (CSV or export from another app), a photo of a vocabulary list, or one word from the app's Woordenboek. Don't start a session for it.
+Use this whenever the user gives words to add to the app: a typed list, a file (CSV or export from another app), a photo of a vocabulary list, or one word from the app's Woordenboek. Don't start a session for it.
 
 **1. Read and filter.**
 - Read the whole list first. Keep only Dutch entries; leave out other languages and say how many.
@@ -188,7 +188,7 @@ Use this whenever Ari gives words to add to the app: a typed list, a file (CSV o
 - `syn` / `ant`: only where a good Belgian Dutch one exists.
 
 **5. Name and size the set.**
-- Use the set name Ari gives, exactly.
+- Use the set name the user gives, exactly.
 - Without one: a single word from the Woordenboek goes to `Mijn woorden`; a list becomes `Import - <source>` (for example `Import - Karteto`).
 - At most 200 words per block. For more, write several blocks with the **same** set name: each import adds to the set.
 - For more than about 30 words, also give the blocks as `.txt` files.
@@ -200,4 +200,4 @@ Use this whenever Ari gives words to add to the app: a typed list, a file (CSV o
 - anything unclear, with your question
 - warnings about second meanings
 
-Then the block or blocks. `Woorden.md` comes from the app, so don't edit it; Ari uploads a new copy after importing.
+Then the block or blocks. `Woorden.md` comes from the app, so don't edit it; the user uploads a new copy after importing.

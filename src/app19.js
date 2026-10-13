@@ -3,7 +3,7 @@
    - tap a word the app has no card for: the filled-in card opens, one tap adds it (to a set if you like)
    - the Nieuw woord form fills itself in when the word is in the woordenboek
    - searching in Woorden also finds woordenboek words
-   - Ari's own words (imported lists) get their missing forms from it
+   - The user's own words (imported lists) get their missing forms from it
    The file loads a few seconds after start (never while the app opens) and the service worker keeps it offline. */
 
 let DICT = null, DICT_IX = null, DICT_P = null;
@@ -24,7 +24,7 @@ function loadDict() {
 }
 // a word as it stands in a text → its woordenboek entry (or null)
 const dictFind = w => (DICT_IX && DICT_IX[norm(w)]) || null;
-// one of Ari's own words with the same lemma and part of speech
+// one of the user's own words with the same lemma and part of speech
 const ownFor = l => Object.values(S.custom || {}).find(c => norm(c.w) === norm(l.w) && (c.p === l.p || !c.p));
 
 /* ---------- tapping a word ---------- */
@@ -47,7 +47,7 @@ function openDictCard(l) {
   </div>`);
   s.querySelector('#dc-add').onclick = () => { const id = addDictWord(l, s.querySelector('#dc-set').value); closeSheet(); toast('Bewaard: ' + l.w); render(); return id; };
 }
-// copy the entry into Ari's own words (with every form), straight into Herhalen
+// copy the entry into the user's own words (with every form), straight into Herhalen
 function addDictWord(l, setId) {
   const own = ownFor(l); let id = own && own.id;
   if (!id) {
@@ -95,7 +95,7 @@ document.addEventListener('submit', e => {
     if (c) { ['v', 'e', 'f', 'se', 'vl', 'syn', 'ant'].forEach(k => { if (l[k] !== undefined && c[k] === undefined) c[k] = l[k]; }); Store.mark('words'); } }, 0);
 });
 
-/* ---------- Ari's own words get what is missing ---------- */
+/* ---------- the user's own words get what is missing ---------- */
 function enrichCustom() {
   let n = 0;
   Object.values(S.custom || {}).forEach(c => { const l = DICT.find(x => norm(x.w) === norm(c.w) && x.p === c.p); if (!l) return;

@@ -1,6 +1,6 @@
 /* ===== 2.2: synonyms (ook) and antonyms (tegenovergestelde), per lemma =====
    Only where a good one exists, in Belgian Dutch (verlof, plezant, verstaan, wenen).
-   Matched on the lemma, so Ari's own words with the same lemma get them too (this list
+   Matched on the lemma, so the user's own words with the same lemma get them too (this list
    also covers the set "Mijn woorden 1"). A word list may bring its own "syn" and "ant". */
 const REL_BY_W = {};
 [

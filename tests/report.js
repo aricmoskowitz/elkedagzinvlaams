@@ -265,7 +265,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   const T = await openApp(); const t = T.p;
   await t.evaluate(() => { closeOverlay('welcome'); closeOverlay('tour'); S.coach = {tour: 1, pad: 1, praten: 1, plan: 1, woorden: 1}; render(); });
   const THEMA = ['thema-oranje-boek.txt', 'thema-quizlet-1.txt', 'thema-quizlet-2.txt', 'thema-quizlet-3.txt', 'thema-doggie.txt'];
-  // Ari's state before: the five sets imported earlier, without a thema
+  // The user's state before: the five sets imported earlier, without a thema
   for (const f of THEMA) await t.evaluate(txt => { const r = parseWords(txt.replace(/,"thema":"[a-z]+"/g, '')).data; saveWords(r); }, fx(f));
   const noThemeBefore = await t.evaluate(() => Object.values(S.custom).filter(l => !themeOf(l)).length);
   // pasting quizlet-1 through the real import screen

@@ -198,7 +198,7 @@ function saveReport(r, hash) {
 }
 
 /* ===== VERSION 2.0: Documents for the Claude Project (Ik → Documenten voor Claude) =====
-   The same text as praten-project/*.md, generated from the app's data. Woorden.md adds Ari's own words. */
+   The same text as praten-project/*.md, generated from the app's data. Woorden.md adds the user's own words. */
 function mdText(h) { const t = document.createElement('textarea'); t.innerHTML = String(h || '').replace(/<[^>]+>/g, ''); return t.value.replace(/\s+/g, ' ').trim(); }
 const DOCS = {
   'Curriculum.md': () => {
@@ -231,10 +231,10 @@ const DOCS = {
     if (typeof DICT !== 'undefined' && DICT) {
       const taken = new Set([...shown, ...own.map(key)]); // after the sets: own words are never listed as woordenboek words
       const wb = DICT.filter(l => !taken.has(key(l)));
-      out.push('## Woordenboek · ingebouwd woordenboek', "The app's built-in dictionary: Ari can open these words and add them in one tap, so they are not new either.", wb.map(l => `${l.p === 'n' && l.g ? l.g + ' ' : ''}${l.w}`).join('; '), '');
+      out.push('## Woordenboek · ingebouwd woordenboek', "The app's built-in dictionary: the user can open these words and add them in one tap, so they are not new either.", wb.map(l => `${l.p === 'n' && l.g ? l.g + ' ' : ''}${l.w}`).join('; '), '');
     }
     const rest = own.filter(l => !inSets.has(l.id)).filter(first);
-    if (rest.length) out.push('## Eigen woorden', 'Words Ari added from reports or by hand. They are not new either.', rest.map(l => wl(l) + (l.plan ? ' · ' + l.plan : '')).join('; '), '');
+    if (rest.length) out.push('## Eigen woorden', 'Words the user added from reports or by hand. They are not new either.', rest.map(l => wl(l) + (l.plan ? ' · ' + l.plan : '')).join('; '), '');
     return out.join('\n').replace(/\n+$/, '\n');
   },
   'Scenes.md': () => {
@@ -316,10 +316,10 @@ function migrated() {
   </div>`);
 }
 
-/* ===== EDZ-WOORDEN v1: a named word set from the Project or Ari's own list (FORMATS.md §4) =====
+/* ===== EDZ-WOORDEN v1: a named word set from the Project or the user's own list (FORMATS.md §4) =====
    Same paste box and normalising as the report. Words are matched on lemma + part of speech:
    a word already in the app is linked into the set and never overwritten. New words enter
-   Herhalen a few a day (S.drip), or straight away when Ari drills the set. */
+   Herhalen a few a day (S.drip), or straight away when the user drills the set. */
 const WORD_P = ['n', 'v', 'adj', 'adv', 'pron', 'conj', 'prep'];
 const DRIP_PER_DAY = 12;
 const wordKey = (w, p) => norm(w) + '|' + p;
@@ -341,7 +341,7 @@ function parseWords(text) {
   const raw = body.slice(a, b + 1); let d = null;
   try { d = JSON.parse(raw); } catch (err) { try { d = JSON.parse(raw.replace(/[“”„‟″]/g, '"').replace(/[‘’‚‛′]/g, "'")); } catch (err2) { d = null; } }
   if (!d || typeof d !== 'object' || Array.isArray(d)) return {error: 'De woordenlijst is geen geldige JSON.', hint: 'Vraag Claude: ‘geef de woordenlijst opnieuw als geldige JSON’.'};
-  const set = str(d.set, 80) || 'Geïmporteerd ' + dateKey(); // Ari names it in the preview
+  const set = str(d.set, 80) || 'Geïmporteerd ' + dateKey(); // the user names it in the preview
   if (!Array.isArray(d.words) || !d.words.length) return {error: 'De woordenlijst heeft geen woorden.', hint: 'Het veld "words" moet 1 tot 200 woorden bevatten.'};
   const ix = wordIndex(); const seen = new Set();
   const out = {set, datum: /^\d{4}-\d\d-\d\d$/.test(d.datum) ? d.datum : dateKey(), bron: str(d.bron, 120), fresh: [], existing: [], rejected: []};
