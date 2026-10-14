@@ -95,6 +95,7 @@ function openProc(o) {
   };
   const body = `<div class="stack">
     <h1>${esc(o.title || 'Verwerkt')}</h1>
+    ${o.status || ''}
     ${o.note ? `<div class="card soft nl" style="font-size:17px">${esc(o.note)}</div>` : ''}
     ${o.corrected ? `<details class="card"><summary class="small" style="cursor:pointer">${esc(o.correctedLabel || 'Je tekst, verbeterd')}</summary><div class="nl" style="font-size:17px;line-height:1.5;margin-top:8px">${esc(o.corrected)}</div></details>` : ''}
     <div class="procsum"><b>${nC}</b> ${nC === 1 ? 'fout' : 'fouten'} · <b>${words.length}</b> ${words.length === 1 ? 'nieuw woord' : 'nieuwe woorden'}${nNew ? ` · <b>${nNew}</b> nieuw in je plan` : ''}${o.filled ? ` · <b>${o.filled}</b> aangevuld` : ''}</div>

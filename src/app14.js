@@ -78,6 +78,23 @@ function openPraten(o = {}) {
     <div id="pr-body"></div></div>`);
   fillPraten(s);
 }
+// 2.8: the opdracht shows its goal before you copy the block: who Claude plays, what you do, and what counts as a pass
+const doelParts = d => String(d || '').split(/ en (?![^(]*\))/).map(x => x.trim()).filter(Boolean).map(x => x[0].toUpperCase() + x.slice(1));
+function opdrachtCard(R) {
+  const q = R.u ? marktId(R.u) : (R.q && PSQ[R.q] ? R.q : nextSquare()); const sq = PSQ[q]; const sc = sceneFor(sq.u);
+  const where = sq.review ? 'Grote Markt van ' + PT[sq.u].name : 'Plein ' + sq.n + ' ' + sq.name; const done = stepDone(q, 'gebruik');
+  return `<div class="card stack opdr" style="gap:8px">
+      <div class="eyebrow" data-en="Your task">Je opdracht · ${esc(where)}</div>
+      <div class="nl" style="font-size:19px;font-weight:600">${esc(sc.title)}</div>
+      <div class="goal">
+        <div class="gr"><span class="gk" data-en="Claude plays">Claude is</span><span class="gv">${esc(sc.role)}</span></div>
+        <div class="gr"><span class="gk" data-en="You">Jij</span><span class="gv nl" data-en="${esc(sc.goalEn || '')}">${esc(sc.goal)}</span></div>
+      </div>
+      <div class="eyebrow" data-en="To pass">Om te slagen</div>
+      <ul class="doel">${doelParts(sc.doel || sc.goal).map(x => `<li class="nl">${esc(x)}</li>`).join('')}</ul>
+      <div class="small">${done ? '✓ Al gehaald. Je mag de opdracht altijd opnieuw doen.' : 'Claude kijkt aan het einde of je dit gedaan hebt. Gelukt? Dan krijgt het Gebruik-huis zijn vlag als je het verslag plakt en bewaart.'}</div>
+    </div>`;
+}
 function fillPraten(s) {
   const P = S.settings.praten; const R = PRATEN; const block = startBlock(R);
   const chips = (name, opts, cur) => `<div class="row wrap" role="radiogroup">${opts.map(([v, l, en]) => `<button type="button" class="chip${cur === v ? ' on' : ''}" data-pr="${name}" data-v="${v}" role="radio" aria-checked="${cur === v}"${en ? ` data-en="${en}"` : ''}>${l}</button>`).join('')}</div>`;
@@ -85,6 +102,7 @@ function fillPraten(s) {
   const hist = (S.talks || []).filter(t => t.src === 'claude').slice(0, 5);
   $('#pr-body', s).innerHTML = `<div class="stack" style="gap:12px">
     ${chips('mode', MODES, R.mode)}
+    ${R.mode === 'opdracht' ? opdrachtCard(R) : ''}
     <div class="eyebrow">Instellingen</div>
     ${chips('verbeteren', [['beurt', 'verbeteren per beurt'], ['einde', 'op het einde']], P.verbeteren)}
     ${chips('beurten', BEURTEN.map(b => [b, b + ' beurten']), P.beurten)}
@@ -182,11 +200,21 @@ function importReport(text) {
   if (res.error) return res;
   if ((S.imports || []).some(x => (x.h || x) === res.hash)) { const x = S.imports.find(y => (y.h || y) === res.hash); return {error: 'Dit verslag heb je al verwerkt' + (x.d ? ' op ' + x.d : '') + '.', hint: 'Elk verslag telt maar één keer.'}; }
   const r = res.data; closeSheet();
-  openProc({title: (r.modus === 'opdracht' && r.doelBereikt ? 'Doel bereikt! ' : '') + (MODE_TITLE[r.modus] || 'Je verslag in je plan'), head: 'Verslag · ' + r.onderwerp, src: r.modus,
+  openProc({title: (r.modus === 'opdracht' && r.doelBereikt ? 'Doel bereikt! ' : '') + (MODE_TITLE[r.modus] || 'Je verslag in je plan'), status: reportStatus(r), head: 'Verslag · ' + r.onderwerp, src: r.modus,
     text: [r.tekst, ...r.corrections.map(c => c.right)].join(' '), corrected: r.tekst, correctedLabel: r.modus === 'foto' ? 'De foto, overgetypt' + (r.bron ? ' · ' + r.bron : '') : 'Je tekst, verbeterd', corrections: r.corrections, words: r.words, grammar: r.goed,
     note: r.samenvatting, tip: r.tip, setName: 'Uit Claude – week ' + weekNo(), filled: r.fill.length,
     onSave: () => saveReport(r, res.hash)});
   return {ok: true, data: r};
+}
+// 2.8: an opdracht report says what happens to the Gebruik house, also when the goal was not reached
+function reportStatus(r) {
+  if (r.modus !== 'opdracht') return '';
+  const sq = r.plein && PSQ[r.plein]; const where = sq ? (sq.review ? 'Grote Markt van ' + PT[sq.u].name : 'Plein ' + sq.n + ' ' + sq.name) : '';
+  if (r.doelBereikt && sq) return `<div class="card soft ok-card">✓ Doel bereikt. Bewaar, en het Gebruik-huis van ${esc(where)} krijgt zijn vlag.</div>`;
+  const doel = sq ? doelParts(sceneFor(sq.u).doel || sceneFor(sq.u).goal) : [];
+  return `<div class="card soft stack warn-card" style="gap:6px"><div><b>Doel nog niet bereikt</b>: Gebruik${where ? ' op ' + esc(where) : ''} blijft open.</div>
+    ${doel.length ? `<div class="small">Om te slagen:</div><ul class="doel">${doel.map(x => `<li class="nl">${esc(x)}</li>`).join('')}</ul>` : ''}
+    <div class="small">Doe de opdracht opnieuw via het Gebruik-huis van dat plein.</div></div>`;
 }
 function saveReport(r, hash) {
   S.imports = S.imports || []; S.imports.push({h: hash, d: dateKey()}); if (S.imports.length > 300) S.imports.splice(0, S.imports.length - 300);

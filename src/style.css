@@ -335,3 +335,9 @@ a.btn{text-decoration:none;text-align:center;box-sizing:border-box}
 .en-hl{font-weight:700;color:var(--ink)}
 .dictpill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--ink2);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:1px 8px;vertical-align:1px}
 .dictpill.vl{color:#7A5A12;background:#FBF3DC;border-color:#EAD9A6}
+
+/* 2.8: the opdracht goal in the Praten sheet and on the report screen */
+ul.doel{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+ul.doel li{position:relative;padding-left:26px;font-size:16px;line-height:1.35}
+ul.doel li::before{content:'';position:absolute;left:2px;top:3px;width:14px;height:14px;border:1.5px solid var(--ink2);border-radius:4px}
+.opdr{border-left:4px solid var(--go)}

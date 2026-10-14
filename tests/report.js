@@ -315,6 +315,12 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   await t.evaluate(id => deleteFix(id), mk.id); await t.waitForTimeout(80); await t.click('#cf-yes'); await t.waitForTimeout(80);
   const gone = await t.evaluate(id => !S.fix[id] && !S.items['c:' + id + ':fix'], mk.id);
   ok(mk.n1 === mk.n0 && mk.item && gone, 'a dictated slip like "op de meer → op de Meir" is not stored; a stored mistake can be deleted (and leaves Herhalen)');
+  // 2.8: the opdracht shows its goal before copying; the report screen says whether Gebruik is gehaald
+  const op = await t.evaluate(() => { openPraten({mode: 'opdracht', q: 'u2q2'}); const c = document.querySelector('.opdr'); const txt = c ? c.textContent : ''; closeSheet();
+    const no = reportStatus({modus: 'opdracht', plein: 'u2q2', doelBereikt: false}), yes = reportStatus({modus: 'opdracht', plein: 'u2q2', doelBereikt: true}), talk = reportStatus({modus: 'onderwerp'});
+    return {txt, items: c ? c.querySelectorAll('ul.doel li').length : 0, no, yes, talk}; });
+  ok(/Plein 2 Theaterplein/.test(op.txt) && /Om te slagen/.test(op.txt) && /verkoper/.test(op.txt) && op.items === 2 && /Doel nog niet bereikt/.test(op.no) && /Vraag 1 keer de prijs/.test(op.no) && /Doel bereikt/.test(op.yes) && op.talk === '',
+    'opdracht: the Praten sheet shows the plein, the role, what to do and the pass conditions (' + op.items + '); the report says whether Gebruik is gehaald');
   await T.close();
   if (T.errs.length) { console.log('PAGE ERRORS (brief 2)', T.errs); fails.push('page errors (brief 2)'); }
   if (errs.length) { console.log('PAGE ERRORS', errs); fails.push('page errors'); }
