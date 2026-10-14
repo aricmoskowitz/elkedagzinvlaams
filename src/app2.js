@@ -73,10 +73,11 @@ function frameNote(s) {
   return t;
 }
 /* valid word orders for a reorder task */
-function orderVariants(s) {
+// every valid order as chunks with their slots, so the feedback can show the learner's own order in the frame
+function orderVariantSents(s) {
   const c = s.ch.map(x => ({...x}));
-  const vars = [c.map(x => x.t)];
-  if (s.q || c[0].sl === '2') return vars.map(v => v.join(' '));
+  const vars = [c];
+  if (s.q || c[0].sl === '2') return vars;
   const pvI = c.findIndex(x => x.sl === '2');
   const subjI = c.findIndex(x => x.sl === 's');
   const subj = c[subjI];
@@ -86,16 +87,24 @@ function orderVariants(s) {
     c.forEach((x, i) => {
       if (i > pvI && x.sl === '3' && frontable(x)) {
         const rest = c.filter((_, j) => j !== i && j !== 0 && j !== pvI);
-        vars.push([x.t, c[pvI].t, lower(subj.t), ...rest.map(r => r.t)]);
+        vars.push([{...x, sl: '1'}, c[pvI], {...subj, t: lower(subj.t)}, ...rest]);
       }
     });
   } else if (subj && !['jij', 'je'].includes(subj.t.toLowerCase())) {
     const front = c[0];
     const rest = c.filter((_, j) => j !== 0 && j !== pvI && j !== subjI);
-    if (SUBORD.has(front.t.toLowerCase().split(' ')[0])) vars.push([cap1(subj.t), c[pvI].t, ...rest.map(r => r.t), lower(front.t)]);
-    else vars.push([cap1(subj.t), c[pvI].t, lower(front.t), ...rest.map(r => r.t)]);
+    if (SUBORD.has(front.t.toLowerCase().split(' ')[0])) vars.push([{...subj, t: cap1(subj.t)}, c[pvI], ...rest, {...front, t: lower(front.t), sl: '5'}]);
+    else vars.push([{...subj, t: cap1(subj.t)}, c[pvI], {...front, t: lower(front.t), sl: '3'}, ...rest]);
   }
-  return vars.map(v => v.join(' '));
+  return vars;
+}
+function orderVariants(s) { return orderVariantSents(s).map(v => v.map(x => x.t).join(' ')); }
+// 2.8: the accepted order the learner gave, as a sentence the feedback can show (null when it is the model order)
+function ownOrder(s, val) {
+  if (!s || !s.ch || norm(val) === norm(s.nl)) return null;
+  const v = orderVariantSents(s).slice(1).find(ch => norm(ch.map(x => x.t).join(' ')) === norm(val)); if (!v) return null;
+  const end = (s.nl.trim().match(/[.?!]$/) || [''])[0];
+  return {...s, ch: v, nl: v.map(x => x.t).join(' ') + end};
 }
 
 /* ===== EXERCISES ===== */

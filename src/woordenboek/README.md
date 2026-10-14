@@ -1,7 +1,7 @@
 # Woordenboek (the built-in dictionary)
 
 When the user taps a word the app has no card for, the app looks it up here and shows a filled-in card.
-One tap adds it to his own words or to a set. `python3 build.py` joins every `*.jsonl` file in this folder into
+One tap adds it to their own words or to a set. `python3 build.py` joins every `*.jsonl` file in this folder into
 `woordenboek.json` at the repo root. The page loads that file only when it first needs it, and the service
 worker keeps it for offline use. `tests/validate.js` checks every entry.
 

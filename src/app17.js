@@ -10,10 +10,11 @@
    Pad: each town has three plein houses and a town hall for its Grote Markt. */
 
 /* ---------- the numbers ---------- */
-// 0 = not yet, 1 = gehaald, 2 = 100% (Ontdek and Gebruik are done or not; a test-out counts as gehaald)
+// 0 = not yet, 1 = gehaald, 2 = 100% (Ontdek is done or not; Gebruik has a score since 2.8; a test-out counts as gehaald)
 function houseLevel(q, st) {
   const v = S.sq[q] && S.sq[q].steps && S.sq[q].steps[st]; if (!v) return 0;
-  if (v === 'test') return 1; if (st === 'ontdek' || st === 'gebruik') return 2;
+  // 2.8: Gebruik has a score like Oefen; a 1 from before scores counts as 100%
+  if (v === 'test') return 1; if (st === 'ontdek' || (st === 'gebruik' && v === 1)) return 2;
   return v >= 100 ? 2 : 1;
 }
 function pleinProgress(q) {

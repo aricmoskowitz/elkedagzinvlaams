@@ -83,9 +83,9 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   // ---- the sheet: settings remembered, copy, project link ----
   await p.evaluate(() => { TAB = 'pad'; PAD.lvl = 'arc'; render(); });
   await p.click('[data-act=praten]'); await p.waitForTimeout(150);
-  await p.click('[data-pr=mode][data-v=dagboek]'); await p.click('[data-pr=beurten][data-v="12–15"]'); await p.click('[data-pr=verbeteren][data-v=einde]');
+  await p.click('[data-pr=mode][data-v=dagboek]'); await p.click('[data-pr=beurten][data-v="12–15"]'); 
   const txt = await p.inputValue('#pr-block'); const noVert = !(await p.$('[data-pr=vertaling]'));
-  ok(txt.includes('modus: dagboek') && txt.includes('instellingen: verbeteren op het einde · beurten 12–15') && !/vertaling/.test(txt) && noVert, 'sheet: mode and settings change the block; no translation option and no vertaling in the block');
+  ok(txt.includes('modus: dagboek') && txt.includes('instellingen: verbeteren op het einde · beurten 12–15') && !/vertaling/.test(txt) && noVert && !(await p.$('[data-pr=verbeteren]')), 'sheet: mode and settings change the block; no translation option, no vertaling, and corrections always op het einde');
   await p.fill('#pr-url', 'geen link'); await p.click('#pr-url-save'); ok(await p.isVisible('#pr-url-err'), 'project link: a bad link is refused');
   await p.fill('#pr-url', 'https://claude.ai/project/abc'); await p.click('#pr-url-save'); await p.waitForTimeout(100);
   ok((await p.getAttribute('#pr-open', 'href')) === 'https://claude.ai/project/abc', 'project link stored, Open Claude links to it');
@@ -315,6 +315,25 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   await t.evaluate(id => deleteFix(id), mk.id); await t.waitForTimeout(80); await t.click('#cf-yes'); await t.waitForTimeout(80);
   const gone = await t.evaluate(id => !S.fix[id] && !S.items['c:' + id + ':fix'], mk.id);
   ok(mk.n1 === mk.n0 && mk.item && gone, 'a dictated slip like "op de meer → op de Meir" is not stored; a stored mistake can be deleted (and leaves Herhalen)');
+  // 2.8: the opdracht shows its goal and how it is scored before copying; the report gives Gebruik a score like Oefen
+  const op = await t.evaluate(() => { S.sq.u2q2 = {steps: {ontdek: 1}}; openPraten({mode: 'opdracht', q: 'u2q2'}); const c = document.querySelector('.opdr'); const txt = c ? c.textContent : ''; const blk = startBlock({mode: 'opdracht', q: 'u2q2'}); closeSheet();
+    const C = n => Array.from({length: n}, () => ({wrong: 'ik zoekt', right: 'ik zoek', why: 'x'}));
+    const base = {modus: 'opdracht', plein: 'u2q2', beurten: 8};
+    const full = gebruikScore({...base, doelen: [1, true], corrections: C(2)}), part = gebruikScore({...base, doelen: [0.33, 0], corrections: C(6), beurten: 4}),
+      old = gebruikScore({...base, doelBereikt: true, corrections: []}), many = gebruikScore({...base, doelen: [1, 1], corrections: C(6)});
+    const html = reportStatus({...base, doelen: [0.33, 0], corrections: C(6), beurten: 4});
+    // saving: a pass stores the score, a fail stores nothing, the best score stays, a legacy 1 stays
+    saveReport({...base, datum: '2026-10-14', onderwerp: 'x', doelen: [0.33, 0], corrections: C(6), beurten: 4, words: [], fill: []}, 'h1'); const afterFail = S.sq.u2q2.steps.gebruik;
+    saveReport({...base, datum: '2026-10-14', onderwerp: 'x', doelen: [1, 1], corrections: C(2), words: [], fill: []}, 'h2'); const afterPass = S.sq.u2q2.steps.gebruik;
+    saveReport({...base, datum: '2026-10-14', onderwerp: 'x', doelen: [1, 1], corrections: C(4), words: [], fill: []}, 'h3'); const afterLower = S.sq.u2q2.steps.gebruik;
+    const lv = houseLevel('u2q2', 'gebruik'); S.sq.u2q3 = {steps: {gebruik: 1}}; const legacy = houseLevel('u2q3', 'gebruik');
+    return {txt, items: c ? c.querySelectorAll('ul.doel li').length : 0, doelLine: blk.split('\n').find(l => l.startsWith('doel:')), full: full.score, part: part.score, old: old.score, many: many.score, html, afterFail, afterPass, afterLower, lv, legacy}; });
+  ok(/Plein 2 Theaterplein/.test(op.txt) && /Om te slagen/.test(op.txt) && /verkoper/.test(op.txt) && /80%/.test(op.txt) && op.items === 2 && op.doelLine === 'doel: 1) Gebruik 3 scheidbare werkwoorden (uitkiezen, meenemen, afrekenen) · 2) Vraag 1 keer de prijs',
+    'opdracht: the Praten sheet shows the plein, the role, the pass conditions and the 80% rule; the start block numbers the goals (' + op.doelLine + ')');
+  ok(op.full === 93 && op.part === 12 && op.old === 100 && op.many === 78 && /Gebruik: 12%/.test(op.html) && /nog niet gehaald/.test(op.html) && /6 fouten in 4 beurten/.test(op.html),
+    'Gebruik score: all goals + 2 fouten in 8 beurten = 93%, a third of one goal + 6 in 4 = 12%, an old report with doelBereikt = 100%, all goals + 6 in 8 = 78%, not gehaald (' + [op.full, op.part, op.old, op.many] + ')');
+  ok(op.afterFail === undefined && op.afterPass === 93 && op.afterLower === 93 && op.lv === 1 && op.legacy === 2,
+    'Gebruik saves: below 80% nothing, a pass stores its %, the best score stays, a done Gebruik from before scores counts as 100% (' + [op.afterFail, op.afterPass, op.afterLower, op.lv, op.legacy] + ')');
   await T.close();
   if (T.errs.length) { console.log('PAGE ERRORS (brief 2)', T.errs); fails.push('page errors (brief 2)'); }
   if (errs.length) { console.log('PAGE ERRORS', errs); fails.push('page errors'); }

@@ -22,10 +22,10 @@ niveau: A2 · Boog 1 · Stad 7 Waaromberg (u7) · Plein 2 Denkplein (u7q2)
 focus: Dat, of en vraagwoorden (u7q2) · kan: Ik kan uitleggen waarom (omdat…).
 taak: Een babbel met de buurvrouw. Zij vraagt wat je van Antwerpen vindt.
 scène: sc-u7 · Jij bent een nieuwsgierige buurvrouw in de trappenhal · opener: "Dag buur! U woont hier nog niet lang, hé? Wat vindt u van Antwerpen?"
-doel: zeg 3 keer waarom (omdat/want) en gebruik 1 keer "als"
+doel: 1) Zeg 3 keer waarom (omdat/want) · 2) Gebruik 1 keer "als"
 recent: vinden, weten, denken, hopen, buurt, zeker, mening, druk, regenen, paraplu
 zwak: u1q2 werkwoord op plaats 2 (4×) · u7q2 dat-zin (2×) · Algemeen: in het Nederlands (1×)
-instellingen: verbeteren per beurt · beurten 8–10
+instellingen: verbeteren op het einde · beurten 8–10
 EDZ-EINDE
 ```
 
@@ -35,10 +35,10 @@ EDZ-EINDE
 | `niveau` | all | The user's current place in the curriculum (the next open square) |
 | `focus` | all | the grammar of that square, plus the town's can-do |
 | `taak` | all | **onderwerp**: a suggested theme from the current town and weak spots. **opdracht**: the scene in one sentence. **dagboek**: `vertel over je dag of je les`. **foto**: `verwerk de foto` |
-| `scène`, `doel` | opdracht | the town's scene from `Scenes.md` and a measurable goal |
+| `scène`, `doel` | opdracht | the town's scene from `Scenes.md` and a measurable goal, in numbered parts |
 | `recent` | all | up to 30 words learned in the last 14 days (not new in the report) |
 | `zwak` | all | up to 5 open corrections, grouped by square, with counts |
-| `instellingen` | all | corrections `per beurt` or `op het einde` · target turns |
+| `instellingen` | all | `verbeteren op het einde` (always: corrections only at the end; an older block may say `per beurt`, treat it the same) · target turns |
 
 **No translations.** Conversation practice stays in Dutch: Claude never puts an English translation under its replies. A `vertaling` value in `instellingen` (from an older app version) is ignored, so the block stays v1.
 
@@ -50,7 +50,7 @@ Claude writes this block. Between the markers there must be exactly one JSON obj
 
 ```
 EDZ-VERSLAG v1
-{"v":1,"modus":"opdracht","datum":"2026-10-12","onderwerp":"Een babbel met de buurvrouw","plein":"u7q2","beurten":9,"doelBereikt":true,
+{"v":1,"modus":"opdracht","datum":"2026-10-12","onderwerp":"Een babbel met de buurvrouw","plein":"u7q2","beurten":9,"doelBereikt":true,"doelen":[1,1],
 "samenvatting":"Je vertelde wat je van Antwerpen vindt en waarom. Je gebruikte omdat drie keer.",
 "tip":"After omdat, wait with the verb until the end of the clause.",
 "goed":[{"topic":"Omdat + werkwoord achteraan (because + verb last)","plan":"u7q1","mastered":false}],
@@ -69,9 +69,10 @@ EDZ-EINDE
 | `modus` | yes | the mode from the start block |
 | `datum` | yes | `YYYY-MM-DD` |
 | `onderwerp` | yes | short title for the history |
-| `plein` | opdracht | the square the exercise targeted (from `niveau`) |
+| `plein` | opdracht | the square the exercise targeted: copy the id in brackets at the end of the `niveau` line exactly |
 | `beurten` | yes | learner turns |
-| `doelBereikt` | opdracht | `true`/`false`: the app marks that square's **Gebruik** house done when true |
+| `doelen` | opdracht | one value per numbered part of `doel`, in the same order: `1` = done, `0` = not done, a fraction for a counted part that was partly done (2 of the 3 verbs → `0.67`) |
+| `doelBereikt` | opdracht | `true` only when every part of `doel` is done (used by older app versions) |
 | `samenvatting` | yes | 1–3 sentences in simple Dutch |
 | `tip` | no | one concrete tip in English |
 | `tekst` | dagboek, foto | dagboek: the user's text, corrected. foto: the transcription of the photo |
@@ -80,6 +81,8 @@ EDZ-EINDE
 | `corrections[]` | no | up to 8: `wrong` (the user's exact words), `right`, `why` (short English), `type` (`word order`, `article`, `verb form`, `adjective`, `spelling`, `word choice`, `other`), `plan` (square id or null), optional `newTopic` |
 | `words[]` | no | up to 10 new words: `w` lemma, `p` (`n`/`v`/`adj`/`adv`), `g` (`de`/`het`, nouns), `pl`, `dim`, `d` (simple Dutch definition), `s` (example), `en`, `plan`, `thema` (always, see §4), and `syn`/`ant` only where a good one exists |
 | `newTopic` | no | `title`, `town` (town id like `u4`), `rule`, `examples[]` (`nl`, `en`) |
+
+**The Gebruik score (opdracht).** The app scores Gebruik like Oefen: **70%** for the goals (the average of `doelen`) and **30%** for accuracy (1 − corrections ÷ `beurten`, never below 0). **80%** or more is gehaald and puts a flag on the square's Gebruik house; 100% gives the star. So count `beurten` honestly (the learner's turns) and list every real correction; leave out speech-recognition slips.
 
 **Rules the app checks.** Breaking one makes the item land under *Algemeen* instead of being lost.
 - `plan` must be a square id from `Curriculum.md`.
