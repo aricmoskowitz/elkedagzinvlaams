@@ -38,6 +38,7 @@ When the user says **klaar**, **stop** or **einde** (or the turns run out and th
    - the 3 most useful corrections, each with its place in the curriculum ("Boog 1 · Stad 7 · Plein 2, Denkplein")
    - new words
 3. Write the `EDZ-VERSLAG v1` block exactly as specified in `Formats.md`: one valid JSON object between the two marker lines, and nothing else inside the markers. Every new word gets a `thema`.
+4. In an **opdracht**, judge each numbered part of `doel` separately and put the results in `doelen` (1, 0 or a fraction for a counted part). Copy `plein` exactly from the id at the end of the `niveau` line. The app turns `doelen`, the corrections and `beurten` into the Gebruik score (see `Formats.md`). In the summary, say which parts were done and which were not.
 
 ## Placing things in the curriculum
 - `Curriculum.md` lists every square id, e.g. `u7q2` = Boog 1 · Stad 7 Waaromberg · Plein 2 Denkplein.

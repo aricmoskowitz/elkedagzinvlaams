@@ -58,7 +58,7 @@ function startBlock(o) {
   if (mode === 'opdracht') {
     lines.push(`taak: ${sc.title}. ${sc.goal}`);
     lines.push(`scène: ${sc.id} · Jij bent ${sc.role} · opener: "${sc.open}"`);
-    lines.push('doel: ' + (sc.doel || sc.goal));
+    lines.push('doel: ' + doelParts(sc.doel || sc.goal).map((x, i) => `${i + 1}) ${x}`).join(' · '));
   }
   if (mode === 'dagboek') lines.push('taak: vertel over je dag of je les');
   if (mode === 'foto') lines.push('taak: verwerk de foto');
@@ -82,7 +82,7 @@ function openPraten(o = {}) {
 const doelParts = d => String(d || '').split(/ en (?![^(]*\))/).map(x => x.trim()).filter(Boolean).map(x => x[0].toUpperCase() + x.slice(1));
 function opdrachtCard(R) {
   const q = R.u ? marktId(R.u) : (R.q && PSQ[R.q] ? R.q : nextSquare()); const sq = PSQ[q]; const sc = sceneFor(sq.u);
-  const where = sq.review ? 'Grote Markt van ' + PT[sq.u].name : 'Plein ' + sq.n + ' ' + sq.name; const done = stepDone(q, 'gebruik');
+  const where = sq.review ? 'Grote Markt van ' + PT[sq.u].name : 'Plein ' + sq.n + ' ' + sq.name; const done = stepDone(q, 'gebruik') && S.sq[q].steps.gebruik;
   return `<div class="card stack opdr" style="gap:8px">
       <div class="eyebrow" data-en="Your task">Je opdracht · ${esc(where)}</div>
       <div class="nl" style="font-size:19px;font-weight:600">${esc(sc.title)}</div>
@@ -92,7 +92,8 @@ function opdrachtCard(R) {
       </div>
       <div class="eyebrow" data-en="To pass">Om te slagen</div>
       <ul class="doel">${doelParts(sc.doel || sc.goal).map(x => `<li class="nl">${esc(x)}</li>`).join('')}</ul>
-      <div class="small">${done ? '✓ Al gehaald. Je mag de opdracht altijd opnieuw doen.' : 'Claude kijkt aan het einde of je dit gedaan hebt. Gelukt? Dan krijgt het Gebruik-huis zijn vlag als je het verslag plakt en bewaart.'}</div>
+      <div class="small">Je score: <b>70%</b> voor de doelen en <b>30%</b> voor juistheid (hoe minder fouten per beurt, hoe meer). Vanaf <b>80%</b> is Gebruik gehaald en krijgt het huis zijn vlag als je het verslag plakt en bewaart.</div>
+      ${done ? `<div class="small">✓ Al gehaald${typeof done === 'number' && done > 1 ? ': ' + done + '%' : ''}. Je mag de opdracht altijd opnieuw doen.</div>` : ''}
     </div>`;
 }
 function fillPraten(s) {
@@ -154,7 +155,8 @@ const str = (x, n = 400) => typeof x === 'string' ? x.trim().slice(0, n) : typeo
 const planId = id => (typeof id === 'string' && PSQ[id] && !PSQ[id].review) ? id : null;
 function cleanReport(d) {
   const r = {v: d.v, modus: MODES.some(m => m[0] === d.modus) ? d.modus : 'onderwerp', datum: /^\d{4}-\d\d-\d\d$/.test(d.datum) ? d.datum : dateKey(), onderwerp: str(d.onderwerp, 120) || 'Gesprek met Claude',
-    plein: typeof d.plein === 'string' && PSQ[d.plein] ? d.plein : null, beurten: Number.isFinite(+d.beurten) ? +d.beurten : 0, doelBereikt: d.doelBereikt === true,
+    plein: typeof d.plein === 'string' && PSQ[d.plein] ? d.plein : null, beurten: Number.isFinite(+d.beurten) ? +d.beurten : 0, doelBereikt: d.doelBereikt === true || d.doelBereikt === 'true',
+    doelen: arr(d.doelen).slice(0, 6).map(x => x === true || x === 'true' ? 1 : Number.isFinite(+x) && x !== false && x !== null && x !== '' ? Math.max(0, Math.min(1, +x)) : 0),
     samenvatting: str(d.samenvatting, 800), tip: str(d.tip, 400), tekst: str(d.tekst, 4000), bron: str(d.bron, 200)};
   const topic = t => t && typeof t === 'object' && str(t.title) ? {title: str(t.title, 80), town: PT[t.town] ? t.town : null, rule: str(t.rule), examples: arr(t.examples).filter(x => x && str(x.nl) && str(x.en)).map(x => ({nl: str(x.nl, 200), en: str(x.en, 200)}))} : null;
   r.corrections = arr(d.corrections).filter(c => c && str(c.wrong) && str(c.right)).slice(0, 12).map(c => {
@@ -200,28 +202,48 @@ function importReport(text) {
   if (res.error) return res;
   if ((S.imports || []).some(x => (x.h || x) === res.hash)) { const x = S.imports.find(y => (y.h || y) === res.hash); return {error: 'Dit verslag heb je al verwerkt' + (x.d ? ' op ' + x.d : '') + '.', hint: 'Elk verslag telt maar één keer.'}; }
   const r = res.data; closeSheet();
-  openProc({title: (r.modus === 'opdracht' && r.doelBereikt ? 'Doel bereikt! ' : '') + (MODE_TITLE[r.modus] || 'Je verslag in je plan'), status: reportStatus(r), head: 'Verslag · ' + r.onderwerp, src: r.modus,
+  openProc({title: (r.modus === 'opdracht' && gebruikScore(r) && gebruikScore(r).pass ? 'Gehaald! ' : '') + (MODE_TITLE[r.modus] || 'Je verslag in je plan'), status: reportStatus(r), head: 'Verslag · ' + r.onderwerp, src: r.modus,
     text: [r.tekst, ...r.corrections.map(c => c.right)].join(' '), corrected: r.tekst, correctedLabel: r.modus === 'foto' ? 'De foto, overgetypt' + (r.bron ? ' · ' + r.bron : '') : 'Je tekst, verbeterd', corrections: r.corrections, words: r.words, grammar: r.goed,
     note: r.samenvatting, tip: r.tip, setName: 'Uit Claude – week ' + weekNo(), filled: r.fill.length,
     onSave: () => saveReport(r, res.hash)});
   return {ok: true, data: r};
 }
-// 2.8: an opdracht report says what happens to the Gebruik house, also when the goal was not reached
+// 2.8: the Gebruik score, like Oefen: 70% for the goals (each part of the doel, partly done counts partly)
+// and 30% for accuracy (1 − corrections ÷ turns). 80% or more is gehaald.
+function gebruikScore(r) {
+  const sq = r.plein && PSQ[r.plein]; if (!sq) return null;
+  const parts = doelParts(sceneFor(sq.u).doel || sceneFor(sq.u).goal);
+  // older reports have only doelBereikt: all parts or none
+  const got = parts.map((_, i) => r.doelen && r.doelen.length ? (r.doelen[i] || 0) : (r.doelBereikt ? 1 : 0));
+  const goal = parts.length ? got.reduce((a, b) => a + b, 0) / parts.length : (r.doelBereikt ? 1 : 0);
+  const fouten = (r.corrections || []).filter(c => !nameSlip(c.wrong, c.right)).length; const beurten = Math.max(1, r.beurten || 0);
+  const acc = Math.max(0, 1 - fouten / beurten);
+  const score = Math.round(70 * goal + 30 * acc);
+  return {score, pass: score >= 80, parts, got, goalPts: Math.round(70 * goal), accPts: Math.round(30 * acc), fouten, beurten: r.beurten || 0};
+}
+// an opdracht report says what happens to the Gebruik house, with the score and how it was made
 function reportStatus(r) {
   if (r.modus !== 'opdracht') return '';
   const sq = r.plein && PSQ[r.plein]; const where = sq ? (sq.review ? 'Grote Markt van ' + PT[sq.u].name : 'Plein ' + sq.n + ' ' + sq.name) : '';
-  if (r.doelBereikt && sq) return `<div class="card soft ok-card">✓ Doel bereikt. Bewaar, en het Gebruik-huis van ${esc(where)} krijgt zijn vlag.</div>`;
-  const doel = sq ? doelParts(sceneFor(sq.u).doel || sceneFor(sq.u).goal) : [];
-  return `<div class="card soft stack warn-card" style="gap:6px"><div><b>Doel nog niet bereikt</b>: Gebruik${where ? ' op ' + esc(where) : ''} blijft open.</div>
-    ${doel.length ? `<div class="small">Om te slagen:</div><ul class="doel">${doel.map(x => `<li class="nl">${esc(x)}</li>`).join('')}</ul>` : ''}
-    <div class="small">Doe de opdracht opnieuw via het Gebruik-huis van dat plein.</div></div>`;
+  const g = gebruikScore(r);
+  if (!g) return `<div class="card soft stack warn-card" style="gap:6px"><div><b>Geen plein in het verslag</b>: Gebruik krijgt geen score.</div><div class="small">Vraag Claude om "plein" in te vullen met de code uit de niveau-regel.</div></div>`;
+  const mark = x => x >= 1 ? '✓' : x > 0 ? '½' : '✗';
+  return `<div class="card soft stack ${g.pass ? 'ok-card' : 'warn-card'}" style="gap:6px">
+    <div style="font-size:18px"><b>Gebruik: ${g.score}%</b> · ${g.pass ? 'gehaald' : 'nog niet gehaald (80% nodig)'}</div>
+    <div class="small">${esc(where)}</div>
+    <div class="small">Doelen: <b>${g.goalPts}</b> van 70</div>
+    <ul class="doel got">${g.parts.map((x, i) => `<li class="nl" data-mark="${mark(g.got[i])}">${esc(x)}${g.got[i] > 0 && g.got[i] < 1 ? ` <span class="small">(${Math.round(g.got[i] * 100)}%)</span>` : ''}</li>`).join('')}</ul>
+    <div class="small">Juistheid: <b>${g.accPts}</b> van 30 · ${g.fouten} ${g.fouten === 1 ? 'fout' : 'fouten'} in ${g.beurten} ${g.beurten === 1 ? 'beurt' : 'beurten'}</div>
+    <div class="small">${g.pass ? 'Bewaar, en het Gebruik-huis krijgt zijn vlag' + (g.score >= 100 ? ' met een ster.' : '.') : 'Doe de opdracht opnieuw via het Gebruik-huis van dat plein.'}</div></div>`;
 }
 function saveReport(r, hash) {
   S.imports = S.imports || []; S.imports.push({h: hash, d: dateKey()}); if (S.imports.length > 300) S.imports.splice(0, S.imports.length - 300);
-  S.talks.unshift({id: uid('t'), src: 'claude', date: r.datum, modus: r.modus, title: r.onderwerp, q: r.plein, beurten: r.beurten, goal: r.doelBereikt, good: r.samenvatting, tip: r.tip, msgs: []});
+  S.talks.unshift({id: uid('t'), src: 'claude', date: r.datum, modus: r.modus, title: r.onderwerp, q: r.plein, beurten: r.beurten, goal: r.doelBereikt, score: r.modus === 'opdracht' && gebruikScore(r) ? gebruikScore(r).score : undefined, good: r.samenvatting, tip: r.tip, msgs: []});
   if (S.talks.length > 120) S.talks.length = 120;
   if (r.tekst) S.log.unshift({id: uid('l'), date: r.datum, mode: r.modus, source: 'claude', bron: r.bron, text: r.tekst, status: 'done'});
-  if (r.modus === 'opdracht' && r.doelBereikt && r.plein) sqstate(r.plein).steps.gebruik = 1;
+  // 2.8: Gebruik keeps its best score from 80% (a legacy 1 = done before scores, shown as gedaan and worth 100%)
+  const g = r.modus === 'opdracht' ? gebruikScore(r) : null;
+  if (g && g.pass) { const ss = sqstate(r.plein); const old = ss.steps.gebruik; if (old !== 1) ss.steps.gebruik = Math.max(+old || 0, g.score); }
   (r.fill || []).forEach(x => applyFill(x.id, fillFor(x.id, x.f)));
 }
 
