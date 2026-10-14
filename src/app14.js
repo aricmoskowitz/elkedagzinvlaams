@@ -65,7 +65,8 @@ function startBlock(o) {
   const rec = recentWords(); if (rec.length) lines.push('recent: ' + rec.join(', '));
   if (weak.length) lines.push('zwak: ' + weak.map(w => `${w.label} (${w.n}×)`).join(' · '));
   // 2.7: no translations any more; the Project ignores an old vertaling value (Formats §1)
-  lines.push(`instellingen: verbeteren ${P.verbeteren === 'einde' ? 'op het einde' : 'per beurt'} · beurten ${P.beurten}`);
+  // 2.8: corrections always come at the end (the per-beurt option is gone); the field stays so the block stays v1
+  lines.push(`instellingen: verbeteren op het einde · beurten ${P.beurten}`);
   lines.push('EDZ-EINDE');
   return lines.join('\n');
 }
@@ -105,7 +106,7 @@ function fillPraten(s) {
     ${chips('mode', MODES, R.mode)}
     ${R.mode === 'opdracht' ? opdrachtCard(R) : ''}
     <div class="eyebrow">Instellingen</div>
-    ${chips('verbeteren', [['beurt', 'verbeteren per beurt'], ['einde', 'op het einde']], P.verbeteren)}
+    <div class="small" data-en="Claude gives corrections at the end of the conversation">Claude verbetert op het einde van het gesprek.</div>
     ${chips('beurten', BEURTEN.map(b => [b, b + ' beurten']), P.beurten)}
     <textarea id="pr-block" rows="7" readonly aria-label="Startblok" style="font-family:ui-monospace,Menlo,monospace;font-size:12px">${esc(block)}</textarea>
     <button class="btn block" id="pr-copy" type="button">Kopieer startblok</button>

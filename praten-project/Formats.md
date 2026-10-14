@@ -25,7 +25,7 @@ scène: sc-u7 · Jij bent een nieuwsgierige buurvrouw in de trappenhal · opener
 doel: 1) Zeg 3 keer waarom (omdat/want) · 2) Gebruik 1 keer "als"
 recent: vinden, weten, denken, hopen, buurt, zeker, mening, druk, regenen, paraplu
 zwak: u1q2 werkwoord op plaats 2 (4×) · u7q2 dat-zin (2×) · Algemeen: in het Nederlands (1×)
-instellingen: verbeteren per beurt · beurten 8–10
+instellingen: verbeteren op het einde · beurten 8–10
 EDZ-EINDE
 ```
 
@@ -38,7 +38,7 @@ EDZ-EINDE
 | `scène`, `doel` | opdracht | the town's scene from `Scenes.md` and a measurable goal, in numbered parts |
 | `recent` | all | up to 30 words learned in the last 14 days (not new in the report) |
 | `zwak` | all | up to 5 open corrections, grouped by square, with counts |
-| `instellingen` | all | corrections `per beurt` or `op het einde` · target turns |
+| `instellingen` | all | `verbeteren op het einde` (always: corrections only at the end; an older block may say `per beurt`, treat it the same) · target turns |
 
 **No translations.** Conversation practice stays in Dutch: Claude never puts an English translation under its replies. A `vertaling` value in `instellingen` (from an older app version) is ignored, so the block stays v1.
 

@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "d745be1201";</script>
+<script>const APP_VERSION = "421969d068";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -1510,7 +1510,7 @@ function personRule(p) {
    migrate() accepts a 1.5 state (v 2) unchanged and adds the 2.0 fields. */
 const LS_KEY = 'edz.v2';
 const LS_OLD = 'goesting.v1';
-const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', verbeteren:'beurt', beurten:'6–8'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[], drip:{ids:[], day:0}, themes:{}, missions:{}});
+const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', verbeteren:'einde', beurten:'6–8'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[], drip:{ids:[], day:0}, themes:{}, missions:{}});
 function migrate() {
   if (!S.v || S.v < 2) { S.v = 2; S.sq = S.sq || {}; S.cur = 'u1q1'; S.coach = S.coach || {}; S.settings = Object.assign(blankState().settings, S.settings || {}, {test: true}); delete S.units; }
   if (!SQ[S.cur]) S.cur = 'u1q1';
@@ -1523,6 +1523,7 @@ function migrate() {
   S.settings = Object.assign({}, def, S.settings || {});
   S.settings.praten = Object.assign({}, def.praten, S.settings.praten || {});
   delete S.settings.praten.vertaling; // 2.7: translations are off for good
+  S.settings.praten.verbeteren = 'einde'; // 2.8: corrections only at the end of a conversation, never in between
   if (S.settings.talkAudio === undefined) S.settings.talkAudio = true;
   if (S.v < 3) { Object.keys(S.seen).forEach(id => { if (S.seenAt[id] === undefined) S.seenAt[id] = 0; }); S.v = 3; }
 }
@@ -3911,7 +3912,8 @@ function startBlock(o) {
   const rec = recentWords(); if (rec.length) lines.push('recent: ' + rec.join(', '));
   if (weak.length) lines.push('zwak: ' + weak.map(w => `${w.label} (${w.n}×)`).join(' · '));
   // 2.7: no translations any more; the Project ignores an old vertaling value (Formats §1)
-  lines.push(`instellingen: verbeteren ${P.verbeteren === 'einde' ? 'op het einde' : 'per beurt'} · beurten ${P.beurten}`);
+  // 2.8: corrections always come at the end (the per-beurt option is gone); the field stays so the block stays v1
+  lines.push(`instellingen: verbeteren op het einde · beurten ${P.beurten}`);
   lines.push('EDZ-EINDE');
   return lines.join('\n');
 }
@@ -3951,7 +3953,7 @@ function fillPraten(s) {
     ${chips('mode', MODES, R.mode)}
     ${R.mode === 'opdracht' ? opdrachtCard(R) : ''}
     <div class="eyebrow">Instellingen</div>
-    ${chips('verbeteren', [['beurt', 'verbeteren per beurt'], ['einde', 'op het einde']], P.verbeteren)}
+    <div class="small" data-en="Claude gives corrections at the end of the conversation">Claude verbetert op het einde van het gesprek.</div>
     ${chips('beurten', BEURTEN.map(b => [b, b + ' beurten']), P.beurten)}
     <textarea id="pr-block" rows="7" readonly aria-label="Startblok" style="font-family:ui-monospace,Menlo,monospace;font-size:12px">${esc(block)}</textarea>
     <button class="btn block" id="pr-copy" type="button">Kopieer startblok</button>

@@ -83,9 +83,9 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   // ---- the sheet: settings remembered, copy, project link ----
   await p.evaluate(() => { TAB = 'pad'; PAD.lvl = 'arc'; render(); });
   await p.click('[data-act=praten]'); await p.waitForTimeout(150);
-  await p.click('[data-pr=mode][data-v=dagboek]'); await p.click('[data-pr=beurten][data-v="12–15"]'); await p.click('[data-pr=verbeteren][data-v=einde]');
+  await p.click('[data-pr=mode][data-v=dagboek]'); await p.click('[data-pr=beurten][data-v="12–15"]'); 
   const txt = await p.inputValue('#pr-block'); const noVert = !(await p.$('[data-pr=vertaling]'));
-  ok(txt.includes('modus: dagboek') && txt.includes('instellingen: verbeteren op het einde · beurten 12–15') && !/vertaling/.test(txt) && noVert, 'sheet: mode and settings change the block; no translation option and no vertaling in the block');
+  ok(txt.includes('modus: dagboek') && txt.includes('instellingen: verbeteren op het einde · beurten 12–15') && !/vertaling/.test(txt) && noVert && !(await p.$('[data-pr=verbeteren]')), 'sheet: mode and settings change the block; no translation option, no vertaling, and corrections always op het einde');
   await p.fill('#pr-url', 'geen link'); await p.click('#pr-url-save'); ok(await p.isVisible('#pr-url-err'), 'project link: a bad link is refused');
   await p.fill('#pr-url', 'https://claude.ai/project/abc'); await p.click('#pr-url-save'); await p.waitForTimeout(100);
   ok((await p.getAttribute('#pr-open', 'href')) === 'https://claude.ai/project/abc', 'project link stored, Open Claude links to it');
