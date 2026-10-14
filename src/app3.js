@@ -122,6 +122,10 @@ function submitAnswer(val) {
   showFeedback(ex, res, val);
 }
 function showFeedback(ex, res, val) {
+  // 2.8: an accepted other order (subject first instead of inversie, or the other way round) is shown as the learner wrote it,
+  // with its own frame; the model sentence follows as "Ook juist"
+  const own = res.ok && ex.whole && ex.frame ? ownOrder(ex.frame, val) : null;
+  if (own) ex = {...ex, sent: ex.sent ? {...ex.sent, nl: own.nl} : ex.sent, frame: own, say: own.nl, why: frameNote(own), also: ex.answer, answer: own.nl};
   $$('#ses-body [data-act="ans"]').forEach(b => {
     b.disabled = true; const v = b.dataset.v;
     if (norm(v) === norm(ex.answer)) b.classList.add(ex.type === 'gen' ? 'pick' : 'right');
@@ -142,6 +146,7 @@ function showFeedback(ex, res, val) {
     ${res.note ? `<div class="small">${res.note}</div>` : ''}
     <div class="row">${ex.say ? speakBtn(ex.say) : ''}<div class="answer">${ansHTML}</div></div>
     ${yoursHTML(ex, res, val)}
+    ${ex.also ? `<div class="small" data-en="Also correct">Ook juist: <span class="nl">${esc(ex.also)}</span></div>` : ''}
     ${ex.sent && (ex.listen || ex.whole) ? `<div class="small">${esc(ex.sent.en)}</div>` : ''}
     ${ex.frame && (res.kind === 'order' || ex.label === 'ord' || ex.label === 'tr') ? frameHTML(ex.frame) : ''}
     <div class="why">${whyFor(ex, res)}</div>

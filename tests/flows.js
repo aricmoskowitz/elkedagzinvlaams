@@ -94,6 +94,11 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
     const n = $$('[data-act=flis]', sec).length; const hidden = $('.fback', sec).hidden; const k = $('.kind', sec); const pill = getComputedStyle(k).fontWeight === '600' && parseFloat(getComputedStyle(k).borderTopLeftRadius) > 10;
     feedListen('ftest', c.opts.indexOf(c.s.en)); const r = {n, hidden, pill, right: !!$('.opt.right', sec), shown: !$('.fback', sec).hidden, ok: /Juist/.test($('.ffb', sec).textContent)}; sec.remove(); return r; });
   ok(lis.n === 3 && lis.hidden && lis.shown && lis.right && lis.ok && lis.pill, 'Scroll Luister: three meanings to choose from, then the sentence; the card label is a clear pill');
+  // 2.8: an accepted other order is shown as the learner wrote it, with the model as "Ook juist"
+  const oo = await p.evaluate(() => { const ex = makeEx('s:u2s8:ord'); const val = 'Ik stap aan de Groenplaats uit.'; const res = check(ex, val);
+    const box = document.createElement('div'); box.id = 'ses-body'; box.innerHTML = '<div id="fb"></div>'; document.body.appendChild(box); showFeedback(ex, res, val); Audio.stop();
+    const r = {ok: res.ok, ans: $('#fb .answer').textContent.trim(), also: /Ook juist: Aan de Groenplaats stap ik uit\./.test($('#fb').textContent), v1: $('#fb .slot.s1 .box').textContent}; box.remove(); return r; });
+  ok(oo.ok && oo.ans === 'Ik stap aan de Groenplaats uit.' && oo.also && oo.v1 === 'Ik', 'Zet in de juiste volgorde: a correct subject-first order is shown as written (slot 1: ' + oo.v1 + '), the inverted model as "Ook juist"');
   const tr = await p.evaluate(() => { const ex = makeEx('s:u1s2:tr'); return {sub: ex.sub, ok: check(ex, ex.answer).ok, sv: check(ex, 'Ik neem morgen de tram.').kind}; });
   ok(/Begin met <b>de tijd<\/b>/.test(tr.sub) && !/Morgen/i.test(tr.sub) && /inversie/.test(tr.sub) && tr.ok && tr.sv === 'order', 'Vertaal asks for inversion (the kind of slot 1, not its words) when the sentence has it, and subject-first is "Andere volgorde": ' + tr.sub.replace(/<[^>]+>/g, ''));
 

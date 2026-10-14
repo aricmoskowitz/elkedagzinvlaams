@@ -22,6 +22,8 @@ const {openApp} = require('./page');
       }
     }));
     SENT.forEach(s => { const v = orderVariants(s).map(norm); if (!v.includes(norm(s.nl))) bad.push(s.id + ' variant0 ' + v[0]); });
+    // 2.8: every other accepted order can be shown as the learner's own sentence, with the verb still in slot 2
+    SENT.forEach(s => orderVariants(s).slice(1).forEach(v => { const o = ownOrder(s, v); if (!o || norm(o.nl) !== norm(v) || frameCols(o)[2].join(' ') !== s.ch.find(x => x.sl === '2').t) bad.push(s.id + ' own order ' + v); }));
     const w1 = check(makeEx('s:u1s2:ord'), 'Morgen ik neem de tram.');
     const w2 = check({type: 'type', accept: [norm('Het broodje is nog warm.')], whole: true}, 'De broodje is nog warm');
     // 2.2: conjugation in a sentence (every occurrence, both contexts), synonym/antonym and definition cards
