@@ -63,7 +63,7 @@ function drawScene(cv, sc) {
     const [cx, cy] = sqCenter(q); const h = q.h * TS, n = Math.round(q.h * 2);
     R(cx - h - 2, cy - h - 2, 2 * h + 4, 2 * h + 4, q.gold ? '#E0A82E' : W.curb); R(cx - h, cy - h, 2 * h, 2 * h, W.stone); // gold: everything perfect
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if ((x + y) % 2) R(cx - h + x * TS + 2, cy - h + y * TS + 2, 4, 4, W.cobble2);
-    R(cx - 5, cy - 5, 10, 10, W.cobble2); R(cx - 2, cy - 2, 4, 4, W.fountain);
+    if (!q.sign) { R(cx - 5, cy - 5, 10, 10, W.cobble2); R(cx - 2, cy - 2, 4, 4, W.fountain); } // 2.11: a square with a theme sign has no fountain
     (q.open || []).forEach(sd => { const [mx, my] = sqSide(q, sd); const [dx, dy] = DIR[sd];
       if (dx) { R(Math.round(mx - 3), Math.round(my - RW / 2), 6, RW, W.stone); for (let k = 0; k < 3; k++) R(Math.round(mx + dx * 6 - 1), Math.round(my - RW / 2 + 1 + k * 4), 2, 2, W.zebra); }
       else { R(Math.round(mx - RW / 2), Math.round(my - 3), RW, 6, W.stone); for (let k = 0; k < 3; k++) R(Math.round(mx - RW / 2 + 1 + k * 4), Math.round(my + dy * 6 - 1), 2, 2, W.zebra); } });
@@ -154,7 +154,7 @@ function placeSign(g, text, x, y, taken, first = 'N') {
   taken.push(best.r, best.a); return best;
 }
 // what stands on a square that a name must leave free: the cyclist, the Ronde flags or the bunting (the arrow bobs on top of the name)
-const heroRect = (x, y) => [x + 6 - 13, y + 8 - 23, 26, 24];
+const heroRect = (x, y) => [x + 14 - 13, y + 8 - 23, 26, 24];
 const arrow = (x, y, next) => `<g transform="translate(${x},${y})"><g class="bob"><path d="M-6,-5 H6 L0,3 Z" fill="${next ? '#2F6B3A' : '#2A2620'}" stroke="#fff" stroke-width="1.5"/></g></g>`;
 const flag = (x, y) => `<g transform="translate(${x},${y})" shape-rendering="crispEdges"><rect width="2" height="16" fill="#2A2620"/><rect x="2" width="9" height="6" fill="#F2D35B" stroke="#2A2620" stroke-width="1"/></g>`;
 const blocks = (x, y, n, done) => `<g transform="translate(${x - (n * 12 - 2) / 2},${y})" shape-rendering="crispEdges">${Array.from({length: n}, (_, j) => `<rect x="${j * 12}" width="10" height="5" fill="${j < done ? '#2A2620' : '#fff'}" stroke="#2A2620" stroke-width="1"/>`).join('')}</g>`;
@@ -266,12 +266,12 @@ function worldHouses() {
   return out;
 }
 const townPx = i => sqCenter(WSQ[i]);
-const standPx = ([x, y]) => [x + 6, y + 8]; // where the cyclist waits on a square
+const standPx = ([x, y]) => [x + 14, y + 8]; // where the cyclist waits on a square: beside the theme sign in its middle (app21.js)
 // where each town's name stands on the Pad (the arrows above the towns are placed first, so names keep clear of them too)
 function worldSigns() {
   if (!WORLD) buildWorld();
   const here = UNIT[SQ[nextSquare()].u].n - 1; // the cyclist waits in one town only
-  const taken = UNITS.flatMap((u, i) => { const [x, y] = townPx(i); return [[x - 26, y - 26, 52, 14], [x - 26, y + 20, 52, 14]].concat(i === here ? [heroRect(x, y)] : []); }); // bunting above and below
+  const taken = UNITS.flatMap((u, i) => { const [x, y] = townPx(i); return [[x - 26, y - 26, 52, 14], [x - 26, y + 20, 52, 14]].concat(i === here ? [heroRect(x, y)] : []); }).concat(lmRects('pad')); // bunting above and below, the theme signs
   return UNITS.map((u, i) => { const [x, y] = townPx(i); return placeSign(WORLD.g, u.name, x, y, taken, TOWN_LABEL[i]); });
 }
 function worldOverlay() {
@@ -348,7 +348,7 @@ function townSigns(u) {
   const [mx, my] = sqCenter(TSQ[3]); const mh = TSQ[3].h * TS;
   const here = qs.findIndex(q => q.id === nextSquare()); // the cyclist waits on one square only
   const taken = qs.flatMap((q, j) => { const [x, y] = sqCenter(TSQ[j]); return [[x - 28, y - 18, 56, 14]].concat(j === here ? [heroRect(x, y)] : []); }) // Ronde flags
-    .concat([[mx - mh, my - mh + 2, 2 * mh, 14], [mx - mh, my + 2, 2 * mh, 14], [mx - 10, my - 12, 20, 20]]); // the Grote Markt's bunting and fountain
+    .concat([[mx - mh, my - mh + 2, 2 * mh, 14], [mx - mh, my + 2, 2 * mh, 14], [mx - 10, my - 12, 20, 20]], lmRects('town', u)); // the Grote Markt's bunting and fountain, the theme signs
   const out = qs.map((q, j) => { const [x, y] = sqCenter(TSQ[j]); return placeSign(T.g, q.name, x, y, taken, j === 0 ? 'S' : 'N'); });
   const mt = '★ Grote Markt' + (tp.marktDone ? ' · ' + tp.markt + '%' : '');
   out.markt = placeSign(T.g, mt, mx, my, taken, 'N'); out.markt.text = mt;

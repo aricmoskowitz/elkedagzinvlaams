@@ -75,17 +75,28 @@ const {openApp} = require('./page');
         if (Math.hypot(gx, gy) > 16) bad.push(where + ': a name stands ' + Math.round(Math.hypot(gx, gy)) + ' px from the edge of its square'); }); };
     signBad(WORLD ? WORLD.g : (buildWorld(), WORLD.g), worldSigns(), UNITS.map((u, i) => townPx(i).concat(40)), 'Pad'); // on the Pad a town is its square plus the ring of houses and bunting
     [0, 100].forEach(m => UNITS.filter(u => u.built).forEach(u => { S.markt = S.markt || {}; S.markt[u.id] = m; const t = townSigns(u.id); signBad(buildTown(u.id).g, [...t, t.markt], TSQ.map(q => sqCenter(q).concat(q.h * TS)), u.id + ' map (Grote Markt ' + m + '%)'); }));
-    // 2.10: every built town has a theme landmark on the Pad and on its town map, on free ground (never a road or a square);
-    // names already keep off it (its cells count as a house); it turns gold when every plein has passed Ronde 3
-    const lmBad = (L, g, sqs, roads, where) => { if (!L) return bad.push(where + ': no landmark spot');
-      const [w, h] = [LM_W * (where.startsWith('Pad') ? WLM_S : TLM_S), lmH(L.key) * (where.startsWith('Pad') ? WLM_S : TLM_S)];
-      if (sqs.some(q => { const [cx, cy] = sqCenter(q), hp = q.h * TS + 2; return L.x < cx + hp && L.x + w > cx - hp && L.y < cy + hp && L.y + h > cy - hp; })) bad.push(where + ': the landmark stands on a square');
-      if (roads.some(r => r.some(([x, y]) => x + RW / 2 > L.x && x - RW / 2 < L.x + w && y + RW / 2 > L.y && y - RW / 2 < L.y + h))) bad.push(where + ': the landmark stands on a road'); };
-    UNITS.filter(u => u.built).forEach((u, i) => { if (!TOWN_LANDMARK[u.id]) return bad.push(u.id + ': no theme landmark in TOWN_LANDMARK (app21.js)');
-      lmBad(WORLD.landmarks[UNIT[u.id].n - 1], WORLD.g, WSQ, WORLD.roads, 'Pad ' + u.id); const T = buildTown(u.id); lmBad(T.landmark, T.g, TSQ, T.roads, u.id + ' map'); });
+    // 2.11: every built town has a theme sign in the middle of each square (Pad and town map), beside the cyclist and inside the square,
+    // with no name on it; the town map has more of them on free grass (never a road, a square or a house)
+    const ov = (a, b) => a[0] < b[0] + b[2] && a[0] + a[2] > b[0] && a[1] < b[1] + b[3] && a[1] + a[3] > b[1];
+    const midBad = (rects, centres, hp, signs, where) => rects.forEach((r, k) => { const [cx, cy] = centres[k];
+      if (r[0] < cx - hp || r[0] + r[2] > cx + hp || r[1] < cy - hp || r[1] + r[3] > cy + hp) bad.push(where + ': the theme sign sticks out of its square');
+      if (ov(r, heroRect(cx, cy))) bad.push(where + ': the theme sign is under the waiting cyclist');
+      if (signs.some(n => ov(r, n.r) || ov(r, n.a))) bad.push(where + ': a name covers the theme sign'); });
+    UNITS.filter(u => u.built).forEach(u => { if (!TOWN_LANDMARK[u.id]) return bad.push(u.id + ': no theme sign in TOWN_LANDMARK (app21.js)'); });
+    { const pr = lmRects('pad'); midBad(pr, UNITS.filter(u => TOWN_LANDMARK[u.id]).map(u => townPx(UNIT[u.id].n - 1)), WSQ[0].h * TS, worldSigns(), 'Pad'); }
+    UNITS.filter(u => u.built).forEach(u => { const T = buildTown(u.id); const t = townSigns(u.id); const signs = [...t, t.markt];
+      midBad(lmRects('town', u.id), squaresOf(u.id).map((q, j) => sqCenter(TSQ[j])), TSQ[0].h * TS, signs, u.id + ' map');
+      if (T.scatter.length < 4) bad.push(u.id + ' map: only ' + T.scatter.length + ' theme signs on the grass');
+      T.scatter.forEach(L => { const r = [L.x, L.y, LM_W, lmH(L.key)];
+        if (TSQ.some(q => { const [cx, cy] = sqCenter(q), hp = q.h * TS + 2; return ov(r, [cx - hp, cy - hp, 2 * hp, 2 * hp]); })) bad.push(u.id + ' map: a theme sign on the grass stands on a square');
+        if (T.roads.some(rd => rd.some(([x, y]) => ov(r, [x - RW / 2, y - RW / 2, RW, RW])))) bad.push(u.id + ' map: a theme sign on the grass stands on a road');
+        if (T.houses.concat(...T.guild).some(h => ov(r, [h.x * TS, h.y * TS - 10, 2 * TS, 2 * TS + 10]))) bad.push(u.id + ' map: a theme sign on the grass covers a house or its flag');
+        if (signs.some(n => ov(r, n.r) || ov(r, n.a))) bad.push(u.id + ' map: a name covers a theme sign on the grass'); }); });
     { const before = JSON.stringify(S.sq); const g0 = townRonde3('u1'); squaresOf('u1').forEach(q => { S.sq[q.id] = {steps: {oefen: 100}, rounds: {oefen: 3}}; });
       const g1 = townRonde3('u1'), svg = landmarkSVG('tram', 0, 0, 1, lmMode('u1'), 'x'); S.sq = JSON.parse(before);
-      if (g0 || !g1 || !/#D9A12A|#EFC447/.test(svg) || !/sparkle/.test(svg)) bad.push('landmark: not gold after Ronde 3 on every plein'); }
+      const q1 = squaresOf('u1')[0].id; S.sq[q1] = {steps: {oefen: 100}, rounds: {oefen: 3}}; const one = (townOverlay('u1').match(/class="landmark gold"/g) || []).length; S.sq = JSON.parse(before);
+      if (g0 || !g1 || !/#D9A12A|#EFC447/.test(svg) || !/sparkle/.test(svg)) bad.push('landmark: not gold after Ronde 3 on every plein');
+      if (one !== 1) bad.push('landmark: after Ronde 3 on one plein, only its own sign should be gold (' + one + ')'); }
     // 2.6 woordenboek: every entry complete and consistent (see src/woordenboek/README.md)
     let nd2 = 0; const seenW = new Set(); const lexW = new Set(LEX.map(l => norm(l.w) + '|' + l.p));
     const PS = ['n', 'v', 'adj', 'adv', 'prep', 'pron', 'conj', 'num', 'int', 'q'];
