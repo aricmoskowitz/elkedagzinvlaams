@@ -97,5 +97,6 @@ function progressLegend() {
     ${row(bunting(1, 6, 15, 6, true) + spark, 'Gouden vlaggetjes met glitter: Ronde 3 gehaald')}
     ${row(`<rect x="2" y="5" width="13" height="11" fill="#DDD4C3" stroke="#E0A82E" stroke-width="2"/>` + spark, 'Gouden stoeprand: plein perfect (alles 100% en Ronde 3)')}
     ${row(bunting(1, 6, 21, 6, false) + '<text x="11" y="17" text-anchor="middle" font-size="6" font-weight="700" fill="#2A2620">★</text>', 'Vlaggetjes over de Grote Markt, of rond een stad op het Pad: de Grote Markt gehaald')}
+    ${typeof landmarkSVG === 'function' ? row(landmarkSVG('tram', -1, 2, .95, 'gold', 'Gouden tram'), 'Het teken van het thema (een tram, een frietkot, …): goud als elk plein van de stad Ronde 3 gehaald heeft') : ''}
   </div><div class="small">Op het Pad heeft elke stad drie huizen (één per plein) en een stadhuis voor de Grote Markt. Is alles perfect, ook de opdracht in de stad, dan wordt de hele stad goud.</div></div>`;
 }

@@ -242,7 +242,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   if (SHOTS) await g.screenshot({path: path.join(SHOTS, '20_pad_progress.png')});
   // what the flags mean: in Ik → Hoe werkt Elke Dag Zin?
   await g.evaluate(() => { TAB = 'ik'; render(); openHelp(); }); await g.waitForTimeout(100);
-  ok(await g.evaluate(() => $$('#help .legend .lg').length === 7 && /Ronde 2/.test($('#help .legend').textContent) && /Ronde 3/.test($('#help .legend').textContent)), 'Ik → Hoe werkt Elke Dag Zin? explains the flags');
+  ok(await g.evaluate(() => $$('#help .legend .lg').length === 8 && /thema/.test($('#help .legend').textContent) && /Ronde 2/.test($('#help .legend').textContent) && /Ronde 3/.test($('#help .legend').textContent)), 'Ik → Hoe werkt Elke Dag Zin? explains the flags and the theme landmark');
   errs.push(...G.errs); await G.close();
 
   // ---- Home Screen app: manifest, icons, service worker, offline, update toast ----
