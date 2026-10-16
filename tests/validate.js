@@ -75,6 +75,17 @@ const {openApp} = require('./page');
         if (Math.hypot(gx, gy) > 16) bad.push(where + ': a name stands ' + Math.round(Math.hypot(gx, gy)) + ' px from the edge of its square'); }); };
     signBad(WORLD ? WORLD.g : (buildWorld(), WORLD.g), worldSigns(), UNITS.map((u, i) => townPx(i).concat(40)), 'Pad'); // on the Pad a town is its square plus the ring of houses and bunting
     [0, 100].forEach(m => UNITS.filter(u => u.built).forEach(u => { S.markt = S.markt || {}; S.markt[u.id] = m; const t = townSigns(u.id); signBad(buildTown(u.id).g, [...t, t.markt], TSQ.map(q => sqCenter(q).concat(q.h * TS)), u.id + ' map (Grote Markt ' + m + '%)'); }));
+    // 2.10: every built town has a theme landmark on the Pad and on its town map, on free ground (never a road or a square);
+    // names already keep off it (its cells count as a house); it turns gold when every plein has passed Ronde 3
+    const lmBad = (L, g, sqs, roads, where) => { if (!L) return bad.push(where + ': no landmark spot');
+      const [w, h] = [LM_W * (where.startsWith('Pad') ? WLM_S : TLM_S), lmH(L.key) * (where.startsWith('Pad') ? WLM_S : TLM_S)];
+      if (sqs.some(q => { const [cx, cy] = sqCenter(q), hp = q.h * TS + 2; return L.x < cx + hp && L.x + w > cx - hp && L.y < cy + hp && L.y + h > cy - hp; })) bad.push(where + ': the landmark stands on a square');
+      if (roads.some(r => r.some(([x, y]) => x + RW / 2 > L.x && x - RW / 2 < L.x + w && y + RW / 2 > L.y && y - RW / 2 < L.y + h))) bad.push(where + ': the landmark stands on a road'); };
+    UNITS.filter(u => u.built).forEach((u, i) => { if (!TOWN_LANDMARK[u.id]) return bad.push(u.id + ': no theme landmark in TOWN_LANDMARK (app21.js)');
+      lmBad(WORLD.landmarks[UNIT[u.id].n - 1], WORLD.g, WSQ, WORLD.roads, 'Pad ' + u.id); const T = buildTown(u.id); lmBad(T.landmark, T.g, TSQ, T.roads, u.id + ' map'); });
+    { const before = JSON.stringify(S.sq); const g0 = townRonde3('u1'); squaresOf('u1').forEach(q => { S.sq[q.id] = {steps: {oefen: 100}, rounds: {oefen: 3}}; });
+      const g1 = townRonde3('u1'), svg = landmarkSVG('tram', 0, 0, 1, lmMode('u1'), 'x'); S.sq = JSON.parse(before);
+      if (g0 || !g1 || !/#D9A12A|#EFC447/.test(svg) || !/sparkle/.test(svg)) bad.push('landmark: not gold after Ronde 3 on every plein'); }
     // 2.6 woordenboek: every entry complete and consistent (see src/woordenboek/README.md)
     let nd2 = 0; const seenW = new Set(); const lexW = new Set(LEX.map(l => norm(l.w) + '|' + l.p));
     const PS = ['n', 'v', 'adj', 'adv', 'prep', 'pron', 'conj', 'num', 'int', 'q'];
