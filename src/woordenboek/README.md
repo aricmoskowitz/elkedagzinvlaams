@@ -22,7 +22,7 @@ worker keeps it for offline use. `tests/validate.js` checks every entry.
 | `s`, `se` | all | an example sentence (max 12 words, everyday Antwerp life) that contains the word or one of its forms, and its English translation |
 | `g`, `pl`, `dim` | n | `de` or `het`; the plural (`null` if none); the diminutive (`null` if none) |
 | `e` | adj | the form with `-e` (`mooie`, `rode`, `grote`); `null` for adjectives that never change (`gratis`, `oranje`) |
-| `v` | v | `t`: `w` weak, `s` strong, `o` irregular; `st` the stem (ik-form); `im` past [singular, plural]; `pp` the participle without a separable prefix; `aux` `h` hebben, `z` zijn, `hz` both; `sep` the separable prefix (`op` for opbellen); `o` present-tense forms that are not stem / stem+t (keys `ik jij inv u hij pl ge`), `imp` the imperative if it is not the stem |
+| `v` | v | `t`: `w` weak, `s` strong, `o` irregular; `st` the stem (ik-form); `im` past [singular, plural]; `pp` the participle without a separable prefix; `aux` `h` hebben, `z` zijn, `hz` both; `sep` the separable prefix (`op` for opbellen); `o` present-tense forms that are not stem / stem+t (keys `ik jij inv u hij pl`; no ge / gij forms), `imp` the imperative if it is not the stem |
 | `f` | any | other forms that should find this entry (comparatives, `mij` for `ik`, `hun`/`hen`, ...) |
 | `vl` | any | `true` for a Flemish word (spreektaal) that a Dutch dictionary may not have; `d` says it is Flemish |
 

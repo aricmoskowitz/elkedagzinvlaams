@@ -50,7 +50,7 @@ function relEx(l) {
     why: `${wordHTML(l)}: ${esc(l.d || '')}. ${relHTML(l).replace(/<\/?div[^>]*>/g, '')}`, say: ans};
 }
 function defEx(l) {
-  const opts = shuffle(uniq([l.w].concat(distractorsFor(l, l.w))).slice(0, 4));
+  const opts = shuffle(uniq([l.w].concat(defDistractors(l))).slice(0, 4));
   return {type: 'mc', key: 'w:' + l.id + ':rec', lex: l, label: 'def', prompt: `<span class="nl" style="font-size:21px">${esc(l.d)}</span>`, sub: POS[l.p] || '', options: opts, answer: l.w,
     why: `${wordHTML(l)}: ${esc(l.d)}. <span class="muted">(${esc(l.en || '')})</span>`, say: (l.g ? l.g + ' ' : '') + l.w};
 }

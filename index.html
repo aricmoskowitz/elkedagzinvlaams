@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "5fb6c2cb9f";</script>
+<script>const APP_VERSION = "dd49fd252c";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -162,7 +162,6 @@ u{text-decoration:none}
 .conj td{padding:6px 4px;border-bottom:1px solid var(--line)}
 .conj td:first-child{color:var(--ink2);width:44%}
 .conj td:last-child{font-family:var(--display);font-size:17px;color:var(--verb)}
-.conj tr.spoken td{color:var(--faint)}
 .conj .head td{color:var(--ink);font-weight:600;font-family:var(--ui);font-size:13px;padding-top:12px;border-bottom:0}
 .en-hidden{border:1.5px dashed var(--go);border-radius:8px;padding:6px 10px;background:transparent;color:var(--go);cursor:pointer;font-size:14px;font-weight:500}
 .list .li{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line);cursor:pointer;min-height:48px}
@@ -191,7 +190,14 @@ u{text-decoration:none}
 #feed .fhead > *{pointer-events:auto}
 #feed .fscroll{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .fcard{height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:64px 16px calc(40px + env(safe-area-inset-bottom,0px))}
-.fcard .fin{width:100%;max-width:420px;background:#fff;border-radius:18px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;min-height:56%;justify-content:center;border:1px solid var(--line)}
+.fcard .fin{width:100%;max-width:420px;background:#fff;border-radius:18px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;min-height:56%;justify-content:center;border:1px solid var(--line);max-height:100%;overflow-y:auto;transition:transform .28s ease-in,opacity .28s ease-in,border-color .15s}
+/* 2.11: a card never grows past its own screen; a verb overview is compact; Wist ik / Nog niet sends the card sideways */
+.fcard .fin{justify-content:flex-start} .fcard .fin > *{flex-shrink:0} .fcard .fin > :first-child{margin-top:auto} .fcard .fin > :last-child{margin-bottom:auto} /* centred, but never cut off at the top */
+.fcard .conj + .why{display:none} /* the long verb note stays on the word card */
+.fcard .conj td{padding:3px 4px} .fcard .conj td:last-child{font-size:16px} .fcard .conj td.eyebrow{padding-top:8px!important}
+.fcard .fin.fly-right{transform:translateX(115%) rotate(7deg);opacity:0} .fcard .fin.fly-left{transform:translateX(-115%) rotate(-7deg);opacity:0}
+.fcard.lean-right .fin{border-color:var(--go)} .fcard.lean-left .fin{border-color:var(--warn)}
+.fcard{overflow:hidden}
 .fcard .kind,.ex-label{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--ink);font-weight:600;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px 12px 4px 10px;letter-spacing:.01em}
 .kind .ki,.ex-label .ki{font-size:15px;line-height:1;color:var(--ink2)}
 
@@ -406,13 +412,13 @@ const LEX = [
 {id:'morgen',u:1,w:'morgen',p:'adv',d:'de dag na vandaag',en:'tomorrow',s:'Morgen neem ik de tram.',se:'Tomorrow I’m taking the tram.'},
 {id:'vandaag',u:1,w:'vandaag',p:'adv',d:'deze dag',en:'today',s:'Vandaag fiets ik naar het werk.',se:'Today I’m cycling to work.'},
 {id:'nemen',u:1,w:'nemen',p:'v',d:'iets pakken; ook: een tram of bus gebruiken',en:'to take',s:'Ik neem de tram naar het station.',se:'I take the tram to the station.',v:{t:'s',st:'neem',im:['nam','namen'],pp:'genomen',aux:'h',fam:'e – a – o'}},
-{id:'gaan',u:1,w:'gaan',p:'v',d:'zich verplaatsen naar een andere plek',en:'to go',s:'Welke tram gaat naar de Groenplaats?',se:'Which tram goes to the Groenplaats?',v:{t:'o',st:'ga',im:['ging','gingen'],pp:'gegaan',aux:'z',o:{jij:'gaat',u:'gaat',hij:'gaat',ge:'gaat'}}},
+{id:'gaan',u:1,w:'gaan',p:'v',d:'zich verplaatsen naar een andere plek',en:'to go',s:'Welke tram gaat naar de Groenplaats?',se:'Which tram goes to the Groenplaats?',v:{t:'o',st:'ga',im:['ging','gingen'],pp:'gegaan',aux:'z',o:{jij:'gaat',u:'gaat',hij:'gaat'}}},
 {id:'komen',u:1,w:'komen',p:'v',d:'naar deze plek gaan; hierheen gaan',en:'to come',s:'De tram komt om acht uur.',se:'The tram comes at eight.',v:{t:'s',st:'kom',im:['kwam','kwamen'],pp:'gekomen',aux:'z',fam:'o – a – o'}},
 {id:'wonen',u:1,w:'wonen',p:'v',d:'je huis hebben op een plek',en:'to live (reside)',s:'Ik woon in Antwerpen.',se:'I live in Antwerp.',v:{t:'w',st:'woon',im:['woonde','woonden'],pp:'gewoond',aux:'h'}},
 {id:'zoeken',u:1,w:'zoeken',p:'v',d:'proberen iets te vinden',en:'to look for',s:'Ik zoek de Meir.',se:'I’m looking for the Meir.',v:{t:'o',st:'zoek',im:['zocht','zochten'],pp:'gezocht',aux:'h'}},
 {id:'zien',u:1,w:'zien',p:'v',d:'met je ogen iets opmerken',en:'to see',s:'Op het plein zie ik de kathedraal.',se:'On the square I see the cathedral.',v:{t:'o',st:'zie',im:['zag','zagen'],pp:'gezien',aux:'h'}},
 {id:'fietsen',u:1,w:'fietsen',p:'v',d:'rijden op een fiets',en:'to cycle',s:'Vandaag fiets ik naar het werk.',se:'Today I’m cycling to work.',v:{t:'w',st:'fiets',im:['fietste','fietsten'],pp:'gefietst',aux:'hz'}},
-{id:'zijn',u:1,w:'zijn',p:'v',d:'het belangrijkste werkwoord: bestaan, of ergens staan of liggen',en:'to be',s:'De halte is om de hoek.',se:'The stop is around the corner.',v:{t:'o',st:'ben',im:['was','waren'],pp:'geweest',aux:'z',imp:'wees',o:{ik:'ben',jij:'bent',inv:'ben',u:'bent',hij:'is',pl:'zijn',ge:'zijt'}}},
+{id:'zijn',u:1,w:'zijn',p:'v',d:'het belangrijkste werkwoord: bestaan, of ergens staan of liggen',en:'to be',s:'De halte is om de hoek.',se:'The stop is around the corner.',v:{t:'o',st:'ben',im:['was','waren'],pp:'geweest',aux:'z',imp:'wees',o:{ik:'ben',jij:'bent',inv:'ben',u:'bent',hij:'is',pl:'zijn'}}},
 
 /* ---------- Unit 2 · Theaterbuurt (Vogelmarkt) ---------- */
 {id:'plant',u:2,w:'plant',p:'n',g:'de',pl:'planten',dim:'plantje',d:'iets dat groeit, met wortels en bladeren',en:'plant',s:'Ik neem de plant mee.',se:'I’m taking the plant with me.'},
@@ -438,7 +444,7 @@ const LEX = [
 {id:'uitstappen',u:2,w:'uitstappen',p:'v',d:'uit de tram, bus of trein gaan',en:'to get off',s:'Aan de Groenplaats stap ik uit.',se:'I get off at the Groenplaats.',v:{t:'w',sep:'uit',st:'stap',im:['stapte','stapten'],pp:'gestapt',aux:'z'}},
 {id:'ophalen',u:2,w:'ophalen',p:'v',d:'iets of iemand gaan halen',en:'to pick up',s:'Ik haal de bloemen morgen op.',se:'I’ll pick up the flowers tomorrow.',v:{t:'w',sep:'op',st:'haal',im:['haalde','haalden'],pp:'gehaald',aux:'h'}},
 {id:'aankomen',u:2,w:'aankomen',p:'v',d:'op een plek komen na een reis',en:'to arrive',s:'Hoe laat komt de tram aan?',se:'What time does the tram arrive?',v:{t:'s',sep:'aan',st:'kom',im:['kwam','kwamen'],pp:'gekomen',aux:'z',fam:'o – a – o'}},
-{id:'opstaan',u:2,w:'opstaan',p:'v',d:'uit je bed komen',en:'to get up',s:'Op zondag sta ik vroeg op.',se:'On Sunday I get up early.',v:{t:'o',sep:'op',st:'sta',im:['stond','stonden'],pp:'gestaan',aux:'z',o:{jij:'staat',u:'staat',hij:'staat',ge:'staat'}}},
+{id:'opstaan',u:2,w:'opstaan',p:'v',d:'uit je bed komen',en:'to get up',s:'Op zondag sta ik vroeg op.',se:'On Sunday I get up early.',v:{t:'o',sep:'op',st:'sta',im:['stond','stonden'],pp:'gestaan',aux:'z',o:{jij:'staat',u:'staat',hij:'staat'}}},
 {id:'kosten',u:2,w:'kosten',p:'v',d:'een prijs hebben',en:'to cost',s:'Hoeveel kost die pot?',se:'How much does that pot cost?',v:{t:'w',st:'kost',im:['kostte','kostten'],pp:'gekost',aux:'h'}},
 
 /* ---------- Unit 3 · Oude Stad (frietkot) ---------- */
@@ -469,7 +475,7 @@ const LEX = [
 {id:'bestellen',u:3,w:'bestellen',p:'v',d:'vragen om eten of iets anders te krijgen',en:'to order',s:'Ik bestel een pak frieten.',se:'I order a portion of fries.',v:{t:'w',st:'bestel',im:['bestelde','bestelden'],pp:'besteld',aux:'h'},why:'Verbs starting with <i>be-</i>, <i>ge-</i>, <i>ver-</i> get no extra <i>ge-</i>: <i>besteld</i>, not <i>gebesteld</i>.'},
 {id:'eten',u:3,w:'eten',p:'v',d:'voedsel in je mond nemen en doorslikken',en:'to eat',s:'Het meisje eet een wafel.',se:'The girl is eating a waffle.',v:{t:'s',st:'eet',im:['at','aten'],pp:'gegeten',aux:'h',fam:'e – a – e'}},
 {id:'drinken',u:3,w:'drinken',p:'v',d:'iets vloeibaars in je mond nemen en doorslikken',en:'to drink',s:'Wij drinken een pintje.',se:'We’re having a beer.',v:{t:'s',st:'drink',im:['dronk','dronken'],pp:'gedronken',aux:'h',fam:'i – o – o'}},
-{id:'hebben',u:3,w:'hebben',p:'v',d:'iets bezitten; het is van jou',en:'to have',s:'Heb jij een vorkje voor mij?',se:'Do you have a little fork for me?',v:{t:'o',st:'heb',im:['had','hadden'],pp:'gehad',aux:'h',o:{ik:'heb',jij:'hebt',inv:'heb',u:'hebt',hij:'heeft',pl:'hebben',ge:'hebt'}}},
+{id:'hebben',u:3,w:'hebben',p:'v',d:'iets bezitten; het is van jou',en:'to have',s:'Heb jij een vorkje voor mij?',se:'Do you have a little fork for me?',v:{t:'o',st:'heb',im:['had','hadden'],pp:'gehad',aux:'h',o:{ik:'heb',jij:'hebt',inv:'heb',u:'hebt',hij:'heeft',pl:'hebben'}}},
 {id:'liggen',u:3,w:'liggen',p:'v',d:'plat op iets rusten',en:'to lie (be lying)',s:'Het mesje ligt naast het bord.',se:'The little knife is next to the plate.',v:{t:'s',st:'lig',im:['lag','lagen'],pp:'gelegen',aux:'h',fam:'i – a – e'}},
 {id:'krijgen',u:3,w:'krijgen',p:'v',d:'iets ontvangen van iemand',en:'to get, receive',s:'Bij de koffie krijg je een koekje.',se:'With coffee you get a biscuit.',v:{t:'s',st:'krijg',im:['kreeg','kregen'],pp:'gekregen',aux:'h',fam:'ij – ee – e'}},
 ];
@@ -650,8 +656,8 @@ u3:{prompt:'Schrijf 3 à 5 zinnen: je bestelt eten en drinken aan het frietkot. 
 /* ===== Batch 2 content: Towns 4–6 ===== */
 LEX.push(
 /* ---------- Unit 4 · Koffiehaven (modal verbs) ---------- */
-{id:'willen',u:4,w:'willen',p:'v',d:'iets graag hebben of doen',en:'to want',s:'Ik wil een broodje kopen.',se:'I want to buy a roll.',v:{t:'o',st:'wil',im:['wilde','wilden'],pp:'gewild',aux:'h',o:{ik:'wil',jij:'wilt',inv:'wil',u:'wilt',hij:'wil',pl:'willen',ge:'wilt'},alt:{jij:['wil'],u:['wil']}},why:'Both <i>jij wil</i> and <i>jij wilt</i> are correct; in Flanders you mostly hear <i>wil</i>. In the past you also hear <i>wou</i>.'},
-{id:'kunnen',u:4,w:'kunnen',p:'v',d:'iets goed genoeg doen; het is mogelijk',en:'can, to be able to',s:'Kan ik met de kaart betalen?',se:'Can I pay by card?',v:{t:'o',st:'kan',im:['kon','konden'],pp:'gekund',aux:'h',o:{ik:'kan',jij:'kunt',inv:'kun',u:'kunt',hij:'kan',pl:'kunnen',ge:'kunt'},alt:{jij:['kan'],u:['kan'],inv:['kan']}},why:'<i>jij kunt</i> and <i>jij kan</i> are both correct; Flemish speakers usually say <i>kan</i>.'},
+{id:'willen',u:4,w:'willen',p:'v',d:'iets graag hebben of doen',en:'to want',s:'Ik wil een broodje kopen.',se:'I want to buy a roll.',v:{t:'o',st:'wil',im:['wilde','wilden'],pp:'gewild',aux:'h',o:{ik:'wil',jij:'wilt',inv:'wil',u:'wilt',hij:'wil',pl:'willen'},alt:{jij:['wil'],u:['wil']}},why:'Both <i>jij wil</i> and <i>jij wilt</i> are correct; in Flanders you mostly hear <i>wil</i>. In the past you also hear <i>wou</i>.'},
+{id:'kunnen',u:4,w:'kunnen',p:'v',d:'iets goed genoeg doen; het is mogelijk',en:'can, to be able to',s:'Kan ik met de kaart betalen?',se:'Can I pay by card?',v:{t:'o',st:'kan',im:['kon','konden'],pp:'gekund',aux:'h',o:{ik:'kan',jij:'kunt',inv:'kun',u:'kunt',hij:'kan',pl:'kunnen'},alt:{jij:['kan'],u:['kan'],inv:['kan']}},why:'<i>jij kunt</i> and <i>jij kan</i> are both correct; Flemish speakers usually say <i>kan</i>.'},
 {id:'brood',u:4,w:'brood',p:'n',g:'het',pl:'broden',dim:'broodje',d:'eten dat de bakker bakt van meel en water',en:'bread',s:'Het brood is nog warm.',se:'The bread is still warm.'},
 {id:'taart',u:4,w:'taart',p:'n',g:'de',pl:'taarten',dim:'taartje',d:'een zoet, rond gebak voor een feest of bij de koffie',en:'cake, tart',s:'Wij willen graag een taart bestellen.',se:'We would like to order a cake.'},
 {id:'bakker',u:4,w:'bakker',p:'n',g:'de',pl:'bakkers',dim:null,d:'iemand die brood en taart maakt en verkoopt; ook: zijn winkel',en:'baker',s:'De bakker opent om zeven uur.',se:'The baker opens at seven.',why:'People doing a job (<i>-er</i>) are <i>de</i>.'},
@@ -659,7 +665,7 @@ LEX.push(
 {id:'betalen',u:4,w:'betalen',p:'v',d:'geld geven voor iets dat je koopt',en:'to pay',s:'Kan ik met de kaart betalen?',se:'Can I pay by card?',v:{t:'w',st:'betaal',im:['betaalde','betaalden'],pp:'betaald',aux:'h'},why:'Starts with <i>be-</i>, so no extra <i>ge-</i>: <i>betaald</i>.'},
 {id:'kaart',u:4,w:'kaart',p:'n',g:'de',pl:'kaarten',dim:'kaartje',d:'een plat stukje plastic of papier; om te betalen of als plan van een stad',en:'card; map',s:'Kan ik met de kaart betalen?',se:'Can I pay by card?'},
 {id:'graag',u:4,w:'graag',p:'adv',d:'met plezier; zoals je het wilt',en:'gladly, would like',s:'Wij willen graag een taart bestellen.',se:'We would like to order a cake.',note:'<i>Ik wil graag…</i> is the polite way to ask for something.'},
-{id:'mogen',u:4,w:'mogen',p:'v',d:'toestemming hebben om iets te doen',en:'may, to be allowed to',s:'Mag ik de rekening, alstublieft?',se:'May I have the bill, please?',v:{t:'o',st:'mag',im:['mocht','mochten'],pp:'gemogen',aux:'h',o:{ik:'mag',jij:'mag',inv:'mag',u:'mag',hij:'mag',pl:'mogen',ge:'moogt'}},why:'<i>Mag ik…?</i> is the standard polite request in a café or shop.'},
+{id:'mogen',u:4,w:'mogen',p:'v',d:'toestemming hebben om iets te doen',en:'may, to be allowed to',s:'Mag ik de rekening, alstublieft?',se:'May I have the bill, please?',v:{t:'o',st:'mag',im:['mocht','mochten'],pp:'gemogen',aux:'h',o:{ik:'mag',jij:'mag',inv:'mag',u:'mag',hij:'mag',pl:'mogen'}},why:'<i>Mag ik…?</i> is the standard polite request in a café or shop.'},
 {id:'glas',u:4,w:'glas',p:'n',g:'het',pl:'glazen',dim:'glaasje',d:'iets doorzichtigs waaruit je drinkt',en:'glass',s:'Mag ik een glas water?',se:'May I have a glass of water?'},
 {id:'thee',u:4,w:'thee',p:'n',g:'de',pl:'theeën',dim:'theetje',d:'een warme drank van gedroogde blaadjes',en:'tea',s:'Ik drink mijn thee met melk en suiker.',se:'I drink my tea with milk and sugar.'},
 {id:'melk',u:4,w:'melk',p:'n',g:'de',pl:null,dim:null,d:'een witte drank van de koe',en:'milk',s:'Ik drink mijn thee met melk en suiker.',se:'I drink my tea with milk and sugar.'},
@@ -668,7 +674,7 @@ LEX.push(
 {id:'tafel',u:4,w:'tafel',p:'n',g:'de',pl:'tafels',dim:'tafeltje',d:'een meubel met een plat blad waar je aan eet of werkt',en:'table',s:'Mogen wij aan deze tafel zitten?',se:'May we sit at this table?'},
 {id:'alstublieft',u:4,w:'alstublieft',p:'adv',d:'beleefd woord als je iets vraagt of iets geeft',en:'please; here you are',s:'Mag ik de rekening, alstublieft?',se:'May I have the bill, please?',note:'In België zeg je het ook als je iets geeft. Tegen vrienden: <i>alsjeblieft</i>.'},
 {id:'moeten',u:4,w:'moeten',p:'v',d:'het is nodig; je hebt geen keuze',en:'must, to have to',s:'We moeten om vijf uur vertrekken.',se:'We have to leave at five.',v:{t:'o',st:'moet',im:['moest','moesten'],pp:'gemoeten',aux:'h'}},
-{id:'zullen',u:4,w:'zullen',p:'v',d:'voor iets in de toekomst; of om iets voor te stellen',en:'shall, will',s:'Zullen we samen een koffie drinken?',se:'Shall we have a coffee together?',v:{t:'o',st:'zal',im:['zou','zouden'],pp:'—',aux:'h',o:{ik:'zal',jij:'zult',inv:'zul',u:'zult',hij:'zal',pl:'zullen',ge:'zult'},alt:{jij:['zal'],u:['zal'],inv:['zal']}},why:'<i>Zullen we…?</i> makes a suggestion: “Shall we…?”'},
+{id:'zullen',u:4,w:'zullen',p:'v',d:'voor iets in de toekomst; of om iets voor te stellen',en:'shall, will',s:'Zullen we samen een koffie drinken?',se:'Shall we have a coffee together?',v:{t:'o',st:'zal',im:['zou','zouden'],pp:'—',aux:'h',o:{ik:'zal',jij:'zult',inv:'zul',u:'zult',hij:'zal',pl:'zullen'},alt:{jij:['zal'],u:['zal'],inv:['zal']}},why:'<i>Zullen we…?</i> makes a suggestion: “Shall we…?”'},
 {id:'vertrekken',u:4,w:'vertrekken',p:'v',d:'weggaan van een plek',en:'to leave, depart',s:'De boot vertrekt straks uit de haven.',se:'The boat leaves the harbour soon.',v:{t:'s',st:'vertrek',im:['vertrok','vertrokken'],pp:'vertrokken',aux:'z',fam:'e – o – o'},why:'Starts with <i>ver-</i>, so no extra <i>ge-</i>: <i>vertrokken</i>.'},
 {id:'wachten',u:4,w:'wachten',p:'v',d:'blijven tot iets of iemand komt',en:'to wait',s:'Je moet hier even wachten.',se:'You have to wait here a moment.',v:{t:'w',st:'wacht',im:['wachtte','wachtten'],pp:'gewacht',aux:'h'}},
 {id:'boot',u:4,w:'boot',p:'n',g:'de',pl:'boten',dim:'bootje',d:'een voertuig dat over het water vaart',en:'boat',s:'De boot vertrekt straks uit de haven.',se:'The boat leaves the harbour soon.'},
@@ -1457,7 +1463,7 @@ function vForms(l) {
   const stT = v.st.endsWith('t') ? v.st : v.st + 't';
   const f = {
     ik: o.ik || v.st, jij: o.jij || stT, inv: o.inv || v.st, u: o.u || stT, hij: o.hij || stT,
-    pl: o.pl || base, ge: o.ge || stT, im: v.im, pp: v.pp, aux: v.aux, imp: v.imp || v.st, base, sep: v.sep || ''
+    pl: o.pl || base, im: v.im, pp: v.pp, aux: v.aux, imp: v.imp || v.st, base, sep: v.sep || ''
   };
   return f;
 }
@@ -1493,7 +1499,7 @@ function stemNote(l) {
   if (m && st.endsWith(m[2] + m[2] + m[3])) return `The vowel is doubled to stay long in a closed syllable: <i>${inf.replace(/en$/, '')}·en</i> → <i>${st}</i>.`;
   return '';
 }
-const PERSON_LABEL = {ik:'ik', jij:'jij / je', inv:'… jij? (omgekeerd)', u:'u', hij:'hij / zij / het', pl:'wij · jullie · zij', ge:'ge / gij (spreektaal)'};
+const PERSON_LABEL = {ik:'ik', jij:'jij / je', inv:'… jij? (omgekeerd)', u:'u', hij:'hij / zij / het', pl:'wij · jullie · zij'};
 function personRule(p) {
   return {
     ik:'<i>ik</i> takes just the stem.',
@@ -1523,6 +1529,7 @@ function migrate() {
   S.settings = Object.assign({}, def, S.settings || {});
   S.settings.praten = Object.assign({}, def.praten, S.settings.praten || {});
   delete S.settings.praten.vertaling; // 2.7: translations are off for good
+  Object.values(S.custom || {}).forEach(l => { if (l.v && l.v.o) delete l.v.o.ge; }); // 2.11: no ge / gij forms
   S.settings.praten.verbeteren = 'einde'; // 2.8: corrections only at the end of a conversation, never in between
   if (S.settings.talkAudio === undefined) S.settings.talkAudio = true;
   if (S.v < 3) { Object.keys(S.seen).forEach(id => { if (S.seenAt[id] === undefined) S.seenAt[id] = 0; }); S.v = 3; }
@@ -1774,6 +1781,15 @@ function distractorsFor(l, surf) {
   if (out.length < 3) for (const x of shuffle(LEX.filter(x => x.id !== l.id))) { const v = x.w.toLowerCase(); if (v !== s && !out.includes(v)) out.push(v); if (out.length === 3) break; }
   return out;
 }
+// a definition card asks for the word itself, so the choices are other words of the same kind in their dictionary form
+// (other verbs, not forms of the same verb); never a synonym, which would also fit the definition
+function defDistractors(l, n = 3) {
+  const avoid = new Set([l.w].concat(typeof relOf === 'function' ? relOf(l).syn : []).map(norm));
+  const pool = allWords().filter(x => x.id !== l.id && x.w && !avoid.has(norm(x.w)) && norm(x.d || '') !== norm(l.d || ''));
+  const same = shuffle(pool.filter(x => x.p === l.p && x.u === l.u)).concat(shuffle(pool.filter(x => x.p === l.p && x.u !== l.u)), shuffle(pool.filter(x => x.p !== l.p)));
+  const out = []; for (const x of same) { const v = x.w.toLowerCase(); if (!out.includes(v)) out.push(v); if (out.length === n) break; }
+  return out;
+}
 function clozeWhy(l, surf) {
   const s = surf.toLowerCase(); let t = '';
   if (l.v) {
@@ -1854,7 +1870,7 @@ function makeEx(key, ctx = 'drill') {
     }
     const defP = `<span class="nl" style="font-size:20px">${esc(l.d)}</span>`;
     if (sk === 'rec' || ctx === 'feed') {
-      const opts = shuffle([l.w, ...distractorsFor(l, l.w)]).slice(0, ctx === 'feed' ? 3 : 4);
+      const opts = shuffle([l.w, ...defDistractors(l)]).slice(0, ctx === 'feed' ? 3 : 4);
       if (!opts.includes(l.w)) opts[0] = l.w;
       return {type: 'mc', key, lex: l, label: 'rec', prompt: defP, sub: l.p === 'n' ? '' : POS[l.p], options: shuffle(opts), answer: l.w, why: `${wordHTML(l)}: ${esc(l.d)}. <span class="muted">(${esc(l.en)})</span>`, say: (l.g ? l.g + ' ' : '') + l.w};
     }
@@ -1958,7 +1974,6 @@ function conjTable(l) {
   <table class="conj"><tbody>
   <tr><td colspan="2" class="eyebrow" style="padding-top:10px" data-en="present">Tegenwoordige tijd</td></tr>
   ${rows.map(r => `<tr><td>${r[0]}</td><td>${esc(r[1])}</td></tr>`).join('')}
-  <tr class="spoken"><td>ge / gij <span class="small">(spreektaal)</span></td><td>${esc(sp(f.ge))}</td></tr>
   <tr><td colspan="2" class="eyebrow" style="padding-top:12px" data-en="simple past">Verleden tijd</td></tr>
   <tr><td>ik / jij / hij</td><td>${esc(sp(f.im[0]))}</td></tr><tr><td>wij / jullie / zij</td><td>${esc(sp(f.im[1]))}</td></tr>
   <tr><td colspan="2" class="eyebrow" style="padding-top:12px" data-en="present perfect">Voltooide tijd</td></tr>
@@ -2468,7 +2483,7 @@ function drawScene(cv, sc) {
     const [cx, cy] = sqCenter(q); const h = q.h * TS, n = Math.round(q.h * 2);
     R(cx - h - 2, cy - h - 2, 2 * h + 4, 2 * h + 4, q.gold ? '#E0A82E' : W.curb); R(cx - h, cy - h, 2 * h, 2 * h, W.stone); // gold: everything perfect
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if ((x + y) % 2) R(cx - h + x * TS + 2, cy - h + y * TS + 2, 4, 4, W.cobble2);
-    R(cx - 5, cy - 5, 10, 10, W.cobble2); R(cx - 2, cy - 2, 4, 4, W.fountain);
+    if (!q.sign) { R(cx - 5, cy - 5, 10, 10, W.cobble2); R(cx - 2, cy - 2, 4, 4, W.fountain); } // 2.11: a square with a theme sign has no fountain
     (q.open || []).forEach(sd => { const [mx, my] = sqSide(q, sd); const [dx, dy] = DIR[sd];
       if (dx) { R(Math.round(mx - 3), Math.round(my - RW / 2), 6, RW, W.stone); for (let k = 0; k < 3; k++) R(Math.round(mx + dx * 6 - 1), Math.round(my - RW / 2 + 1 + k * 4), 2, 2, W.zebra); }
       else { R(Math.round(mx - RW / 2), Math.round(my - 3), RW, 6, W.stone); for (let k = 0; k < 3; k++) R(Math.round(mx - RW / 2 + 1 + k * 4), Math.round(my + dy * 6 - 1), 2, 2, W.zebra); } });
@@ -2559,7 +2574,7 @@ function placeSign(g, text, x, y, taken, first = 'N') {
   taken.push(best.r, best.a); return best;
 }
 // what stands on a square that a name must leave free: the cyclist, the Ronde flags or the bunting (the arrow bobs on top of the name)
-const heroRect = (x, y) => [x + 6 - 13, y + 8 - 23, 26, 24];
+const heroRect = (x, y) => [x + 14 - 13, y + 8 - 23, 26, 24];
 const arrow = (x, y, next) => `<g transform="translate(${x},${y})"><g class="bob"><path d="M-6,-5 H6 L0,3 Z" fill="${next ? '#2F6B3A' : '#2A2620'}" stroke="#fff" stroke-width="1.5"/></g></g>`;
 const flag = (x, y) => `<g transform="translate(${x},${y})" shape-rendering="crispEdges"><rect width="2" height="16" fill="#2A2620"/><rect x="2" width="9" height="6" fill="#F2D35B" stroke="#2A2620" stroke-width="1"/></g>`;
 const blocks = (x, y, n, done) => `<g transform="translate(${x - (n * 12 - 2) / 2},${y})" shape-rendering="crispEdges">${Array.from({length: n}, (_, j) => `<rect x="${j * 12}" width="10" height="5" fill="${j < done ? '#2A2620' : '#fff'}" stroke="#2A2620" stroke-width="1"/>`).join('')}</g>`;
@@ -2671,12 +2686,12 @@ function worldHouses() {
   return out;
 }
 const townPx = i => sqCenter(WSQ[i]);
-const standPx = ([x, y]) => [x + 6, y + 8]; // where the cyclist waits on a square
+const standPx = ([x, y]) => [x + 14, y + 8]; // where the cyclist waits on a square: beside the theme sign in its middle (app21.js)
 // where each town's name stands on the Pad (the arrows above the towns are placed first, so names keep clear of them too)
 function worldSigns() {
   if (!WORLD) buildWorld();
   const here = UNIT[SQ[nextSquare()].u].n - 1; // the cyclist waits in one town only
-  const taken = UNITS.flatMap((u, i) => { const [x, y] = townPx(i); return [[x - 26, y - 26, 52, 14], [x - 26, y + 20, 52, 14]].concat(i === here ? [heroRect(x, y)] : []); }); // bunting above and below
+  const taken = UNITS.flatMap((u, i) => { const [x, y] = townPx(i); return [[x - 26, y - 26, 52, 14], [x - 26, y + 20, 52, 14]].concat(i === here ? [heroRect(x, y)] : []); }).concat(lmRects('pad')); // bunting above and below, the theme signs
   return UNITS.map((u, i) => { const [x, y] = townPx(i); return placeSign(WORLD.g, u.name, x, y, taken, TOWN_LABEL[i]); });
 }
 function worldOverlay() {
@@ -2753,7 +2768,7 @@ function townSigns(u) {
   const [mx, my] = sqCenter(TSQ[3]); const mh = TSQ[3].h * TS;
   const here = qs.findIndex(q => q.id === nextSquare()); // the cyclist waits on one square only
   const taken = qs.flatMap((q, j) => { const [x, y] = sqCenter(TSQ[j]); return [[x - 28, y - 18, 56, 14]].concat(j === here ? [heroRect(x, y)] : []); }) // Ronde flags
-    .concat([[mx - mh, my - mh + 2, 2 * mh, 14], [mx - mh, my + 2, 2 * mh, 14], [mx - 10, my - 12, 20, 20]]); // the Grote Markt's bunting and fountain
+    .concat([[mx - mh, my - mh + 2, 2 * mh, 14], [mx - mh, my + 2, 2 * mh, 14], [mx - 10, my - 12, 20, 20]], lmRects('town', u)); // the Grote Markt's bunting and fountain, the theme signs
   const out = qs.map((q, j) => { const [x, y] = sqCenter(TSQ[j]); return placeSign(T.g, q.name, x, y, taken, j === 0 ? 'S' : 'N'); });
   const mt = '★ Grote Markt' + (tp.marktDone ? ' · ' + tp.markt + '%' : '');
   out.markt = placeSign(T.g, mt, mx, my, taken, 'N'); out.markt.text = mt;
@@ -2831,7 +2846,7 @@ function squareOverlay(q) {
     return `<g data-act="step" data-q="${q}" data-step="${st}" role="button" tabindex="0" style="cursor:pointer" aria-label="${STEP_NAME[st]}${done ? ', klaar' : ''}${built ? '' : ', later'}">
       <rect x="${x - 4}" y="0" width="64" height="150" fill="transparent"/>
       ${guildHouse(x, state, i)}
-      ${pp.levels[i] ? `<g transform="translate(${x + 44},4) scale(1.5)">${miniFlag(0, 0, pp.levels[i] === 2)}</g>` : ''}
+      ${pp.levels[i] ? /* the pole stands on the gable's second step */ `<g transform="translate(${x + 40},10.5) scale(1.5)">${miniFlag(0, 0, pp.levels[i] === 2)}</g>` : ''}
       ${state === 'next' ? arrow(x + 28, 9, true) : ''}
       ${sign(x + 28, 118, STEP_NAME[st], state === 'later' || state === 'locked')}
     </g>`;
@@ -3087,7 +3102,34 @@ function feedAppend() {
     const fid = 'f' + (FEED.fid++); c.fid = fid; FC[fid] = c;
     const sec = document.createElement('section'); sec.className = 'fcard'; sec.dataset.fid = fid;
     sec.innerHTML = fcardHTML(c); box.appendChild(sec); FEED.io.observe(sec);
+    if (c.kind === 'w') feedSwipe(sec, fid);
   });
+}
+// 2.11: Wist ik / Nog niet sends the card off to the right or left, then the next card scrolls in
+function feedKnew(fid, ok) {
+  const c = FC[fid]; const sec = document.querySelector(`.fcard[data-fid="${fid}"]`); if (!c || !sec || c.done) return; c.done = true;
+  grade('w:' + c.l.id + ':rec', ok);
+  $$('[data-act="fknew"]', sec).forEach(b => { b.disabled = true; if ((b.dataset.ok === '1') === ok) b.style.outline = '2px solid var(--gold)'; });
+  const fin = $('.fin', sec); fin.style.transform = ''; fin.classList.add(ok ? 'fly-right' : 'fly-left');
+  setTimeout(() => {
+    const next = sec.nextElementSibling; const box = $('#fscroll'); if (next && box) box.scrollTo({top: next.offsetTop, behavior: reduceMotion ? 'auto' : 'smooth'});
+    setTimeout(() => fin.classList.remove('fly-right', 'fly-left'), 600); // back in place, graded, if you scroll back up
+  }, reduceMotion ? 0 : 280);
+}
+// a sideways swipe on a 'Ken je dit woord?' card: right = Wist ik, left = Nog niet; up and down still scroll
+function feedSwipe(sec, fid) {
+  const fin = $('.fin', sec); let x0 = null, y0 = 0, dx = 0, side = false;
+  fin.addEventListener('pointerdown', e => { if (FC[fid].done || e.target.closest('button')) return; x0 = e.clientX; y0 = e.clientY; dx = 0; side = false; });
+  fin.addEventListener('pointermove', e => {
+    if (x0 === null) return; dx = e.clientX - x0; const dy = e.clientY - y0;
+    if (!side && Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.5) side = true;
+    if (!side) { if (Math.abs(dy) > 12) x0 = null; return; }
+    fin.style.transition = 'none'; fin.style.transform = `translateX(${dx}px) rotate(${dx / 24}deg)`;
+    sec.classList.toggle('lean-right', dx > 60); sec.classList.toggle('lean-left', dx < -60);
+  });
+  const end = () => { if (x0 === null) return; x0 = null; sec.classList.remove('lean-right', 'lean-left'); fin.style.transition = '';
+    if (side && Math.abs(dx) > 80) return feedKnew(fid, dx > 0); fin.style.transform = ''; };
+  fin.addEventListener('pointerup', end); fin.addEventListener('pointercancel', () => { x0 = null; fin.style.transform = ''; sec.classList.remove('lean-right', 'lean-left'); });
 }
 function fcardHTML(c) {
   const hint = '<div class="fhint">veeg omhoog</div>';
@@ -3100,7 +3142,7 @@ function fcardHTML(c) {
     const l = c.l; const isNew = c.kind === 'n';
     return `<div class="fin"><div class="kind">${isNew ? 'Nieuw woord' : 'Ken je dit woord?'}</div><div class="spread"><div class="wc-word">${wordHTML(l)}</div>${speakBtn((l.g ? l.g + ' ' : '') + l.w)}</div>${l.s ? `<div class="nl" style="font-size:18px">${highlight(l.s, l.w)}</div>` : ''}
       <div class="fback" ${isNew ? '' : 'hidden'}><div class="nl" style="font-size:17px">${esc(l.d)}</div>${relHTML(l)}${l.pl ? `<div class="small">mv: de ${esc(l.pl)}${l.dim ? ' · het ' + esc(l.dim) : ''}</div>` : ''}<button class="en-hidden" data-act="reveal-en" data-en-text="${esc(l.en)}" style="margin-top:8px">Toon Engels</button></div>
-      ${isNew ? '' : `<button class="btn line fshow" data-act="freveal" data-fid="${c.fid}">Toon betekenis</button><div class="grid2 fgrade" hidden><button class="btn line" data-act="fknew" data-fid="${c.fid}" data-ok="0">Nog niet</button><button class="btn" data-act="fknew" data-fid="${c.fid}" data-ok="1">Wist ik</button></div>`}</div>`;
+      ${isNew ? '' : `<button class="btn line fshow" data-act="freveal" data-fid="${c.fid}">Toon betekenis</button><div class="grid2 fgrade" hidden><button class="btn line" data-act="fknew" data-fid="${c.fid}" data-ok="0">Nog niet</button><button class="btn" data-act="fknew" data-fid="${c.fid}" data-ok="1">Wist ik</button></div><div class="small muted" style="text-align:center" data-en="Swipe left: not yet · swipe right: knew it">← nog niet · veeg · wist ik →</div>`}</div>`;
   }
   if (c.kind === 'x') {
     const x = c.x; const lab = {straat: 'Straatnaam', vlaams: 'Vlaams dat je hoort', cultuur: 'Zo doen ze het hier'}[x.t];
@@ -4601,7 +4643,7 @@ function relEx(l) {
     why: `${wordHTML(l)}: ${esc(l.d || '')}. ${relHTML(l).replace(/<\/?div[^>]*>/g, '')}`, say: ans};
 }
 function defEx(l) {
-  const opts = shuffle(uniq([l.w].concat(distractorsFor(l, l.w))).slice(0, 4));
+  const opts = shuffle(uniq([l.w].concat(defDistractors(l))).slice(0, 4));
   return {type: 'mc', key: 'w:' + l.id + ':rec', lex: l, label: 'def', prompt: `<span class="nl" style="font-size:21px">${esc(l.d)}</span>`, sub: POS[l.p] || '', options: opts, answer: l.w,
     why: `${wordHTML(l)}: ${esc(l.d)}. <span class="muted">(${esc(l.en || '')})</span>`, say: (l.g ? l.g + ' ' : '') + l.w};
 }
@@ -4755,7 +4797,7 @@ function progressLegend() {
     ${row(bunting(1, 6, 15, 6, true) + spark, 'Gouden vlaggetjes met glitter: Ronde 3 gehaald')}
     ${row(`<rect x="2" y="5" width="13" height="11" fill="#DDD4C3" stroke="#E0A82E" stroke-width="2"/>` + spark, 'Gouden stoeprand: plein perfect (alles 100% en Ronde 3)')}
     ${row(bunting(1, 6, 21, 6, false) + '<text x="11" y="17" text-anchor="middle" font-size="6" font-weight="700" fill="#2A2620">★</text>', 'Vlaggetjes over de Grote Markt, of rond een stad op het Pad: de Grote Markt gehaald')}
-    ${typeof landmarkSVG === 'function' ? row(landmarkSVG('tram', -1, 2, .95, 'gold', 'Gouden tram'), 'Het teken van het thema (een tram, een frietkot, …): goud als elk plein van de stad Ronde 3 gehaald heeft') : ''}
+    ${typeof landmarkSVG === 'function' ? row(landmarkSVG('tram', 1, 2, 1.4, 'gold', 'Gouden tram', false), 'Het teken van het thema (een tram, een frietkot, …) midden op elk plein: goud als dat plein Ronde 3 gehaald heeft, op het Pad en in het gras als elk plein van de stad het gehaald heeft') : ''}
   </div><div class="small">Op het Pad heeft elke stad drie huizen (één per plein) en een stadhuis voor de Grote Markt. Is alles perfect, ook de opdracht in de stad, dan wordt de hele stad goud.</div></div>`;
 }
 
@@ -5010,47 +5052,32 @@ function deleteFix(id) {
   });
 }
 
-/* ===== VERSION 2.10: a landmark for every town's theme, on the Pad and on the town map =====
-   Each town shows one pixel landmark for its theme: a tram for the trams, a plant stall for the plant market,
-   a hospital for the doctor's town. It stands on free grass (never on a road, a square, a house or a name)
-   and turns gold, with sparkles, when every plein of the town has passed Ronde 3. Grey while the town is closed. */
+/* ===== VERSION 2.10: a sign for every town's theme, on the Pad and on the town map =====
+   Each town has one pixel sign for its theme: a tram for the trams, plants for the plant market, a hospital for the doctor's town.
+   2.11: it stands in the middle of every square (the cyclist rides over it and waits beside it), and the town map has more of
+   them, small, on the grass around the pleinen. Gold with sparkles after Ronde 3: on the Pad and on the grass when every plein
+   of the town has passed it, in the middle of a plein when that plein has. Grey while the town or plein is closed. */
 
-// 24 px wide sprites, one character per pixel; '.' is empty, K is the outline
+// 14 px wide sprites, simple shapes without stands, tracks or steam, one character per pixel; '.' is empty, K is the outline
 const LM_COL = {K: '#2A2620', W: '#F4EFE4', Y: '#F2C14E', B: '#8FB8DE', G: '#8C877E', R: '#C8553D', L: '#5E9E4E', D: '#3F7A38', O: '#C9743A', N: '#9C6B4A',
   F: '#F2D35B', C: '#E8E1D2', S: '#B9D7EF', P: '#8C5A9E', A: '#D08A3A', X: '#D23B30', U: '#6E8FB5'};
 const LANDMARK_ART = {
-  tram: ['..........KKKK..........', '...........K............', '..KKKKKKKKKKKKKKKKKKKK..', '.KWWWWWWWWWWWWWWWWWWWWK.', '.KWBBBWBBBWBBBWBBBWBBWK.', '.KWBBBWBBBWBBBWBBBWBBWK.',
-    '.KWBBBWBBBWBBBWBBBWBBWK.', '.KWWWWWWWWWWWWWWWWWWWWK.', '.KYYYYYYYYYYYYYYYYYYYYK.', '.KWWWWWWWWWWWWWWWWWWWWK.', '.KKKKKKKKKKKKKKKKKKKKKK.', '...KK.KK........KK.KK...',
-    'GGGGGGGGGGGGGGGGGGGGGGGG', '.K...K...K...K...K...K..'],
-  plants: ['..KKKKKKKKKKKKKKKKKKKK..', '.KRRWWRRWWRRWWRRWWRRWWK.', '.KRRWWRRWWRRWWRRWWRRWWK.', '..KRK.KRK.KRK.KRK.KRK...', '..K..................K..', '..K..L....LDL....L...K..',
-    '..K.LDL..LLDLL..LDL..K..', '..K.LLL...LLL...LLL..K..', '..K..O....OOO....O...K..', '..K.OOO...OOO...OOO..K..', '..KNNNNNNNNNNNNNNNNNNK..', '..KNNNNNNNNNNNNNNNNNNK..',
-    '..K..................K..', '..K..................K..'],
-  fries: ['......F.F.F.FF.F.......', '.....FFFFFFFFFFFF.......', '.....FFFFFFFFFFFF.......', '......KKKKKKKKKK........', '......KXXWXXWXXK........', '.......KXWXXWXK.........',
-    '..KKKKKKKXXWXKKKKKKKKK..', '..KAAAAAAKXXKAAAAAAAAK..', '..KAWWWWWWKKWWWWWWWWAK..', '..KAWYYYYYYYYYYYYYYWAK..', '..KAWWWWWWWWWWWWWWWWAK..', '..KAAAAAAAAAAAAAAAAAAK..',
-    '..KNNNNNNNNNNNNNNNNNNK..', '..KNNNNNNNNNNNNNNNNNNK..', '..KKKKKKKKKKKKKKKKKKKK..'],
-  cup: ['.......K...K...K........', '......K...K...K.........', '.......K...K...K........', '........................', '...KKKKKKKKKKKKKKKKK....', '...KWWWWWWWWWWWWWWWKKKK.',
-    '...KNNNNNNNNNNNNNNNK..K.', '...KWWWWWWWWWWWWWWWK..K.', '....KWWWWWWWWWWWWWK..K..', '....KWWWWWRWWWWWWWKKK...', '.....KWWWWWWWWWWWK......', '......KKKKKKKKKKK.......',
-    '.KKKKKKKKKKKKKKKKKKKKK..', '..KCCCCCCCCCCCCCCCCCK...', '...KKKKKKKKKKKKKKKKK....'],
-  book: ['..KKKKKKKKK..KKKKKKKKK..', '.KWWWWWWWWWKKWWWWWWWWWK.', '.KWGGGGGGGWKKWGGGGGGGWK.', '.KWWWWWWWWWKKWWWWWWWWWK.', '.KWGGGGGGWWKKWGGGGGGWWK.', '.KWWWWWWWWWKKWWWWWWWWWK.',
-    '.KWGGGGGGGWKKWGGGGGGGWK.', '.KWWWWWWWWWKKWWWWWWWWWK.', '.KWGGGGGWWWKKWGGGGGWWWK.', '.KWWWWWWWWWKKWWWWWWWWWK.', '.KPPPPPPPPPKKPPPPPPPPPK.', '..KKKKKKKKKKKKKKKKKKKK..',
-    '...........KK...........', '..........KNNK..........', '.........KNNNNK.........'],
-  gable: ['...........KK...........', '..........KRRK..........', '.........KKRRKK.........', '.........KCCCCK.........', '.......KKKCBBCKKK.......', '.......KCCCBBCCCK.......',
-    '.....KKKCCCCCCCCKKK.....', '.....KCCBBCCCCBBCCK.....', '...KKKCCBBCCCCBBCCKKK...', '...KCCCCCCCCCCCCCCCCK...', '...KCCBBCCCBBCCCBBCCK...', '...KCCBBCCCBBCCCBBCCK...',
-    '...KCCCCCCCNNNCCCCCCK...', '...KCCCCCCCNNNCCCCCCK...', '...KKKKKKKKKKKKKKKKKK...'],
-  weather: ['................FF......', '..............F.FF.F....', '...............FFFF.....', '......KKKKK...FFFFFF....', '....KKWWWWWKK.FFFFF.....', '...KWWWWWWWWWKKK.FF.F...',
-    '.KKWWWWWWWWWWWWWKK......', 'KWWWWWWWWWWWWWWWWWK.....', 'KWWWWWWWWWWWWWWWWWWK....', '.KKKKKKKKKKKKKKKKKK.....', '...U...U...U...U........', '..U...U...U...U.........',
-    '....U...U...U...U.......'],
-  hospital: ['..........KKKK..........', '..........KXXK..........', '........KKKXXKKK........', '........KXXXXXXK........', '........KKKXXKKK........', '..KKKKKKKKKXXKKKKKKKKK..',
-    '..KWWWWWWWKKKKWWWWWWWK..', '..KWBBWBBWWWWWWBBWBBWK..', '..KWBBWBBWWWWWWBBWBBWK..', '..KWWWWWWWWWWWWWWWWWWK..', '..KWBBWBBWWNNWWBBWBBWK..', '..KWBBWBBWWNNWWBBWBBWK..',
-    '..KWWWWWWWWNNWWWWWWWWK..', '..KKKKKKKKKKKKKKKKKKKK..'],
+  tram: ['......KK......', '......K.......', 'KKKKKKKKKKKKKK', 'KWWWWWWWWWWWWK', 'KWBBWBBWBBWBBK', 'KWBBWBBWBBWBBK', 'KWWWWWWWWWWWWK', 'KYYYYYYYYYYYYK', 'KKKKKKKKKKKKKK', '.KK.KK..KK.KK.'],
+  plants: ['...R......R...', '..RYR....RYR..', '...R..LL..R...', '...L..LL..L...', '...LL.DD.LL...', '....LLDDLL....', '.....LDDL.....', '..KKKKKKKKKK..', '...KOOOOOOK...', '...KOOOOOOK...', '....KKKKKK....'],
+  fries: ['...F.F.FF.F...', '..FFFFFFFFFF..', '..FFFFFFFFFF..', '..KKKKKKKKKK..', '..KXXWXXWXXK..', '...KXWXXWXK...', '...KXXWXXXK...', '....KXWXXK....', '....KXXWXK....', '.....KXXK.....', '......KK......'],
+  cup: ['..KKKKKKKKK...', '..KWWWWWWWKKK.', '..KNNNNNNNK.K.', '..KWWWWWWWK.K.', '...KWWRWWK.K..', '...KWWWWWKK...', '....KKKKK.....', 'KKKKKKKKKKKKK.', '.KCCCCCCCCCK..', '..KKKKKKKKK...'],
+  book: ['.KKKKK..KKKKK.', 'KWWWWWKKWWWWWK', 'KWGGGWKKWGGGWK', 'KWWWWWKKWWWWWK', 'KWGGGWKKWGGWWK', 'KWWWWWKKWWWWWK', 'KWGGWWKKWGGGWK', 'KWWWWWKKWWWWWK', 'KPPPPPKKPPPPPK', '.KKKKKKKKKKKK.'],
+  gable: ['.....KKKK.....', '.....KCCK.....', '...KKKCCKKK...', '...KCCBBCCK...', '.KKKCCCCCCKKK.', '.KCCBBCCBBCCK.', '.KCCBBCCBBCCK.', '.KCCCCCCCCCCK.', '.KCCBBCNNCCCK.', '.KCCBBCNNCCCK.', '.KKKKKKKKKKKK.'],
+  weather: ['..........F...', '.......F.FFF.F', '.........FFFF.', '.....KKKK.FFF.', '...KKWWWWK.F..', '..KWWWWWWWKK..', '.KWWWWWWWWWWK.', 'KWWWWWWWWWWWWK', '.KKKKKKKKKKKK.', '..U..U..U..U..', '.U..U..U..U...'],
+  hospital: ['KKKKKKKKKKKKKK', 'KWWWWWXXWWWWWK', 'KWWWWWXXWWWWWK', 'KWWWXXXXXXWWWK', 'KWWWXXXXXXWWWK', 'KWWWWWXXWWWWWK', 'KWWWWWXXWWWWWK', 'KWBBWWWWWWBBWK', 'KWBBWWNNWWBBWK', 'KWWWWWNNWWWWWK', 'KKKKKKKKKKKKKK'],
 };
 // the town's theme → its landmark (a new town adds a line here; tests/validate.js checks every built town has one)
 const TOWN_LANDMARK = {
   u1: ['tram', 'De tram'], u2: ['plants', 'Een plantenkraam'], u3: ['fries', 'Een frietkot'], u4: ['cup', 'Een kop koffie'], u5: ['book', 'Een verhalenboek'],
   u6: ['gable', 'Een trapgevel'], u7: ['weather', 'Zon, wolk en regen'], u11: ['hospital', 'Het ziekenhuis'],
 };
-Object.keys(LANDMARK_ART).forEach(k => { LANDMARK_ART[k] = LANDMARK_ART[k].map(r => r.padEnd(24, '.').slice(0, 24)); });
-const LM_W = 24, lmH = key => LANDMARK_ART[key].length;
+Object.keys(LANDMARK_ART).forEach(k => { LANDMARK_ART[k] = LANDMARK_ART[k].map(r => r.padEnd(14, '.').slice(0, 14)); });
+const LM_W = 14, lmH = key => LANDMARK_ART[key].length;
 // gold or grey versions keep the light and dark of each colour
 const lum = hex => { const n = parseInt(hex.slice(1), 16); return (0.3 * (n >> 16) + 0.59 * (n >> 8 & 255) + 0.11 * (n & 255)) / 255; };
 function lmColour(ch, mode) {
@@ -5058,79 +5085,84 @@ function lmColour(ch, mode) {
   const l = lum(c); const shades = mode === 'gold' ? ['#A87A22', '#D9A12A', '#EFC447', '#F6DA7A'] : ['#9C978D', '#B8B3A9', '#CFCAC1', '#E4E0D8'];
   return shades[l < .45 ? 0 : l < .62 ? 1 : l < .8 ? 2 : 3];
 }
-function landmarkSVG(key, x, y, s, mode, label) {
+function landmarkSVG(key, x, y, s, mode, label, spark = true) {
   let r = ''; LANDMARK_ART[key].forEach((row, j) => [...row].forEach((ch, i) => { const col = lmColour(ch, mode); if (col) r += `<rect x="${i}" y="${j}" width="1.05" height="1.05" fill="${col}"/>`; }));
   const w = LM_W * s, h = lmH(key) * s;
-  return `<g class="landmark${mode === 'gold' ? ' gold' : ''}" role="img" aria-label="${esc(label)}" style="pointer-events:none"><g transform="translate(${x},${y}) scale(${s})" shape-rendering="crispEdges">${r}</g>${mode === 'gold' ? sparkles(x + w / 2, y + h / 2, Math.max(w, h) * .55) : ''}</g>`;
+  return `<g class="landmark${mode === 'gold' ? ' gold' : ''}" role="img" aria-label="${esc(label)}" style="pointer-events:none"><g transform="translate(${x},${y}) scale(${s})" shape-rendering="crispEdges">${r}</g>${mode === 'gold' && spark ? sparkles(x + w / 2, y + h / 2, Math.max(w, h) * .55) : ''}</g>`;
 }
 // Ronde 3 passed on every plein of the town
 const townRonde3 = u => !!UNIT[u] && UNIT[u].built && squaresOf(u).length > 0 && squaresOf(u).every(q => pleinProgress(q.id).ronde >= 3);
 const lmMode = u => townRonde3(u) ? 'gold' : '';
 
-/* ---------- where a landmark stands: a free block of grass, marked as 'house' so names and trees keep off it ---------- */
-const LM_FREE = ['grass', 'flower', 'tuft', 'field', 'field2'];
-function findLandmarkSpot(g, wc, hc, ok, score) {
-  const hard = t => ['road', 'house', 'plaza', 'path', 'bridge'].includes(t); // a ring of one cell keeps it off roads and houses
-  let best = null;
-  for (let y = 1; y + hc < g.length - 1; y++) for (let x = 1; x + wc < g[0].length - 1; x++) {
-    let free = true;
-    for (let dy = -1; dy <= hc && free; dy++) for (let dx = -1; dx <= wc && free; dx++) {
-      const t = g[y + dy][x + dx]; const inside = dy >= 0 && dy < hc && dx >= 0 && dx < wc;
-      if (inside ? !LM_FREE.includes(t) && t !== 'tree' && t !== 'treeX' : hard(t)) free = false; // a tree under it is cleared
-    }
-    if (!free || !ok(x, y)) continue;
-    const sc = score(x, y); if (!best || sc < best.sc) best = {x, y, sc};
-  }
-  if (best) for (let dy = 0; dy < hc; dy++) for (let dx = 0; dx < wc; dx++) g[best.y + dy][best.x + dx] = 'house';
-  return best;
+/* ---------- where it stands: in the middle of every square, just left of the cyclist's spot (standPx), on the same ground line;
+   the cyclist rides over it through the centre and waits beside it. Names keep off it (lmRects joins the `taken` list). ---------- */
+const WLM_S = 1, TLM_S = 1.5;
+const lmAt = ([cx, cy], key, s) => ({x: cx - LM_W * s, y: cy + 8 - lmH(key) * s, w: LM_W * s, h: lmH(key) * s});
+const lmKey = u => TOWN_LANDMARK[u] && TOWN_LANDMARK[u][0];
+// Pad: one per town square; town map: one per plein (the Grote Markt keeps its fountain)
+function lmRects(level, u) {
+  if (level === 'pad') return UNITS.map((t, i) => lmKey(t.id) ? lmAt(townPx(i), lmKey(t.id), WLM_S) : null).filter(Boolean).map(r => [r.x, r.y, r.w, r.h]);
+  return lmKey(u) ? squaresOf(u).map((q, j) => lmAt(sqCenter(TSQ[j]), lmKey(u), TLM_S)).map(r => [r.x, r.y, r.w, r.h]) : [];
 }
-const lmCells = (key, s) => [Math.ceil(LM_W * s / TS), Math.ceil(lmH(key) * s / TS)];
-
-// Pad: next to each town, outside its bunting, arrow and name area
-const WLM_S = 1;
-const _buildWorld = buildWorld; // wrapped on purpose: the landmarks are placed once the world is built
-buildWorld = function () {
-  _buildWorld();
-  // first where the names would stand (with the cyclist on any town), so a landmark never takes a name's spot
-  const taken = UNITS.flatMap((u, i) => { const [x, y] = townPx(i); return [[x - 26, y - 26, 52, 14], [x - 26, y + 20, 52, 14], heroRect(x, y)]; });
-  const names = UNITS.map((u, i) => { const [x, y] = townPx(i); const n = placeSign(WORLD.g, u.name, x, y, taken, TOWN_LABEL[i]); return [n.r, n.a]; }).flat();
-  const offNames = (x, y, wc, hc) => names.every(([nx, ny, nw, nh]) => x * TS >= nx + nw + 4 || (x + wc) * TS <= nx - 4 || y * TS >= ny + nh + 4 || (y + hc) * TS <= ny - 4);
-  WORLD.landmarks = UNITS.map((u, i) => {
-    const lm = TOWN_LANDMARK[u.id]; if (!lm) return null; const [wc, hc] = lmCells(lm[0], WLM_S); const [tx, ty] = WSQ[i].t;
-    const clear = (x, y) => WSQ.every(({t: [sx, sy]}) => x + wc <= sx - 5 || x >= sx + 5 || y + hc <= sy - 5 || y >= sy + 6);
-    const spot = findLandmarkSpot(WORLD.g, wc, hc, (x, y) => clear(x, y) && offNames(x, y, wc, hc) && Math.hypot(x + wc / 2 - tx, y + hc / 2 - ty) < 11 && nearPath(WORLD.g, x + (wc >> 1), y + (hc >> 1), 4),
-      // nearest its own town, and clearly further from every other town
-      (x, y) => { const cx = x + wc / 2, cy = y + hc / 2; const own = Math.hypot(cx - tx - .5, cy - ty - .5);
-        const other = Math.min(...WSQ.filter((_, j) => j !== i).map(({t: [ox, oy]}) => Math.hypot(cx - ox - .5, cy - oy - .5)));
-        return own + (other < own + 4 ? 50 : 0) - .2 * other; });
-    return spot && {key: lm[0], label: lm[1], x: spot.x * TS, y: spot.y * TS};
-  });
-};
-const _worldOverlay = worldOverlay; // wrapped on purpose: landmarks go under the names and flags
+const _buildWorld = buildWorld; // wrapped on purpose: a square with a theme sign drops its fountain
+buildWorld = function () { _buildWorld(); WORLD.squares.forEach((q, i) => { q.sign = !!(UNITS[i] && lmKey(UNITS[i].id)); }); };
+const _worldOverlay = worldOverlay; // wrapped on purpose: the landmarks go under the names, flags and cyclist
 worldOverlay = function () {
-  if (!WORLD) buildWorld();
-  const lms = UNITS.map((u, i) => { const L = WORLD.landmarks[i]; if (!L) return ''; const st = townState(u.id); const off = st === 'later' || st === 'locked';
-    return landmarkSVG(L.key, L.x, L.y + (TS * lmCells(L.key, WLM_S)[1] - lmH(L.key) * WLM_S), WLM_S, off ? 'grey' : lmMode(u.id), `${L.label} in ${u.name}: ${u.theme}${townRonde3(u.id) ? ', Ronde 3 overal gehaald' : ''}`); }).join('');
+  const lms = UNITS.map((u, i) => { const lm = TOWN_LANDMARK[u.id]; if (!lm) return ''; const st = townState(u.id); const off = st === 'later' || st === 'locked'; const L = lmAt(townPx(i), lm[0], WLM_S);
+    return landmarkSVG(lm[0], L.x, L.y, WLM_S, off ? 'grey' : lmMode(u.id), `${lm[1]} in ${u.name}: ${u.theme}${townRonde3(u.id) ? ', Ronde 3 overal gehaald' : ''}`); }).join('');
   return lms + _worldOverlay();
 };
 
-// town map: between the pleinen, near a road, away from the squares and the way in
-const TLM_S = 1.5;
-const _buildTown = buildTown; // wrapped on purpose: one landmark per town map, placed after the houses
+/* ---------- the town map also has the same sign, small, here and there on the grass around the pleinen ---------- */
+const LM_FREE = ['grass', 'flower', 'tuft', 'field', 'field2'];
+const SCATTER_MAX = 9;
+// free blocks of grass (a ring of one cell keeps them off roads and houses), spread out over the map; marked as 'house' so names and trees keep off
+function scatterSpots(g, wc, hc, ok, n) {
+  const hard = t => ['road', 'house', 'plaza', 'path', 'bridge'].includes(t); const out = [];
+  const free = (x, y) => { for (let dy = -1; dy <= hc; dy++) for (let dx = -1; dx <= wc; dx++) { const t = g[y + dy] && g[y + dy][x + dx]; const inside = dy >= 0 && dy < hc && dx >= 0 && dx < wc;
+    if (t === undefined || (inside ? !LM_FREE.includes(t) && t !== 'tree' && t !== 'treeX' : hard(t))) return false; } return true; };
+  while (out.length < n) {
+    let best = null;
+    for (let y = 1; y + hc < g.length - 1; y++) for (let x = 1; x + wc < g[0].length - 1; x++) {
+      if (!free(x, y) || !ok(x, y)) continue;
+      const d = out.length ? Math.min(...out.map(o => Math.hypot(o.x - x, o.y - y))) : 99; if (d < 6) continue;
+      const sc = -d + hsh(x * 1.7, y * 2.3) * 2; // the farthest from the others, a little shuffled
+      if (!best || sc < best.sc) best = {x, y, sc};
+    }
+    if (!best) break;
+    for (let dy = 0; dy < hc; dy++) for (let dx = 0; dx < wc; dx++) g[best.y + dy][best.x + dx] = 'house';
+    out.push(best);
+  }
+  return out;
+}
+const lmCells = (key, s) => [Math.ceil(LM_W * s / TS), Math.ceil(lmH(key) * s / TS)];
+const _buildTown = buildTown; // wrapped on purpose: the scattered signs are placed after the houses and trees
 buildTown = function (u) {
   if (TOWN_CACHE[u]) return TOWN_CACHE[u];
-  const T = _buildTown(u); const lm = TOWN_LANDMARK[u]; if (!lm) return T;
-  const [wc, hc] = lmCells(lm[0], TLM_S);
+  const T = _buildTown(u); const key = lmKey(u); T.scatter = []; if (!key) return T;
+  T.squares.forEach((q, j) => { q.sign = j < 3; });
+  const [wc, hc] = lmCells(key, 1);
+  // off the squares, and first where the names would stand (with the cyclist on any plein), so a sign never takes a name's spot
   const clear = (x, y) => TSQ.every(q => x + wc <= q.t[0] - q.h - 2 || x >= q.t[0] + q.h + 2 || y + hc <= q.t[1] - q.h - 3 || y >= q.t[1] + q.h + 2);
-  const spot = findLandmarkSpot(T.g, wc, hc, (x, y) => clear(x, y) && nearPath(T.g, x + (wc >> 1), y + (hc >> 1), Math.max(wc, hc)),
-    (x, y) => Math.hypot(x + wc / 2 - TGW / 2, y + hc / 2 - TGH / 2));
-  T.landmark = spot && {key: lm[0], label: lm[1], x: spot.x * TS, y: spot.y * TS + (TS * hc - lmH(lm[0]) * TLM_S)};
+  const [mx, my] = sqCenter(TSQ[3]), mh = TSQ[3].h * TS;
+  const names = [-1, 0, 1, 2].flatMap(here => { // the cyclist on no plein or on one of them
+    const taken = squaresOf(u).flatMap((q, j) => { const [x, y] = sqCenter(TSQ[j]); return [[x - 28, y - 18, 56, 14]].concat(j === here ? [heroRect(x, y)] : []); })
+      .concat([[mx - mh, my - mh + 2, 2 * mh, 14], [mx - mh, my + 2, 2 * mh, 14], [mx - 10, my - 12, 20, 20]], lmRects('town', u));
+    return squaresOf(u).map((q, j) => { const [x, y] = sqCenter(TSQ[j]); return placeSign(T.g, q.name, x, y, taken, j === 0 ? 'S' : 'N'); })
+      .concat(['★ Grote Markt', '★ Grote Markt · 100%'].map(t => placeSign(T.g, t, mx, my, taken.slice(), 'N'))).flatMap(n => [n.r, n.a]); });
+  // the sign, the flag row above it and a margin stay off every name
+  const offNames = (x, y) => names.every(([nx, ny, nw, nh]) => x * TS >= nx + nw + 4 || (x + wc) * TS <= nx - 4 || (y - 1) * TS >= ny + nh + 4 || (y + hc) * TS <= ny - 4);
+  T.scatter = scatterSpots(T.g, wc, hc, (x, y) => clear(x, y) && offNames(x, y), SCATTER_MAX).map(p => ({key, x: p.x * TS + (wc * TS - LM_W) / 2, y: p.y * TS + (hc * TS - lmH(key))}));
   return T;
 };
-const _townOverlay = townOverlay; // wrapped on purpose: the landmark goes under the names and flags
+const _townOverlay = townOverlay; // wrapped on purpose: the landmarks go under the names, flags and cyclist
 townOverlay = function (u) {
-  const T = buildTown(u); const L = T.landmark; const unit = UNIT[u];
-  return (L ? landmarkSVG(L.key, L.x, L.y, TLM_S, lmMode(u), `${L.label}: het thema van ${unit.name}, ${unit.theme}${townRonde3(u) ? '. Ronde 3 is overal gehaald' : ''}`) : '') + _townOverlay(u);
+  const T = buildTown(u); const lm = TOWN_LANDMARK[u]; if (!lm) return _townOverlay(u); const unit = UNIT[u];
+  const all = lmMode(u); const many = T.scatter.map(p => landmarkSVG(p.key, p.x, p.y, 1, all, lm[1], false)).join('');
+  // the one in the middle of a plein turns gold when that plein has passed Ronde 3
+  const mid = squaresOf(u).map((q, j) => { const L = lmAt(sqCenter(TSQ[j]), lm[0], TLM_S); const r3 = pleinProgress(q.id).ronde >= 3;
+    return landmarkSVG(lm[0], L.x, L.y, TLM_S, sqState(q.id) === 'locked' ? 'grey' : r3 ? 'gold' : '', `${lm[1]} op ${q.name}: het thema van ${unit.name}, ${unit.theme}${r3 ? '. Ronde 3 gehaald' : ''}`); }).join('');
+  return `<g aria-hidden="true">${many}</g>` + mid + _townOverlay(u);
 };
 
 /* ===== LONG-PRESS ENGLISH ===== */
@@ -5254,7 +5286,7 @@ document.addEventListener('click', e => {
     case 'fans': feedAnswer(d.fid, d.v); break;
     case 'flis': feedListen(d.fid, d.j); break;
     case 'freveal': { const sec = el.closest('.fcard'); $('.fback', sec).hidden = false; el.hidden = true; const g = $('.fgrade', sec); if (g) g.hidden = false; break; }
-    case 'fknew': { const c = FC[d.fid]; if (c && !c.done) { c.done = true; grade('w:' + c.l.id + ':rec', d.ok === '1'); } $$('[data-act="fknew"]', el.closest('.fcard')).forEach(b => { b.disabled = true; if (b === el) b.style.outline = '2px solid var(--gold)'; }); break; }
+    case 'fknew': feedKnew(d.fid, d.ok === '1'); break;
   }
 });
 document.addEventListener('keydown', e => {

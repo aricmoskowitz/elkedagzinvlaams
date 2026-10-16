@@ -142,7 +142,6 @@ u{text-decoration:none}
 .conj td{padding:6px 4px;border-bottom:1px solid var(--line)}
 .conj td:first-child{color:var(--ink2);width:44%}
 .conj td:last-child{font-family:var(--display);font-size:17px;color:var(--verb)}
-.conj tr.spoken td{color:var(--faint)}
 .conj .head td{color:var(--ink);font-weight:600;font-family:var(--ui);font-size:13px;padding-top:12px;border-bottom:0}
 .en-hidden{border:1.5px dashed var(--go);border-radius:8px;padding:6px 10px;background:transparent;color:var(--go);cursor:pointer;font-size:14px;font-weight:500}
 .list .li{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line);cursor:pointer;min-height:48px}
@@ -171,7 +170,14 @@ u{text-decoration:none}
 #feed .fhead > *{pointer-events:auto}
 #feed .fscroll{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .fcard{height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:64px 16px calc(40px + env(safe-area-inset-bottom,0px))}
-.fcard .fin{width:100%;max-width:420px;background:#fff;border-radius:18px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;min-height:56%;justify-content:center;border:1px solid var(--line)}
+.fcard .fin{width:100%;max-width:420px;background:#fff;border-radius:18px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;min-height:56%;justify-content:center;border:1px solid var(--line);max-height:100%;overflow-y:auto;transition:transform .28s ease-in,opacity .28s ease-in,border-color .15s}
+/* 2.11: a card never grows past its own screen; a verb overview is compact; Wist ik / Nog niet sends the card sideways */
+.fcard .fin{justify-content:flex-start} .fcard .fin > *{flex-shrink:0} .fcard .fin > :first-child{margin-top:auto} .fcard .fin > :last-child{margin-bottom:auto} /* centred, but never cut off at the top */
+.fcard .conj + .why{display:none} /* the long verb note stays on the word card */
+.fcard .conj td{padding:3px 4px} .fcard .conj td:last-child{font-size:16px} .fcard .conj td.eyebrow{padding-top:8px!important}
+.fcard .fin.fly-right{transform:translateX(115%) rotate(7deg);opacity:0} .fcard .fin.fly-left{transform:translateX(-115%) rotate(-7deg);opacity:0}
+.fcard.lean-right .fin{border-color:var(--go)} .fcard.lean-left .fin{border-color:var(--warn)}
+.fcard{overflow:hidden}
 .fcard .kind,.ex-label{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--ink);font-weight:600;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px 12px 4px 10px;letter-spacing:.01em}
 .kind .ki,.ex-label .ki{font-size:15px;line-height:1;color:var(--ink2)}
 

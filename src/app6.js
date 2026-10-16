@@ -119,7 +119,7 @@ document.addEventListener('click', e => {
     case 'fans': feedAnswer(d.fid, d.v); break;
     case 'flis': feedListen(d.fid, d.j); break;
     case 'freveal': { const sec = el.closest('.fcard'); $('.fback', sec).hidden = false; el.hidden = true; const g = $('.fgrade', sec); if (g) g.hidden = false; break; }
-    case 'fknew': { const c = FC[d.fid]; if (c && !c.done) { c.done = true; grade('w:' + c.l.id + ':rec', d.ok === '1'); } $$('[data-act="fknew"]', el.closest('.fcard')).forEach(b => { b.disabled = true; if (b === el) b.style.outline = '2px solid var(--gold)'; }); break; }
+    case 'fknew': feedKnew(d.fid, d.ok === '1'); break;
   }
 });
 document.addEventListener('keydown', e => {

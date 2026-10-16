@@ -37,7 +37,6 @@ function conjTable(l) {
   <table class="conj"><tbody>
   <tr><td colspan="2" class="eyebrow" style="padding-top:10px" data-en="present">Tegenwoordige tijd</td></tr>
   ${rows.map(r => `<tr><td>${r[0]}</td><td>${esc(r[1])}</td></tr>`).join('')}
-  <tr class="spoken"><td>ge / gij <span class="small">(spreektaal)</span></td><td>${esc(sp(f.ge))}</td></tr>
   <tr><td colspan="2" class="eyebrow" style="padding-top:12px" data-en="simple past">Verleden tijd</td></tr>
   <tr><td>ik / jij / hij</td><td>${esc(sp(f.im[0]))}</td></tr><tr><td>wij / jullie / zij</td><td>${esc(sp(f.im[1]))}</td></tr>
   <tr><td colspan="2" class="eyebrow" style="padding-top:12px" data-en="present perfect">Voltooide tijd</td></tr>
