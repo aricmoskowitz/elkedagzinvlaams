@@ -97,6 +97,10 @@ const {openApp} = require('./page');
       const q1 = squaresOf('u1')[0].id; S.sq[q1] = {steps: {oefen: 100}, rounds: {oefen: 3}}; const one = (townOverlay('u1').match(/class="landmark gold"/g) || []).length; S.sq = JSON.parse(before);
       if (g0 || !g1 || !/#D9A12A|#EFC447/.test(svg) || !/sparkle/.test(svg)) bad.push('landmark: not gold after Ronde 3 on every plein');
       if (one !== 1) bad.push('landmark: after Ronde 3 on one plein, only its own sign should be gold (' + one + ')'); }
+    // definition cards: the choices are other words, never another form of the answer (hakken: not hak, hakten)
+    LEX.filter(l => l.d).forEach(l => { const e = defEx(l); const forms = new Set([l.pl, l.dim, l.e].concat(l.v ? allForms(l) : []).filter(Boolean).map(norm));
+      if (e.options.length < 3 || !e.options.includes(l.w)) bad.push('definition card ' + l.w + ': ' + e.options.join('/'));
+      e.options.filter(o => o !== l.w && forms.has(norm(o))).forEach(o => bad.push('definition card ' + l.w + ': ' + o + ' is a form of the answer')); });
     // 2.6 woordenboek: every entry complete and consistent (see src/woordenboek/README.md)
     let nd2 = 0; const seenW = new Set(); const lexW = new Set(LEX.map(l => norm(l.w) + '|' + l.p));
     const PS = ['n', 'v', 'adj', 'adv', 'prep', 'pron', 'conj', 'num', 'int', 'q'];

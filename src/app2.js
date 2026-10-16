@@ -156,6 +156,15 @@ function distractorsFor(l, surf) {
   if (out.length < 3) for (const x of shuffle(LEX.filter(x => x.id !== l.id))) { const v = x.w.toLowerCase(); if (v !== s && !out.includes(v)) out.push(v); if (out.length === 3) break; }
   return out;
 }
+// a definition card asks for the word itself, so the choices are other words of the same kind in their dictionary form
+// (other verbs, not forms of the same verb); never a synonym, which would also fit the definition
+function defDistractors(l, n = 3) {
+  const avoid = new Set([l.w].concat(typeof relOf === 'function' ? relOf(l).syn : []).map(norm));
+  const pool = allWords().filter(x => x.id !== l.id && x.w && !avoid.has(norm(x.w)) && norm(x.d || '') !== norm(l.d || ''));
+  const same = shuffle(pool.filter(x => x.p === l.p && x.u === l.u)).concat(shuffle(pool.filter(x => x.p === l.p && x.u !== l.u)), shuffle(pool.filter(x => x.p !== l.p)));
+  const out = []; for (const x of same) { const v = x.w.toLowerCase(); if (!out.includes(v)) out.push(v); if (out.length === n) break; }
+  return out;
+}
 function clozeWhy(l, surf) {
   const s = surf.toLowerCase(); let t = '';
   if (l.v) {
@@ -236,7 +245,7 @@ function makeEx(key, ctx = 'drill') {
     }
     const defP = `<span class="nl" style="font-size:20px">${esc(l.d)}</span>`;
     if (sk === 'rec' || ctx === 'feed') {
-      const opts = shuffle([l.w, ...distractorsFor(l, l.w)]).slice(0, ctx === 'feed' ? 3 : 4);
+      const opts = shuffle([l.w, ...defDistractors(l)]).slice(0, ctx === 'feed' ? 3 : 4);
       if (!opts.includes(l.w)) opts[0] = l.w;
       return {type: 'mc', key, lex: l, label: 'rec', prompt: defP, sub: l.p === 'n' ? '' : POS[l.p], options: shuffle(opts), answer: l.w, why: `${wordHTML(l)}: ${esc(l.d)}. <span class="muted">(${esc(l.en)})</span>`, say: (l.g ? l.g + ' ' : '') + l.w};
     }
