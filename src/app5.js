@@ -167,7 +167,34 @@ function feedAppend() {
     const fid = 'f' + (FEED.fid++); c.fid = fid; FC[fid] = c;
     const sec = document.createElement('section'); sec.className = 'fcard'; sec.dataset.fid = fid;
     sec.innerHTML = fcardHTML(c); box.appendChild(sec); FEED.io.observe(sec);
+    if (c.kind === 'w') feedSwipe(sec, fid);
   });
+}
+// 2.11: Wist ik / Nog niet sends the card off to the right or left, then the next card scrolls in
+function feedKnew(fid, ok) {
+  const c = FC[fid]; const sec = document.querySelector(`.fcard[data-fid="${fid}"]`); if (!c || !sec || c.done) return; c.done = true;
+  grade('w:' + c.l.id + ':rec', ok);
+  $$('[data-act="fknew"]', sec).forEach(b => { b.disabled = true; if ((b.dataset.ok === '1') === ok) b.style.outline = '2px solid var(--gold)'; });
+  const fin = $('.fin', sec); fin.style.transform = ''; fin.classList.add(ok ? 'fly-right' : 'fly-left');
+  setTimeout(() => {
+    const next = sec.nextElementSibling; const box = $('#fscroll'); if (next && box) box.scrollTo({top: next.offsetTop, behavior: reduceMotion ? 'auto' : 'smooth'});
+    setTimeout(() => fin.classList.remove('fly-right', 'fly-left'), 600); // back in place, graded, if you scroll back up
+  }, reduceMotion ? 0 : 280);
+}
+// a sideways swipe on a 'Ken je dit woord?' card: right = Wist ik, left = Nog niet; up and down still scroll
+function feedSwipe(sec, fid) {
+  const fin = $('.fin', sec); let x0 = null, y0 = 0, dx = 0, side = false;
+  fin.addEventListener('pointerdown', e => { if (FC[fid].done || e.target.closest('button')) return; x0 = e.clientX; y0 = e.clientY; dx = 0; side = false; });
+  fin.addEventListener('pointermove', e => {
+    if (x0 === null) return; dx = e.clientX - x0; const dy = e.clientY - y0;
+    if (!side && Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.5) side = true;
+    if (!side) { if (Math.abs(dy) > 12) x0 = null; return; }
+    fin.style.transition = 'none'; fin.style.transform = `translateX(${dx}px) rotate(${dx / 24}deg)`;
+    sec.classList.toggle('lean-right', dx > 60); sec.classList.toggle('lean-left', dx < -60);
+  });
+  const end = () => { if (x0 === null) return; x0 = null; sec.classList.remove('lean-right', 'lean-left'); fin.style.transition = '';
+    if (side && Math.abs(dx) > 80) return feedKnew(fid, dx > 0); fin.style.transform = ''; };
+  fin.addEventListener('pointerup', end); fin.addEventListener('pointercancel', () => { x0 = null; fin.style.transform = ''; sec.classList.remove('lean-right', 'lean-left'); });
 }
 function fcardHTML(c) {
   const hint = '<div class="fhint">veeg omhoog</div>';
@@ -180,7 +207,7 @@ function fcardHTML(c) {
     const l = c.l; const isNew = c.kind === 'n';
     return `<div class="fin"><div class="kind">${isNew ? 'Nieuw woord' : 'Ken je dit woord?'}</div><div class="spread"><div class="wc-word">${wordHTML(l)}</div>${speakBtn((l.g ? l.g + ' ' : '') + l.w)}</div>${l.s ? `<div class="nl" style="font-size:18px">${highlight(l.s, l.w)}</div>` : ''}
       <div class="fback" ${isNew ? '' : 'hidden'}><div class="nl" style="font-size:17px">${esc(l.d)}</div>${relHTML(l)}${l.pl ? `<div class="small">mv: de ${esc(l.pl)}${l.dim ? ' · het ' + esc(l.dim) : ''}</div>` : ''}<button class="en-hidden" data-act="reveal-en" data-en-text="${esc(l.en)}" style="margin-top:8px">Toon Engels</button></div>
-      ${isNew ? '' : `<button class="btn line fshow" data-act="freveal" data-fid="${c.fid}">Toon betekenis</button><div class="grid2 fgrade" hidden><button class="btn line" data-act="fknew" data-fid="${c.fid}" data-ok="0">Nog niet</button><button class="btn" data-act="fknew" data-fid="${c.fid}" data-ok="1">Wist ik</button></div>`}</div>`;
+      ${isNew ? '' : `<button class="btn line fshow" data-act="freveal" data-fid="${c.fid}">Toon betekenis</button><div class="grid2 fgrade" hidden><button class="btn line" data-act="fknew" data-fid="${c.fid}" data-ok="0">Nog niet</button><button class="btn" data-act="fknew" data-fid="${c.fid}" data-ok="1">Wist ik</button></div><div class="small muted" style="text-align:center" data-en="Swipe left: not yet · swipe right: knew it">← nog niet · veeg · wist ik →</div>`}</div>`;
   }
   if (c.kind === 'x') {
     const x = c.x; const lab = {straat: 'Straatnaam', vlaams: 'Vlaams dat je hoort', cultuur: 'Zo doen ze het hier'}[x.t];

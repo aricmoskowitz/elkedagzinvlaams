@@ -28,13 +28,13 @@ const LEX = [
 {id:'morgen',u:1,w:'morgen',p:'adv',d:'de dag na vandaag',en:'tomorrow',s:'Morgen neem ik de tram.',se:'Tomorrow I’m taking the tram.'},
 {id:'vandaag',u:1,w:'vandaag',p:'adv',d:'deze dag',en:'today',s:'Vandaag fiets ik naar het werk.',se:'Today I’m cycling to work.'},
 {id:'nemen',u:1,w:'nemen',p:'v',d:'iets pakken; ook: een tram of bus gebruiken',en:'to take',s:'Ik neem de tram naar het station.',se:'I take the tram to the station.',v:{t:'s',st:'neem',im:['nam','namen'],pp:'genomen',aux:'h',fam:'e – a – o'}},
-{id:'gaan',u:1,w:'gaan',p:'v',d:'zich verplaatsen naar een andere plek',en:'to go',s:'Welke tram gaat naar de Groenplaats?',se:'Which tram goes to the Groenplaats?',v:{t:'o',st:'ga',im:['ging','gingen'],pp:'gegaan',aux:'z',o:{jij:'gaat',u:'gaat',hij:'gaat',ge:'gaat'}}},
+{id:'gaan',u:1,w:'gaan',p:'v',d:'zich verplaatsen naar een andere plek',en:'to go',s:'Welke tram gaat naar de Groenplaats?',se:'Which tram goes to the Groenplaats?',v:{t:'o',st:'ga',im:['ging','gingen'],pp:'gegaan',aux:'z',o:{jij:'gaat',u:'gaat',hij:'gaat'}}},
 {id:'komen',u:1,w:'komen',p:'v',d:'naar deze plek gaan; hierheen gaan',en:'to come',s:'De tram komt om acht uur.',se:'The tram comes at eight.',v:{t:'s',st:'kom',im:['kwam','kwamen'],pp:'gekomen',aux:'z',fam:'o – a – o'}},
 {id:'wonen',u:1,w:'wonen',p:'v',d:'je huis hebben op een plek',en:'to live (reside)',s:'Ik woon in Antwerpen.',se:'I live in Antwerp.',v:{t:'w',st:'woon',im:['woonde','woonden'],pp:'gewoond',aux:'h'}},
 {id:'zoeken',u:1,w:'zoeken',p:'v',d:'proberen iets te vinden',en:'to look for',s:'Ik zoek de Meir.',se:'I’m looking for the Meir.',v:{t:'o',st:'zoek',im:['zocht','zochten'],pp:'gezocht',aux:'h'}},
 {id:'zien',u:1,w:'zien',p:'v',d:'met je ogen iets opmerken',en:'to see',s:'Op het plein zie ik de kathedraal.',se:'On the square I see the cathedral.',v:{t:'o',st:'zie',im:['zag','zagen'],pp:'gezien',aux:'h'}},
 {id:'fietsen',u:1,w:'fietsen',p:'v',d:'rijden op een fiets',en:'to cycle',s:'Vandaag fiets ik naar het werk.',se:'Today I’m cycling to work.',v:{t:'w',st:'fiets',im:['fietste','fietsten'],pp:'gefietst',aux:'hz'}},
-{id:'zijn',u:1,w:'zijn',p:'v',d:'het belangrijkste werkwoord: bestaan, of ergens staan of liggen',en:'to be',s:'De halte is om de hoek.',se:'The stop is around the corner.',v:{t:'o',st:'ben',im:['was','waren'],pp:'geweest',aux:'z',imp:'wees',o:{ik:'ben',jij:'bent',inv:'ben',u:'bent',hij:'is',pl:'zijn',ge:'zijt'}}},
+{id:'zijn',u:1,w:'zijn',p:'v',d:'het belangrijkste werkwoord: bestaan, of ergens staan of liggen',en:'to be',s:'De halte is om de hoek.',se:'The stop is around the corner.',v:{t:'o',st:'ben',im:['was','waren'],pp:'geweest',aux:'z',imp:'wees',o:{ik:'ben',jij:'bent',inv:'ben',u:'bent',hij:'is',pl:'zijn'}}},
 
 /* ---------- Unit 2 · Theaterbuurt (Vogelmarkt) ---------- */
 {id:'plant',u:2,w:'plant',p:'n',g:'de',pl:'planten',dim:'plantje',d:'iets dat groeit, met wortels en bladeren',en:'plant',s:'Ik neem de plant mee.',se:'I’m taking the plant with me.'},
@@ -60,7 +60,7 @@ const LEX = [
 {id:'uitstappen',u:2,w:'uitstappen',p:'v',d:'uit de tram, bus of trein gaan',en:'to get off',s:'Aan de Groenplaats stap ik uit.',se:'I get off at the Groenplaats.',v:{t:'w',sep:'uit',st:'stap',im:['stapte','stapten'],pp:'gestapt',aux:'z'}},
 {id:'ophalen',u:2,w:'ophalen',p:'v',d:'iets of iemand gaan halen',en:'to pick up',s:'Ik haal de bloemen morgen op.',se:'I’ll pick up the flowers tomorrow.',v:{t:'w',sep:'op',st:'haal',im:['haalde','haalden'],pp:'gehaald',aux:'h'}},
 {id:'aankomen',u:2,w:'aankomen',p:'v',d:'op een plek komen na een reis',en:'to arrive',s:'Hoe laat komt de tram aan?',se:'What time does the tram arrive?',v:{t:'s',sep:'aan',st:'kom',im:['kwam','kwamen'],pp:'gekomen',aux:'z',fam:'o – a – o'}},
-{id:'opstaan',u:2,w:'opstaan',p:'v',d:'uit je bed komen',en:'to get up',s:'Op zondag sta ik vroeg op.',se:'On Sunday I get up early.',v:{t:'o',sep:'op',st:'sta',im:['stond','stonden'],pp:'gestaan',aux:'z',o:{jij:'staat',u:'staat',hij:'staat',ge:'staat'}}},
+{id:'opstaan',u:2,w:'opstaan',p:'v',d:'uit je bed komen',en:'to get up',s:'Op zondag sta ik vroeg op.',se:'On Sunday I get up early.',v:{t:'o',sep:'op',st:'sta',im:['stond','stonden'],pp:'gestaan',aux:'z',o:{jij:'staat',u:'staat',hij:'staat'}}},
 {id:'kosten',u:2,w:'kosten',p:'v',d:'een prijs hebben',en:'to cost',s:'Hoeveel kost die pot?',se:'How much does that pot cost?',v:{t:'w',st:'kost',im:['kostte','kostten'],pp:'gekost',aux:'h'}},
 
 /* ---------- Unit 3 · Oude Stad (frietkot) ---------- */
@@ -91,7 +91,7 @@ const LEX = [
 {id:'bestellen',u:3,w:'bestellen',p:'v',d:'vragen om eten of iets anders te krijgen',en:'to order',s:'Ik bestel een pak frieten.',se:'I order a portion of fries.',v:{t:'w',st:'bestel',im:['bestelde','bestelden'],pp:'besteld',aux:'h'},why:'Verbs starting with <i>be-</i>, <i>ge-</i>, <i>ver-</i> get no extra <i>ge-</i>: <i>besteld</i>, not <i>gebesteld</i>.'},
 {id:'eten',u:3,w:'eten',p:'v',d:'voedsel in je mond nemen en doorslikken',en:'to eat',s:'Het meisje eet een wafel.',se:'The girl is eating a waffle.',v:{t:'s',st:'eet',im:['at','aten'],pp:'gegeten',aux:'h',fam:'e – a – e'}},
 {id:'drinken',u:3,w:'drinken',p:'v',d:'iets vloeibaars in je mond nemen en doorslikken',en:'to drink',s:'Wij drinken een pintje.',se:'We’re having a beer.',v:{t:'s',st:'drink',im:['dronk','dronken'],pp:'gedronken',aux:'h',fam:'i – o – o'}},
-{id:'hebben',u:3,w:'hebben',p:'v',d:'iets bezitten; het is van jou',en:'to have',s:'Heb jij een vorkje voor mij?',se:'Do you have a little fork for me?',v:{t:'o',st:'heb',im:['had','hadden'],pp:'gehad',aux:'h',o:{ik:'heb',jij:'hebt',inv:'heb',u:'hebt',hij:'heeft',pl:'hebben',ge:'hebt'}}},
+{id:'hebben',u:3,w:'hebben',p:'v',d:'iets bezitten; het is van jou',en:'to have',s:'Heb jij een vorkje voor mij?',se:'Do you have a little fork for me?',v:{t:'o',st:'heb',im:['had','hadden'],pp:'gehad',aux:'h',o:{ik:'heb',jij:'hebt',inv:'heb',u:'hebt',hij:'heeft',pl:'hebben'}}},
 {id:'liggen',u:3,w:'liggen',p:'v',d:'plat op iets rusten',en:'to lie (be lying)',s:'Het mesje ligt naast het bord.',se:'The little knife is next to the plate.',v:{t:'s',st:'lig',im:['lag','lagen'],pp:'gelegen',aux:'h',fam:'i – a – e'}},
 {id:'krijgen',u:3,w:'krijgen',p:'v',d:'iets ontvangen van iemand',en:'to get, receive',s:'Bij de koffie krijg je een koekje.',se:'With coffee you get a biscuit.',v:{t:'s',st:'krijg',im:['kreeg','kregen'],pp:'gekregen',aux:'h',fam:'ij – ee – e'}},
 ];

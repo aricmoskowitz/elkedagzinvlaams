@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "aa8b6eb1cb";</script>
+<script>const APP_VERSION = "dd49fd252c";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -162,7 +162,6 @@ u{text-decoration:none}
 .conj td{padding:6px 4px;border-bottom:1px solid var(--line)}
 .conj td:first-child{color:var(--ink2);width:44%}
 .conj td:last-child{font-family:var(--display);font-size:17px;color:var(--verb)}
-.conj tr.spoken td{color:var(--faint)}
 .conj .head td{color:var(--ink);font-weight:600;font-family:var(--ui);font-size:13px;padding-top:12px;border-bottom:0}
 .en-hidden{border:1.5px dashed var(--go);border-radius:8px;padding:6px 10px;background:transparent;color:var(--go);cursor:pointer;font-size:14px;font-weight:500}
 .list .li{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line);cursor:pointer;min-height:48px}
@@ -191,7 +190,14 @@ u{text-decoration:none}
 #feed .fhead > *{pointer-events:auto}
 #feed .fscroll{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .fcard{height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:64px 16px calc(40px + env(safe-area-inset-bottom,0px))}
-.fcard .fin{width:100%;max-width:420px;background:#fff;border-radius:18px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;min-height:56%;justify-content:center;border:1px solid var(--line)}
+.fcard .fin{width:100%;max-width:420px;background:#fff;border-radius:18px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;min-height:56%;justify-content:center;border:1px solid var(--line);max-height:100%;overflow-y:auto;transition:transform .28s ease-in,opacity .28s ease-in,border-color .15s}
+/* 2.11: a card never grows past its own screen; a verb overview is compact; Wist ik / Nog niet sends the card sideways */
+.fcard .fin{justify-content:flex-start} .fcard .fin > *{flex-shrink:0} .fcard .fin > :first-child{margin-top:auto} .fcard .fin > :last-child{margin-bottom:auto} /* centred, but never cut off at the top */
+.fcard .conj + .why{display:none} /* the long verb note stays on the word card */
+.fcard .conj td{padding:3px 4px} .fcard .conj td:last-child{font-size:16px} .fcard .conj td.eyebrow{padding-top:8px!important}
+.fcard .fin.fly-right{transform:translateX(115%) rotate(7deg);opacity:0} .fcard .fin.fly-left{transform:translateX(-115%) rotate(-7deg);opacity:0}
+.fcard.lean-right .fin{border-color:var(--go)} .fcard.lean-left .fin{border-color:var(--warn)}
+.fcard{overflow:hidden}
 .fcard .kind,.ex-label{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--ink);font-weight:600;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px 12px 4px 10px;letter-spacing:.01em}
 .kind .ki,.ex-label .ki{font-size:15px;line-height:1;color:var(--ink2)}
 
@@ -406,13 +412,13 @@ const LEX = [
 {id:'morgen',u:1,w:'morgen',p:'adv',d:'de dag na vandaag',en:'tomorrow',s:'Morgen neem ik de tram.',se:'Tomorrow I’m taking the tram.'},
 {id:'vandaag',u:1,w:'vandaag',p:'adv',d:'deze dag',en:'today',s:'Vandaag fiets ik naar het werk.',se:'Today I’m cycling to work.'},
 {id:'nemen',u:1,w:'nemen',p:'v',d:'iets pakken; ook: een tram of bus gebruiken',en:'to take',s:'Ik neem de tram naar het station.',se:'I take the tram to the station.',v:{t:'s',st:'neem',im:['nam','namen'],pp:'genomen',aux:'h',fam:'e – a – o'}},
-{id:'gaan',u:1,w:'gaan',p:'v',d:'zich verplaatsen naar een andere plek',en:'to go',s:'Welke tram gaat naar de Groenplaats?',se:'Which tram goes to the Groenplaats?',v:{t:'o',st:'ga',im:['ging','gingen'],pp:'gegaan',aux:'z',o:{jij:'gaat',u:'gaat',hij:'gaat',ge:'gaat'}}},
+{id:'gaan',u:1,w:'gaan',p:'v',d:'zich verplaatsen naar een andere plek',en:'to go',s:'Welke tram gaat naar de Groenplaats?',se:'Which tram goes to the Groenplaats?',v:{t:'o',st:'ga',im:['ging','gingen'],pp:'gegaan',aux:'z',o:{jij:'gaat',u:'gaat',hij:'gaat'}}},
 {id:'komen',u:1,w:'komen',p:'v',d:'naar deze plek gaan; hierheen gaan',en:'to come',s:'De tram komt om acht uur.',se:'The tram comes at eight.',v:{t:'s',st:'kom',im:['kwam','kwamen'],pp:'gekomen',aux:'z',fam:'o – a – o'}},
 {id:'wonen',u:1,w:'wonen',p:'v',d:'je huis hebben op een plek',en:'to live (reside)',s:'Ik woon in Antwerpen.',se:'I live in Antwerp.',v:{t:'w',st:'woon',im:['woonde','woonden'],pp:'gewoond',aux:'h'}},
 {id:'zoeken',u:1,w:'zoeken',p:'v',d:'proberen iets te vinden',en:'to look for',s:'Ik zoek de Meir.',se:'I’m looking for the Meir.',v:{t:'o',st:'zoek',im:['zocht','zochten'],pp:'gezocht',aux:'h'}},
 {id:'zien',u:1,w:'zien',p:'v',d:'met je ogen iets opmerken',en:'to see',s:'Op het plein zie ik de kathedraal.',se:'On the square I see the cathedral.',v:{t:'o',st:'zie',im:['zag','zagen'],pp:'gezien',aux:'h'}},
 {id:'fietsen',u:1,w:'fietsen',p:'v',d:'rijden op een fiets',en:'to cycle',s:'Vandaag fiets ik naar het werk.',se:'Today I’m cycling to work.',v:{t:'w',st:'fiets',im:['fietste','fietsten'],pp:'gefietst',aux:'hz'}},
-{id:'zijn',u:1,w:'zijn',p:'v',d:'het belangrijkste werkwoord: bestaan, of ergens staan of liggen',en:'to be',s:'De halte is om de hoek.',se:'The stop is around the corner.',v:{t:'o',st:'ben',im:['was','waren'],pp:'geweest',aux:'z',imp:'wees',o:{ik:'ben',jij:'bent',inv:'ben',u:'bent',hij:'is',pl:'zijn',ge:'zijt'}}},
+{id:'zijn',u:1,w:'zijn',p:'v',d:'het belangrijkste werkwoord: bestaan, of ergens staan of liggen',en:'to be',s:'De halte is om de hoek.',se:'The stop is around the corner.',v:{t:'o',st:'ben',im:['was','waren'],pp:'geweest',aux:'z',imp:'wees',o:{ik:'ben',jij:'bent',inv:'ben',u:'bent',hij:'is',pl:'zijn'}}},
 
 /* ---------- Unit 2 · Theaterbuurt (Vogelmarkt) ---------- */
 {id:'plant',u:2,w:'plant',p:'n',g:'de',pl:'planten',dim:'plantje',d:'iets dat groeit, met wortels en bladeren',en:'plant',s:'Ik neem de plant mee.',se:'I’m taking the plant with me.'},
@@ -438,7 +444,7 @@ const LEX = [
 {id:'uitstappen',u:2,w:'uitstappen',p:'v',d:'uit de tram, bus of trein gaan',en:'to get off',s:'Aan de Groenplaats stap ik uit.',se:'I get off at the Groenplaats.',v:{t:'w',sep:'uit',st:'stap',im:['stapte','stapten'],pp:'gestapt',aux:'z'}},
 {id:'ophalen',u:2,w:'ophalen',p:'v',d:'iets of iemand gaan halen',en:'to pick up',s:'Ik haal de bloemen morgen op.',se:'I’ll pick up the flowers tomorrow.',v:{t:'w',sep:'op',st:'haal',im:['haalde','haalden'],pp:'gehaald',aux:'h'}},
 {id:'aankomen',u:2,w:'aankomen',p:'v',d:'op een plek komen na een reis',en:'to arrive',s:'Hoe laat komt de tram aan?',se:'What time does the tram arrive?',v:{t:'s',sep:'aan',st:'kom',im:['kwam','kwamen'],pp:'gekomen',aux:'z',fam:'o – a – o'}},
-{id:'opstaan',u:2,w:'opstaan',p:'v',d:'uit je bed komen',en:'to get up',s:'Op zondag sta ik vroeg op.',se:'On Sunday I get up early.',v:{t:'o',sep:'op',st:'sta',im:['stond','stonden'],pp:'gestaan',aux:'z',o:{jij:'staat',u:'staat',hij:'staat',ge:'staat'}}},
+{id:'opstaan',u:2,w:'opstaan',p:'v',d:'uit je bed komen',en:'to get up',s:'Op zondag sta ik vroeg op.',se:'On Sunday I get up early.',v:{t:'o',sep:'op',st:'sta',im:['stond','stonden'],pp:'gestaan',aux:'z',o:{jij:'staat',u:'staat',hij:'staat'}}},
 {id:'kosten',u:2,w:'kosten',p:'v',d:'een prijs hebben',en:'to cost',s:'Hoeveel kost die pot?',se:'How much does that pot cost?',v:{t:'w',st:'kost',im:['kostte','kostten'],pp:'gekost',aux:'h'}},
 
 /* ---------- Unit 3 · Oude Stad (frietkot) ---------- */
@@ -469,7 +475,7 @@ const LEX = [
 {id:'bestellen',u:3,w:'bestellen',p:'v',d:'vragen om eten of iets anders te krijgen',en:'to order',s:'Ik bestel een pak frieten.',se:'I order a portion of fries.',v:{t:'w',st:'bestel',im:['bestelde','bestelden'],pp:'besteld',aux:'h'},why:'Verbs starting with <i>be-</i>, <i>ge-</i>, <i>ver-</i> get no extra <i>ge-</i>: <i>besteld</i>, not <i>gebesteld</i>.'},
 {id:'eten',u:3,w:'eten',p:'v',d:'voedsel in je mond nemen en doorslikken',en:'to eat',s:'Het meisje eet een wafel.',se:'The girl is eating a waffle.',v:{t:'s',st:'eet',im:['at','aten'],pp:'gegeten',aux:'h',fam:'e – a – e'}},
 {id:'drinken',u:3,w:'drinken',p:'v',d:'iets vloeibaars in je mond nemen en doorslikken',en:'to drink',s:'Wij drinken een pintje.',se:'We’re having a beer.',v:{t:'s',st:'drink',im:['dronk','dronken'],pp:'gedronken',aux:'h',fam:'i – o – o'}},
-{id:'hebben',u:3,w:'hebben',p:'v',d:'iets bezitten; het is van jou',en:'to have',s:'Heb jij een vorkje voor mij?',se:'Do you have a little fork for me?',v:{t:'o',st:'heb',im:['had','hadden'],pp:'gehad',aux:'h',o:{ik:'heb',jij:'hebt',inv:'heb',u:'hebt',hij:'heeft',pl:'hebben',ge:'hebt'}}},
+{id:'hebben',u:3,w:'hebben',p:'v',d:'iets bezitten; het is van jou',en:'to have',s:'Heb jij een vorkje voor mij?',se:'Do you have a little fork for me?',v:{t:'o',st:'heb',im:['had','hadden'],pp:'gehad',aux:'h',o:{ik:'heb',jij:'hebt',inv:'heb',u:'hebt',hij:'heeft',pl:'hebben'}}},
 {id:'liggen',u:3,w:'liggen',p:'v',d:'plat op iets rusten',en:'to lie (be lying)',s:'Het mesje ligt naast het bord.',se:'The little knife is next to the plate.',v:{t:'s',st:'lig',im:['lag','lagen'],pp:'gelegen',aux:'h',fam:'i – a – e'}},
 {id:'krijgen',u:3,w:'krijgen',p:'v',d:'iets ontvangen van iemand',en:'to get, receive',s:'Bij de koffie krijg je een koekje.',se:'With coffee you get a biscuit.',v:{t:'s',st:'krijg',im:['kreeg','kregen'],pp:'gekregen',aux:'h',fam:'ij – ee – e'}},
 ];
@@ -650,8 +656,8 @@ u3:{prompt:'Schrijf 3 à 5 zinnen: je bestelt eten en drinken aan het frietkot. 
 /* ===== Batch 2 content: Towns 4–6 ===== */
 LEX.push(
 /* ---------- Unit 4 · Koffiehaven (modal verbs) ---------- */
-{id:'willen',u:4,w:'willen',p:'v',d:'iets graag hebben of doen',en:'to want',s:'Ik wil een broodje kopen.',se:'I want to buy a roll.',v:{t:'o',st:'wil',im:['wilde','wilden'],pp:'gewild',aux:'h',o:{ik:'wil',jij:'wilt',inv:'wil',u:'wilt',hij:'wil',pl:'willen',ge:'wilt'},alt:{jij:['wil'],u:['wil']}},why:'Both <i>jij wil</i> and <i>jij wilt</i> are correct; in Flanders you mostly hear <i>wil</i>. In the past you also hear <i>wou</i>.'},
-{id:'kunnen',u:4,w:'kunnen',p:'v',d:'iets goed genoeg doen; het is mogelijk',en:'can, to be able to',s:'Kan ik met de kaart betalen?',se:'Can I pay by card?',v:{t:'o',st:'kan',im:['kon','konden'],pp:'gekund',aux:'h',o:{ik:'kan',jij:'kunt',inv:'kun',u:'kunt',hij:'kan',pl:'kunnen',ge:'kunt'},alt:{jij:['kan'],u:['kan'],inv:['kan']}},why:'<i>jij kunt</i> and <i>jij kan</i> are both correct; Flemish speakers usually say <i>kan</i>.'},
+{id:'willen',u:4,w:'willen',p:'v',d:'iets graag hebben of doen',en:'to want',s:'Ik wil een broodje kopen.',se:'I want to buy a roll.',v:{t:'o',st:'wil',im:['wilde','wilden'],pp:'gewild',aux:'h',o:{ik:'wil',jij:'wilt',inv:'wil',u:'wilt',hij:'wil',pl:'willen'},alt:{jij:['wil'],u:['wil']}},why:'Both <i>jij wil</i> and <i>jij wilt</i> are correct; in Flanders you mostly hear <i>wil</i>. In the past you also hear <i>wou</i>.'},
+{id:'kunnen',u:4,w:'kunnen',p:'v',d:'iets goed genoeg doen; het is mogelijk',en:'can, to be able to',s:'Kan ik met de kaart betalen?',se:'Can I pay by card?',v:{t:'o',st:'kan',im:['kon','konden'],pp:'gekund',aux:'h',o:{ik:'kan',jij:'kunt',inv:'kun',u:'kunt',hij:'kan',pl:'kunnen'},alt:{jij:['kan'],u:['kan'],inv:['kan']}},why:'<i>jij kunt</i> and <i>jij kan</i> are both correct; Flemish speakers usually say <i>kan</i>.'},
 {id:'brood',u:4,w:'brood',p:'n',g:'het',pl:'broden',dim:'broodje',d:'eten dat de bakker bakt van meel en water',en:'bread',s:'Het brood is nog warm.',se:'The bread is still warm.'},
 {id:'taart',u:4,w:'taart',p:'n',g:'de',pl:'taarten',dim:'taartje',d:'een zoet, rond gebak voor een feest of bij de koffie',en:'cake, tart',s:'Wij willen graag een taart bestellen.',se:'We would like to order a cake.'},
 {id:'bakker',u:4,w:'bakker',p:'n',g:'de',pl:'bakkers',dim:null,d:'iemand die brood en taart maakt en verkoopt; ook: zijn winkel',en:'baker',s:'De bakker opent om zeven uur.',se:'The baker opens at seven.',why:'People doing a job (<i>-er</i>) are <i>de</i>.'},
@@ -659,7 +665,7 @@ LEX.push(
 {id:'betalen',u:4,w:'betalen',p:'v',d:'geld geven voor iets dat je koopt',en:'to pay',s:'Kan ik met de kaart betalen?',se:'Can I pay by card?',v:{t:'w',st:'betaal',im:['betaalde','betaalden'],pp:'betaald',aux:'h'},why:'Starts with <i>be-</i>, so no extra <i>ge-</i>: <i>betaald</i>.'},
 {id:'kaart',u:4,w:'kaart',p:'n',g:'de',pl:'kaarten',dim:'kaartje',d:'een plat stukje plastic of papier; om te betalen of als plan van een stad',en:'card; map',s:'Kan ik met de kaart betalen?',se:'Can I pay by card?'},
 {id:'graag',u:4,w:'graag',p:'adv',d:'met plezier; zoals je het wilt',en:'gladly, would like',s:'Wij willen graag een taart bestellen.',se:'We would like to order a cake.',note:'<i>Ik wil graag…</i> is the polite way to ask for something.'},
-{id:'mogen',u:4,w:'mogen',p:'v',d:'toestemming hebben om iets te doen',en:'may, to be allowed to',s:'Mag ik de rekening, alstublieft?',se:'May I have the bill, please?',v:{t:'o',st:'mag',im:['mocht','mochten'],pp:'gemogen',aux:'h',o:{ik:'mag',jij:'mag',inv:'mag',u:'mag',hij:'mag',pl:'mogen',ge:'moogt'}},why:'<i>Mag ik…?</i> is the standard polite request in a café or shop.'},
+{id:'mogen',u:4,w:'mogen',p:'v',d:'toestemming hebben om iets te doen',en:'may, to be allowed to',s:'Mag ik de rekening, alstublieft?',se:'May I have the bill, please?',v:{t:'o',st:'mag',im:['mocht','mochten'],pp:'gemogen',aux:'h',o:{ik:'mag',jij:'mag',inv:'mag',u:'mag',hij:'mag',pl:'mogen'}},why:'<i>Mag ik…?</i> is the standard polite request in a café or shop.'},
 {id:'glas',u:4,w:'glas',p:'n',g:'het',pl:'glazen',dim:'glaasje',d:'iets doorzichtigs waaruit je drinkt',en:'glass',s:'Mag ik een glas water?',se:'May I have a glass of water?'},
 {id:'thee',u:4,w:'thee',p:'n',g:'de',pl:'theeën',dim:'theetje',d:'een warme drank van gedroogde blaadjes',en:'tea',s:'Ik drink mijn thee met melk en suiker.',se:'I drink my tea with milk and sugar.'},
 {id:'melk',u:4,w:'melk',p:'n',g:'de',pl:null,dim:null,d:'een witte drank van de koe',en:'milk',s:'Ik drink mijn thee met melk en suiker.',se:'I drink my tea with milk and sugar.'},
@@ -668,7 +674,7 @@ LEX.push(
 {id:'tafel',u:4,w:'tafel',p:'n',g:'de',pl:'tafels',dim:'tafeltje',d:'een meubel met een plat blad waar je aan eet of werkt',en:'table',s:'Mogen wij aan deze tafel zitten?',se:'May we sit at this table?'},
 {id:'alstublieft',u:4,w:'alstublieft',p:'adv',d:'beleefd woord als je iets vraagt of iets geeft',en:'please; here you are',s:'Mag ik de rekening, alstublieft?',se:'May I have the bill, please?',note:'In België zeg je het ook als je iets geeft. Tegen vrienden: <i>alsjeblieft</i>.'},
 {id:'moeten',u:4,w:'moeten',p:'v',d:'het is nodig; je hebt geen keuze',en:'must, to have to',s:'We moeten om vijf uur vertrekken.',se:'We have to leave at five.',v:{t:'o',st:'moet',im:['moest','moesten'],pp:'gemoeten',aux:'h'}},
-{id:'zullen',u:4,w:'zullen',p:'v',d:'voor iets in de toekomst; of om iets voor te stellen',en:'shall, will',s:'Zullen we samen een koffie drinken?',se:'Shall we have a coffee together?',v:{t:'o',st:'zal',im:['zou','zouden'],pp:'—',aux:'h',o:{ik:'zal',jij:'zult',inv:'zul',u:'zult',hij:'zal',pl:'zullen',ge:'zult'},alt:{jij:['zal'],u:['zal'],inv:['zal']}},why:'<i>Zullen we…?</i> makes a suggestion: “Shall we…?”'},
+{id:'zullen',u:4,w:'zullen',p:'v',d:'voor iets in de toekomst; of om iets voor te stellen',en:'shall, will',s:'Zullen we samen een koffie drinken?',se:'Shall we have a coffee together?',v:{t:'o',st:'zal',im:['zou','zouden'],pp:'—',aux:'h',o:{ik:'zal',jij:'zult',inv:'zul',u:'zult',hij:'zal',pl:'zullen'},alt:{jij:['zal'],u:['zal'],inv:['zal']}},why:'<i>Zullen we…?</i> makes a suggestion: “Shall we…?”'},
 {id:'vertrekken',u:4,w:'vertrekken',p:'v',d:'weggaan van een plek',en:'to leave, depart',s:'De boot vertrekt straks uit de haven.',se:'The boat leaves the harbour soon.',v:{t:'s',st:'vertrek',im:['vertrok','vertrokken'],pp:'vertrokken',aux:'z',fam:'e – o – o'},why:'Starts with <i>ver-</i>, so no extra <i>ge-</i>: <i>vertrokken</i>.'},
 {id:'wachten',u:4,w:'wachten',p:'v',d:'blijven tot iets of iemand komt',en:'to wait',s:'Je moet hier even wachten.',se:'You have to wait here a moment.',v:{t:'w',st:'wacht',im:['wachtte','wachtten'],pp:'gewacht',aux:'h'}},
 {id:'boot',u:4,w:'boot',p:'n',g:'de',pl:'boten',dim:'bootje',d:'een voertuig dat over het water vaart',en:'boat',s:'De boot vertrekt straks uit de haven.',se:'The boat leaves the harbour soon.'},
@@ -1457,7 +1463,7 @@ function vForms(l) {
   const stT = v.st.endsWith('t') ? v.st : v.st + 't';
   const f = {
     ik: o.ik || v.st, jij: o.jij || stT, inv: o.inv || v.st, u: o.u || stT, hij: o.hij || stT,
-    pl: o.pl || base, ge: o.ge || stT, im: v.im, pp: v.pp, aux: v.aux, imp: v.imp || v.st, base, sep: v.sep || ''
+    pl: o.pl || base, im: v.im, pp: v.pp, aux: v.aux, imp: v.imp || v.st, base, sep: v.sep || ''
   };
   return f;
 }
@@ -1493,7 +1499,7 @@ function stemNote(l) {
   if (m && st.endsWith(m[2] + m[2] + m[3])) return `The vowel is doubled to stay long in a closed syllable: <i>${inf.replace(/en$/, '')}·en</i> → <i>${st}</i>.`;
   return '';
 }
-const PERSON_LABEL = {ik:'ik', jij:'jij / je', inv:'… jij? (omgekeerd)', u:'u', hij:'hij / zij / het', pl:'wij · jullie · zij', ge:'ge / gij (spreektaal)'};
+const PERSON_LABEL = {ik:'ik', jij:'jij / je', inv:'… jij? (omgekeerd)', u:'u', hij:'hij / zij / het', pl:'wij · jullie · zij'};
 function personRule(p) {
   return {
     ik:'<i>ik</i> takes just the stem.',
@@ -1523,6 +1529,7 @@ function migrate() {
   S.settings = Object.assign({}, def, S.settings || {});
   S.settings.praten = Object.assign({}, def.praten, S.settings.praten || {});
   delete S.settings.praten.vertaling; // 2.7: translations are off for good
+  Object.values(S.custom || {}).forEach(l => { if (l.v && l.v.o) delete l.v.o.ge; }); // 2.11: no ge / gij forms
   S.settings.praten.verbeteren = 'einde'; // 2.8: corrections only at the end of a conversation, never in between
   if (S.settings.talkAudio === undefined) S.settings.talkAudio = true;
   if (S.v < 3) { Object.keys(S.seen).forEach(id => { if (S.seenAt[id] === undefined) S.seenAt[id] = 0; }); S.v = 3; }
@@ -1967,7 +1974,6 @@ function conjTable(l) {
   <table class="conj"><tbody>
   <tr><td colspan="2" class="eyebrow" style="padding-top:10px" data-en="present">Tegenwoordige tijd</td></tr>
   ${rows.map(r => `<tr><td>${r[0]}</td><td>${esc(r[1])}</td></tr>`).join('')}
-  <tr class="spoken"><td>ge / gij <span class="small">(spreektaal)</span></td><td>${esc(sp(f.ge))}</td></tr>
   <tr><td colspan="2" class="eyebrow" style="padding-top:12px" data-en="simple past">Verleden tijd</td></tr>
   <tr><td>ik / jij / hij</td><td>${esc(sp(f.im[0]))}</td></tr><tr><td>wij / jullie / zij</td><td>${esc(sp(f.im[1]))}</td></tr>
   <tr><td colspan="2" class="eyebrow" style="padding-top:12px" data-en="present perfect">Voltooide tijd</td></tr>
@@ -3096,7 +3102,34 @@ function feedAppend() {
     const fid = 'f' + (FEED.fid++); c.fid = fid; FC[fid] = c;
     const sec = document.createElement('section'); sec.className = 'fcard'; sec.dataset.fid = fid;
     sec.innerHTML = fcardHTML(c); box.appendChild(sec); FEED.io.observe(sec);
+    if (c.kind === 'w') feedSwipe(sec, fid);
   });
+}
+// 2.11: Wist ik / Nog niet sends the card off to the right or left, then the next card scrolls in
+function feedKnew(fid, ok) {
+  const c = FC[fid]; const sec = document.querySelector(`.fcard[data-fid="${fid}"]`); if (!c || !sec || c.done) return; c.done = true;
+  grade('w:' + c.l.id + ':rec', ok);
+  $$('[data-act="fknew"]', sec).forEach(b => { b.disabled = true; if ((b.dataset.ok === '1') === ok) b.style.outline = '2px solid var(--gold)'; });
+  const fin = $('.fin', sec); fin.style.transform = ''; fin.classList.add(ok ? 'fly-right' : 'fly-left');
+  setTimeout(() => {
+    const next = sec.nextElementSibling; const box = $('#fscroll'); if (next && box) box.scrollTo({top: next.offsetTop, behavior: reduceMotion ? 'auto' : 'smooth'});
+    setTimeout(() => fin.classList.remove('fly-right', 'fly-left'), 600); // back in place, graded, if you scroll back up
+  }, reduceMotion ? 0 : 280);
+}
+// a sideways swipe on a 'Ken je dit woord?' card: right = Wist ik, left = Nog niet; up and down still scroll
+function feedSwipe(sec, fid) {
+  const fin = $('.fin', sec); let x0 = null, y0 = 0, dx = 0, side = false;
+  fin.addEventListener('pointerdown', e => { if (FC[fid].done || e.target.closest('button')) return; x0 = e.clientX; y0 = e.clientY; dx = 0; side = false; });
+  fin.addEventListener('pointermove', e => {
+    if (x0 === null) return; dx = e.clientX - x0; const dy = e.clientY - y0;
+    if (!side && Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.5) side = true;
+    if (!side) { if (Math.abs(dy) > 12) x0 = null; return; }
+    fin.style.transition = 'none'; fin.style.transform = `translateX(${dx}px) rotate(${dx / 24}deg)`;
+    sec.classList.toggle('lean-right', dx > 60); sec.classList.toggle('lean-left', dx < -60);
+  });
+  const end = () => { if (x0 === null) return; x0 = null; sec.classList.remove('lean-right', 'lean-left'); fin.style.transition = '';
+    if (side && Math.abs(dx) > 80) return feedKnew(fid, dx > 0); fin.style.transform = ''; };
+  fin.addEventListener('pointerup', end); fin.addEventListener('pointercancel', () => { x0 = null; fin.style.transform = ''; sec.classList.remove('lean-right', 'lean-left'); });
 }
 function fcardHTML(c) {
   const hint = '<div class="fhint">veeg omhoog</div>';
@@ -3109,7 +3142,7 @@ function fcardHTML(c) {
     const l = c.l; const isNew = c.kind === 'n';
     return `<div class="fin"><div class="kind">${isNew ? 'Nieuw woord' : 'Ken je dit woord?'}</div><div class="spread"><div class="wc-word">${wordHTML(l)}</div>${speakBtn((l.g ? l.g + ' ' : '') + l.w)}</div>${l.s ? `<div class="nl" style="font-size:18px">${highlight(l.s, l.w)}</div>` : ''}
       <div class="fback" ${isNew ? '' : 'hidden'}><div class="nl" style="font-size:17px">${esc(l.d)}</div>${relHTML(l)}${l.pl ? `<div class="small">mv: de ${esc(l.pl)}${l.dim ? ' · het ' + esc(l.dim) : ''}</div>` : ''}<button class="en-hidden" data-act="reveal-en" data-en-text="${esc(l.en)}" style="margin-top:8px">Toon Engels</button></div>
-      ${isNew ? '' : `<button class="btn line fshow" data-act="freveal" data-fid="${c.fid}">Toon betekenis</button><div class="grid2 fgrade" hidden><button class="btn line" data-act="fknew" data-fid="${c.fid}" data-ok="0">Nog niet</button><button class="btn" data-act="fknew" data-fid="${c.fid}" data-ok="1">Wist ik</button></div>`}</div>`;
+      ${isNew ? '' : `<button class="btn line fshow" data-act="freveal" data-fid="${c.fid}">Toon betekenis</button><div class="grid2 fgrade" hidden><button class="btn line" data-act="fknew" data-fid="${c.fid}" data-ok="0">Nog niet</button><button class="btn" data-act="fknew" data-fid="${c.fid}" data-ok="1">Wist ik</button></div><div class="small muted" style="text-align:center" data-en="Swipe left: not yet · swipe right: knew it">← nog niet · veeg · wist ik →</div>`}</div>`;
   }
   if (c.kind === 'x') {
     const x = c.x; const lab = {straat: 'Straatnaam', vlaams: 'Vlaams dat je hoort', cultuur: 'Zo doen ze het hier'}[x.t];
@@ -5253,7 +5286,7 @@ document.addEventListener('click', e => {
     case 'fans': feedAnswer(d.fid, d.v); break;
     case 'flis': feedListen(d.fid, d.j); break;
     case 'freveal': { const sec = el.closest('.fcard'); $('.fback', sec).hidden = false; el.hidden = true; const g = $('.fgrade', sec); if (g) g.hidden = false; break; }
-    case 'fknew': { const c = FC[d.fid]; if (c && !c.done) { c.done = true; grade('w:' + c.l.id + ':rec', d.ok === '1'); } $$('[data-act="fknew"]', el.closest('.fcard')).forEach(b => { b.disabled = true; if (b === el) b.style.outline = '2px solid var(--gold)'; }); break; }
+    case 'fknew': feedKnew(d.fid, d.ok === '1'); break;
   }
 });
 document.addEventListener('keydown', e => {

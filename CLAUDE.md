@@ -16,6 +16,7 @@ A Flemish (Belgian Dutch) learning app for one learner (Antwerp, A2 → C1). It 
 ## The three card modes
 - **Herhalen** tests: the review schedule decides, you type, order and fix. Every answer counts.
 - **Scroll** practises with one tap, never typing: multiple choice, de/het, word cards, synonym/antonym and definition cards, conjugation in a sentence. Synonym, antonym and definition cards stay in Scroll only.
+  - 2.11: on a *Ken je dit woord?* card, Wist ik / Nog niet (a tap or a swipe right / left) sends the card sideways and the next one scrolls in (`feedKnew`, `feedSwipe` in `app5.js`). A Scroll card never grows past its own screen. Verbs have no ge / gij forms (not in the overview, not in the data).
 - **Kaarten** studies a group the user picks (a set, theme, town or part of speech): flip, then knew it / not yet.
 - All three share the word card, the feedback (right/wrong, the answer, why) and the colours.
 - Every card names its kind in one label pill at the top (`kindLabel`), e.g. *⇄ Tegenovergestelde*. A multiple-choice card always has at least three choices, and exactly one of them fits.

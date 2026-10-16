@@ -53,7 +53,7 @@ function vForms(l) {
   const stT = v.st.endsWith('t') ? v.st : v.st + 't';
   const f = {
     ik: o.ik || v.st, jij: o.jij || stT, inv: o.inv || v.st, u: o.u || stT, hij: o.hij || stT,
-    pl: o.pl || base, ge: o.ge || stT, im: v.im, pp: v.pp, aux: v.aux, imp: v.imp || v.st, base, sep: v.sep || ''
+    pl: o.pl || base, im: v.im, pp: v.pp, aux: v.aux, imp: v.imp || v.st, base, sep: v.sep || ''
   };
   return f;
 }
@@ -89,7 +89,7 @@ function stemNote(l) {
   if (m && st.endsWith(m[2] + m[2] + m[3])) return `The vowel is doubled to stay long in a closed syllable: <i>${inf.replace(/en$/, '')}·en</i> → <i>${st}</i>.`;
   return '';
 }
-const PERSON_LABEL = {ik:'ik', jij:'jij / je', inv:'… jij? (omgekeerd)', u:'u', hij:'hij / zij / het', pl:'wij · jullie · zij', ge:'ge / gij (spreektaal)'};
+const PERSON_LABEL = {ik:'ik', jij:'jij / je', inv:'… jij? (omgekeerd)', u:'u', hij:'hij / zij / het', pl:'wij · jullie · zij'};
 function personRule(p) {
   return {
     ik:'<i>ik</i> takes just the stem.',
@@ -119,6 +119,7 @@ function migrate() {
   S.settings = Object.assign({}, def, S.settings || {});
   S.settings.praten = Object.assign({}, def.praten, S.settings.praten || {});
   delete S.settings.praten.vertaling; // 2.7: translations are off for good
+  Object.values(S.custom || {}).forEach(l => { if (l.v && l.v.o) delete l.v.o.ge; }); // 2.11: no ge / gij forms
   S.settings.praten.verbeteren = 'einde'; // 2.8: corrections only at the end of a conversation, never in between
   if (S.settings.talkAudio === undefined) S.settings.talkAudio = true;
   if (S.v < 3) { Object.keys(S.seen).forEach(id => { if (S.seenAt[id] === undefined) S.seenAt[id] = 0; }); S.v = 3; }
