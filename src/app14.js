@@ -59,6 +59,7 @@ function startBlock(o) {
     lines.push(`taak: ${sc.title}. ${sc.goal}`);
     lines.push(`scène: ${sc.id} · Jij bent ${sc.role} · opener: "${sc.open}"`);
     lines.push('doel: ' + doelParts(sc.doel || sc.goal).map((x, i) => `${i + 1}) ${x}`).join(' · '));
+    lines.push('kanaal: ' + (P.kanaal === 'schrijven' ? 'schrijven' : 'spreken')); // 2.9: spoken (voice mode) or typed
   }
   if (mode === 'dagboek') lines.push('taak: vertel over je dag of je les');
   if (mode === 'foto') lines.push('taak: verwerk de foto');
@@ -81,6 +82,7 @@ function openPraten(o = {}) {
 }
 // 2.8: the opdracht shows its goal before you copy the block: who Claude plays, what you do, and what counts as a pass
 const doelParts = d => String(d || '').split(/ en (?![^(]*\))/).map(x => x.trim()).filter(Boolean).map(x => x[0].toUpperCase() + x.slice(1));
+const kanaalOf = () => S.settings.praten.kanaal === 'schrijven' ? 'schrijven' : 'spreken';
 function opdrachtCard(R) {
   const q = R.u ? marktId(R.u) : (R.q && PSQ[R.q] ? R.q : nextSquare()); const sq = PSQ[q]; const sc = sceneFor(sq.u);
   const where = sq.review ? 'Grote Markt van ' + PT[sq.u].name : 'Plein ' + sq.n + ' ' + sq.name; const done = stepDone(q, 'gebruik') && S.sq[q].steps.gebruik;
@@ -91,6 +93,9 @@ function opdrachtCard(R) {
         <div class="gr"><span class="gk" data-en="Claude plays">Claude is</span><span class="gv">${esc(sc.role)}</span></div>
         <div class="gr"><span class="gk" data-en="You">Jij</span><span class="gv nl" data-en="${esc(sc.goalEn || '')}">${esc(sc.goal)}</span></div>
       </div>
+      <div class="eyebrow" data-en="How">Hoe doe je het?</div>
+      <div class="row wrap" role="radiogroup">${[['spreken', 'Spreken', 'Speaking'], ['schrijven', 'Schrijven', 'Writing']].map(([v, l, en]) => `<button type="button" class="chip${kanaalOf() === v ? ' on' : ''}" data-pr="kanaal" data-v="${v}" role="radio" aria-checked="${kanaalOf() === v}" data-en="${en}">${l}</button>`).join('')}</div>
+      <div class="small">${kanaalOf() === 'schrijven' ? 'Typ je antwoorden in Claude. Telt voor <b>Schrijven</b> bij Ik.' : 'Zet in Claude de stem aan en praat. Telt voor <b>Spreken</b> bij Ik.'}</div>
       <div class="eyebrow" data-en="To pass">Om te slagen</div>
       <ul class="doel">${doelParts(sc.doel || sc.goal).map(x => `<li class="nl">${esc(x)}</li>`).join('')}</ul>
       <div class="small">Je score: <b>70%</b> voor de doelen en <b>30%</b> voor juistheid (hoe minder fouten per beurt, hoe meer). Vanaf <b>80%</b> is Gebruik gehaald en krijgt het huis zijn vlag als je het verslag plakt en bewaart.</div>
@@ -157,6 +162,7 @@ const planId = id => (typeof id === 'string' && PSQ[id] && !PSQ[id].review) ? id
 function cleanReport(d) {
   const r = {v: d.v, modus: MODES.some(m => m[0] === d.modus) ? d.modus : 'onderwerp', datum: /^\d{4}-\d\d-\d\d$/.test(d.datum) ? d.datum : dateKey(), onderwerp: str(d.onderwerp, 120) || 'Gesprek met Claude',
     plein: typeof d.plein === 'string' && PSQ[d.plein] ? d.plein : null, beurten: Number.isFinite(+d.beurten) ? +d.beurten : 0, doelBereikt: d.doelBereikt === true || d.doelBereikt === 'true',
+    kanaal: d.kanaal === 'schrijven' ? 'schrijven' : 'spreken',
     doelen: arr(d.doelen).slice(0, 6).map(x => x === true || x === 'true' ? 1 : Number.isFinite(+x) && x !== false && x !== null && x !== '' ? Math.max(0, Math.min(1, +x)) : 0),
     samenvatting: str(d.samenvatting, 800), tip: str(d.tip, 400), tekst: str(d.tekst, 4000), bron: str(d.bron, 200)};
   const topic = t => t && typeof t === 'object' && str(t.title) ? {title: str(t.title, 80), town: PT[t.town] ? t.town : null, rule: str(t.rule), examples: arr(t.examples).filter(x => x && str(x.nl) && str(x.en)).map(x => ({nl: str(x.nl, 200), en: str(x.en, 200)}))} : null;
@@ -231,7 +237,7 @@ function reportStatus(r) {
   const mark = x => x >= 1 ? '✓' : x > 0 ? '½' : '✗';
   return `<div class="card soft stack ${g.pass ? 'ok-card' : 'warn-card'}" style="gap:6px">
     <div style="font-size:18px"><b>Gebruik: ${g.score}%</b> · ${g.pass ? 'gehaald' : 'nog niet gehaald (80% nodig)'}</div>
-    <div class="small">${esc(where)}</div>
+    <div class="small">${esc(where)} · ${r.kanaal === 'schrijven' ? 'Schrijven' : 'Spreken'}</div>
     <div class="small">Doelen: <b>${g.goalPts}</b> van 70</div>
     <ul class="doel got">${g.parts.map((x, i) => `<li class="nl" data-mark="${mark(g.got[i])}">${esc(x)}${g.got[i] > 0 && g.got[i] < 1 ? ` <span class="small">(${Math.round(g.got[i] * 100)}%)</span>` : ''}</li>`).join('')}</ul>
     <div class="small">Juistheid: <b>${g.accPts}</b> van 30 · ${g.fouten} ${g.fouten === 1 ? 'fout' : 'fouten'} in ${g.beurten} ${g.beurten === 1 ? 'beurt' : 'beurten'}</div>
@@ -244,6 +250,8 @@ function saveReport(r, hash) {
   if (r.tekst) S.log.unshift({id: uid('l'), date: r.datum, mode: r.modus, source: 'claude', bron: r.bron, text: r.tekst, status: 'done'});
   // 2.8: Gebruik keeps its best score from 80% (a legacy 1 = done before scores, shown as gedaan and worth 100%)
   const g = r.modus === 'opdracht' ? gebruikScore(r) : null;
+  // 2.9: the best score per kanaal, from every attempt, feeds the Spreken and Schrijven meters under Ik
+  if (g) { const ss = sqstate(r.plein); ss.best = ss.best || {}; ss.best[r.kanaal] = Math.max(ss.best[r.kanaal] || 0, g.score); Store.mark('state'); }
   if (g && g.pass) { const ss = sqstate(r.plein); const old = ss.steps.gebruik; if (old !== 1) ss.steps.gebruik = Math.max(+old || 0, g.score); }
   (r.fill || []).forEach(x => applyFill(x.id, fillFor(x.id, x.f)));
 }
