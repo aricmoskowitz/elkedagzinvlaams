@@ -334,6 +334,21 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
     'Gebruik score: all goals + 2 fouten in 8 beurten = 93%, a third of one goal + 6 in 4 = 12%, an old report with doelBereikt = 100%, all goals + 6 in 8 = 78%, not gehaald (' + [op.full, op.part, op.old, op.many] + ')');
   ok(op.afterFail === undefined && op.afterPass === 93 && op.afterLower === 93 && op.lv === 1 && op.legacy === 2,
     'Gebruik saves: below 80% nothing, a pass stores its %, the best score stays, a done Gebruik from before scores counts as 100% (' + [op.afterFail, op.afterPass, op.afterLower, op.lv, op.legacy] + ')');
+  // 2.9: Spreken or Schrijven on the goal card; the Ik meters Lezen, Spreken and Schrijven use the best scores
+  const km = await t.evaluate(() => {
+    S.sq = {}; const n = SQUARES.filter(q => UNIT[q.u].built).length + UNITS.filter(u => u.built).length, nr = SQUARES.filter(q => UNIT[q.u].built && READ[q.id]).length;
+    const zero = [meterStat('lees'), meterStat('spreken'), meterStat('schrijven')];
+    openPraten({mode: 'opdracht', q: 'u2q2'}); document.querySelector('[data-pr=kanaal][data-v=schrijven]').click(); const blk = document.querySelector('#pr-block').value; const hint = document.querySelector('.opdr').textContent; closeSheet();
+    const C = k => Array.from({length: k}, () => ({wrong: 'ik zoekt', right: 'ik zoek', why: 'x'}));
+    const rep = (kanaal, doelen, c) => cleanReport({v: 1, modus: 'opdracht', datum: '2026-10-16', onderwerp: 'x', plein: 'u2q2', beurten: 8, kanaal, doelen, corrections: C(c)});
+    const r1 = rep('schrijven', [1, 1], 0), r2 = rep(undefined, [0.5, 0], 4); saveReport({...r1, words: [], fill: []}, 'k1'); saveReport({...r2, words: [], fill: []}, 'k2');
+    S.sq.u1q1 = {steps: {lees: 80}, best: {lees: 80}}; S.sq.u1q2 = {steps: {}, best: {lees: 60}}; S.sq.u1q3 = {steps: {gebruik: 1}};
+    const m = [meterStat('lees'), meterStat('spreken'), meterStat('schrijven')]; S.settings.praten.kanaal = 'spreken';
+    const ik = (TAB = 'ik', render(), document.body.textContent);
+    return {zero, blk: /\nkanaal: schrijven\n/.test(blk), hint: /Telt voor Schrijven/.test(hint), k1: r1.kanaal, k2: r2.kanaal, best: S.sq.u2q2.best, m, exp: [140 / 100 / nr, (100 + 33) / 100 / n, 100 / 100 / n], later: /later/.test(document.querySelector('.bar') ? $$('.bar').map(b => b.textContent).join() : 'later')}; });
+  const near = (a, b) => Math.abs(a - b) < 1e-9;
+  ok(km.zero.every(x => x === 0) && km.blk && km.hint && km.k1 === 'schrijven' && km.k2 === 'spreken' && km.best.schrijven === 100 && km.best.spreken === 33 && km.m.every((x, i) => near(x, km.exp[i])) && !km.later,
+    'Spreken/Schrijven: the goal card chooses the kanaal, the start block and report carry it (missing = spreken), the best score per kanaal is kept (' + JSON.stringify(km.best) + '); Ik shows Lezen, Spreken and Schrijven as % (' + km.m.map(x => Math.round(x * 100)) + ')');
   await T.close();
   if (T.errs.length) { console.log('PAGE ERRORS (brief 2)', T.errs); fails.push('page errors (brief 2)'); }
   if (errs.length) { console.log('PAGE ERRORS', errs); fails.push('page errors'); }

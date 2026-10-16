@@ -106,7 +106,7 @@ function personRule(p) {
    migrate() accepts a 1.5 state (v 2) unchanged and adds the 2.0 fields. */
 const LS_KEY = 'edz.v2';
 const LS_OLD = 'goesting.v1';
-const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', verbeteren:'einde', beurten:'6–8'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[], drip:{ids:[], day:0}, themes:{}, missions:{}});
+const blankState = () => ({v:3, savedAt:0, items:{}, sq:{}, cur:'u1q1', seen:{}, seenAt:{}, activity:{}, sets:[], custom:{}, coach:{}, settings:{rate:0.9, cap:60, voice:'', autoAudio:false, test:true, talkAudio:true, projectUrl:'', praten:{mode:'onderwerp', verbeteren:'einde', beurten:'6–8', kanaal:'spreken'}, lastBackup:0}, mission:{}, log:[], talks:[], fix:{}, extras:[], sic:{}, imports:[], drip:{ids:[], day:0}, themes:{}, missions:{}});
 function migrate() {
   if (!S.v || S.v < 2) { S.v = 2; S.sq = S.sq || {}; S.cur = 'u1q1'; S.coach = S.coach || {}; S.settings = Object.assign(blankState().settings, S.settings || {}, {test: true}); delete S.units; }
   if (!SQ[S.cur]) S.cur = 'u1q1';
@@ -193,6 +193,20 @@ function wordsKnown() {
   const ids = new Set(); Object.keys(S.items).forEach(k => { if (k[0] === 'w' && known(k)) ids.add(k.split(':')[1]); }); return ids.size;
 }
 function sentencesKnown() { const ids = new Set(); Object.keys(S.items).forEach(k => { if (k[0] === 's' && known(k)) ids.add(k.split(':')[1]); }); return ids.size; }
+// 2.9: Lezen, Spreken and Schrijven: the best score of every Lees text, or of every Gebruik opdracht in that kanaal,
+// summed over everything built (a square not done yet counts 0), like the other meters count the whole built plan.
+// A Gebruik done before 2.9 (steps.gebruik without best) counts for Spreken.
+function meterStat(kind) {
+  const built = SQUARES.filter(q => UNIT[q.u] && UNIT[q.u].built).map(q => q.id);
+  // Lees: every plein with a text; Gebruik: every plein and every Grote Markt (its opdracht)
+  const qs = kind === 'lees' ? built.filter(q => typeof READ !== 'undefined' && READ[q]) : built.concat(UNITS.filter(u => u.built).map(u => marktId(u.id)));
+  if (!qs.length) return 0;
+  const val = id => { const ss = S.sq[id] || {}; const b = ss.best || {}; const st = ss.steps || {};
+    if (kind === 'lees') return Math.max(b.lees || 0, +st.lees || 0);
+    const old = st.gebruik === 1 ? 100 : +st.gebruik || 0;
+    return Math.max(b[kind] || 0, kind === 'spreken' && !b.spreken && !b.schrijven ? old : 0); };
+  return qs.reduce((a, id) => a + Math.min(100, val(id)), 0) / qs.length / 100;
+}
 function skillStat(test) {
   const all = []; UNITS.filter(u => u.built).forEach(u => unitKeys(u.id).filter(test).forEach(k => all.push(k)));
   return all.length ? all.filter(known).length / all.length : 0;

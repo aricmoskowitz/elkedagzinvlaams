@@ -23,6 +23,7 @@ focus: Dat, of en vraagwoorden (u7q2) · kan: Ik kan uitleggen waarom (omdat…)
 taak: Een babbel met de buurvrouw. Zij vraagt wat je van Antwerpen vindt.
 scène: sc-u7 · Jij bent een nieuwsgierige buurvrouw in de trappenhal · opener: "Dag buur! U woont hier nog niet lang, hé? Wat vindt u van Antwerpen?"
 doel: 1) Zeg 3 keer waarom (omdat/want) · 2) Gebruik 1 keer "als"
+kanaal: spreken
 recent: vinden, weten, denken, hopen, buurt, zeker, mening, druk, regenen, paraplu
 zwak: u1q2 werkwoord op plaats 2 (4×) · u7q2 dat-zin (2×) · Algemeen: in het Nederlands (1×)
 instellingen: verbeteren op het einde · beurten 8–10
@@ -36,6 +37,7 @@ EDZ-EINDE
 | `focus` | all | the grammar of that square, plus the town's can-do |
 | `taak` | all | **onderwerp**: a suggested theme from the current town and weak spots. **opdracht**: the scene in one sentence. **dagboek**: `vertel over je dag of je les`. **foto**: `verwerk de foto` |
 | `scène`, `doel` | opdracht | the town's scene from `Scenes.md` and a measurable goal, in numbered parts |
+| `kanaal` | opdracht | `spreken` (the learner talks in voice mode) or `schrijven` (the learner types) |
 | `recent` | all | up to 30 words learned in the last 14 days (not new in the report) |
 | `zwak` | all | up to 5 open corrections, grouped by square, with counts |
 | `instellingen` | all | `verbeteren op het einde` (always: corrections only at the end; an older block may say `per beurt`, treat it the same) · target turns |
@@ -50,7 +52,7 @@ Claude writes this block. Between the markers there must be exactly one JSON obj
 
 ```
 EDZ-VERSLAG v1
-{"v":1,"modus":"opdracht","datum":"2026-10-12","onderwerp":"Een babbel met de buurvrouw","plein":"u7q2","beurten":9,"doelBereikt":true,"doelen":[1,1],
+{"v":1,"modus":"opdracht","datum":"2026-10-12","onderwerp":"Een babbel met de buurvrouw","plein":"u7q2","beurten":9,"doelBereikt":true,"doelen":[1,1],"kanaal":"spreken",
 "samenvatting":"Je vertelde wat je van Antwerpen vindt en waarom. Je gebruikte omdat drie keer.",
 "tip":"After omdat, wait with the verb until the end of the clause.",
 "goed":[{"topic":"Omdat + werkwoord achteraan (because + verb last)","plan":"u7q1","mastered":false}],
@@ -72,6 +74,7 @@ EDZ-EINDE
 | `plein` | opdracht | the square the exercise targeted: copy the id in brackets at the end of the `niveau` line exactly |
 | `beurten` | yes | learner turns |
 | `doelen` | opdracht | one value per numbered part of `doel`, in the same order: `1` = done, `0` = not done, a fraction for a counted part that was partly done (2 of the 3 verbs → `0.67`) |
+| `kanaal` | opdracht | copy it from the start block: `spreken` or `schrijven`. The score counts for that skill under Ik (Spreken or Schrijven) |
 | `doelBereikt` | opdracht | `true` only when every part of `doel` is done (used by older app versions) |
 | `samenvatting` | yes | 1–3 sentences in simple Dutch |
 | `tip` | no | one concrete tip in English |
