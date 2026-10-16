@@ -426,7 +426,7 @@ function squareOverlay(q) {
     return `<g data-act="step" data-q="${q}" data-step="${st}" role="button" tabindex="0" style="cursor:pointer" aria-label="${STEP_NAME[st]}${done ? ', klaar' : ''}${built ? '' : ', later'}">
       <rect x="${x - 4}" y="0" width="64" height="150" fill="transparent"/>
       ${guildHouse(x, state, i)}
-      ${pp.levels[i] ? `<g transform="translate(${x + 44},4) scale(1.5)">${miniFlag(0, 0, pp.levels[i] === 2)}</g>` : ''}
+      ${pp.levels[i] ? /* the pole stands on the gable's second step */ `<g transform="translate(${x + 40},10.5) scale(1.5)">${miniFlag(0, 0, pp.levels[i] === 2)}</g>` : ''}
       ${state === 'next' ? arrow(x + 28, 9, true) : ''}
       ${sign(x + 28, 118, STEP_NAME[st], state === 'later' || state === 'locked')}
     </g>`;
