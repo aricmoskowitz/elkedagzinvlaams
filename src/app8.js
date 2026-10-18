@@ -155,6 +155,7 @@ function placeSign(g, text, x, y, taken, first = 'N') {
 }
 // what stands on a square that a name must leave free: the cyclist, the Ronde flags or the bunting (the arrow bobs on top of the name)
 const heroRect = (x, y) => [x + 14 - 13, y + 8 - 23, 26, 24];
+// 2.12: one arrow only, the green one over the next step (open towns and pleinen have none)
 const arrow = (x, y, next) => `<g transform="translate(${x},${y})"><g class="bob"><path d="M-6,-5 H6 L0,3 Z" fill="${next ? '#2F6B3A' : '#2A2620'}" stroke="#fff" stroke-width="1.5"/></g></g>`;
 const flag = (x, y) => `<g transform="translate(${x},${y})" shape-rendering="crispEdges"><rect width="2" height="16" fill="#2A2620"/><rect x="2" width="9" height="6" fill="#F2D35B" stroke="#2A2620" stroke-width="1"/></g>`;
 const blocks = (x, y, n, done) => `<g transform="translate(${x - (n * 12 - 2) / 2},${y})" shape-rendering="crispEdges">${Array.from({length: n}, (_, j) => `<rect x="${j * 12}" width="10" height="5" fill="${j < done ? '#2A2620' : '#fff'}" stroke="#2A2620" stroke-width="1"/>`).join('')}</g>`;
@@ -288,7 +289,7 @@ function worldOverlay() {
         return roundsFlags(h.x * TS - 1, h.y * TS + 2, h.x * TS + 17, h.y * TS + 2, pp.ronde, .45) + (f ? miniFlag(h.x * TS + 10, h.y * TS - 9, f === 2) : ''); }).join('') : ''}
       ${tpw && tpw.marktDone ? bunting(x - 24, y - 24, x + 24, y - 24, tpw.perfect) + bunting(x - 24, y + 22, x + 24, y + 22, tpw.perfect) : ''}
       ${tpw && tpw.perfect ? sparkles(x, y, 26) : ''}
-      ${st === 'open' || st === 'next' ? arrow(lx, ly - 6, st === 'next') : ''}
+      ${st === 'next' ? arrow(lx, ly - 6, true) : ''}
     </g>`;
   }).join('');
   const [px, py] = [(PASS[0] + .5) * TS, (WGH - 1) * TS];
@@ -366,7 +367,7 @@ function townOverlay(u) {
       <rect x="${x - 36}" y="${y - 30}" width="72" height="60" fill="${dim ? 'rgba(255,255,255,.55)' : 'transparent'}"/>
       ${flags}${roundsFlags(x - 26, y - 16, x + 26, y - 16, pp.ronde)}${pp.perfect ? sparkles(x, y, 30) : ''}
       ${sign(TS2[j].x, TS2[j].y, q.name, dim)}
-      ${st === 'next' || st === 'open' ? arrow(TS2[j].x, TS2[j].y - 6, st === 'next') : ''}
+      ${st === 'next' ? arrow(TS2[j].x, TS2[j].y - 6, true) : ''}
     </g>`;
   }).join('');
   const [mx, my] = sqCenter(TSQ[3]); const mh = TSQ[3].h * TS; const mOpen = marktOpen(u);
