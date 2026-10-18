@@ -1,7 +1,7 @@
 /* Elke Dag Zin service worker. build.py fills in the version, so every release gets a new cache.
    Cache-first for the app shell; Google Fonts are cached when they load (optional, the
    system fallbacks look fine offline). A new version waits until the page says "herlaad". */
-const CACHE = 'edz-701bee01bf';
+const CACHE = 'edz-1853fda7d0';
 const FONTS = 'edz-fonts';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon180.png', 'icon192.png', 'icon512.png', 'icon512-maskable.png', 'woordenboek.json'];
 self.addEventListener('install', e => {

@@ -89,6 +89,8 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--in
 .backdrop{position:fixed;inset:0;z-index:40;background:rgba(30,27,22,.35);display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--bg);width:100%;max-width:560px;max-height:88%;overflow-y:auto;border-radius:18px 18px 0 0;padding:10px 16px calc(24px + env(safe-area-inset-bottom,0px))}
 .sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:2px auto 12px}
+.sheet-top{position:sticky;top:-10px;z-index:3;background:var(--bg);margin:-10px -16px 0;padding:10px 16px 0;min-height:30px}
+.sheet-x{position:absolute;right:6px;top:4px;width:40px;height:40px;font-size:18px;background:var(--soft);border:1px solid var(--line)}
 .progress{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
 .progress > div{height:100%;background:var(--ink);transition:width .3s}
 
