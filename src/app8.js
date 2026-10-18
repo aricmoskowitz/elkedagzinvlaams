@@ -74,7 +74,7 @@ function drawScene(cv, sc) {
     if (t === 'mtn' && x % 2 === 0 && g[y][x + 1] === 'mtn') { c.fillStyle = W.mtn; c.beginPath(); c.moveTo(px - 1, py + 8); c.lineTo(px + 8, py - 6); c.lineTo(px + 17, py + 8); c.fill(); c.fillStyle = W.mtn2; c.beginPath(); c.moveTo(px + 8, py - 6); c.lineTo(px + 17, py + 8); c.lineTo(px + 9, py + 8); c.fill(); if (hsh(x, y) > .55) { c.fillStyle = W.snow; c.beginPath(); c.moveTo(px + 5, py - 2); c.lineTo(px + 8, py - 6); c.lineTo(px + 11, py - 2); c.fill(); } }
   }
   houses.forEach(h => {
-    const px = h.x * TS, py = h.y * TS, roof = h.grey ? W.greyRoof : h.roof, wall = h.grey ? '#E4E0D8' : W.wall;
+    const px = h.x * TS, py = h.y * TS, roof = h.gold ? '#E0A82E' : h.grey ? W.greyRoof : h.roof, wall = h.gold ? '#F6DA7A' : h.grey ? '#E4E0D8' : W.wall;
     if (h.guild) { drawMiniGuild(R, px, py, h.col, h.on); return; }
     if (h.hall) { const win = h.grey ? '#E4E0D8' : '#F4EFE4';
       R(px - 3, py + 2, 22, 14, roof); R(px - 1, py - 1, 18, 3, roof); R(px + 2, py - 4, 12, 3, roof); R(px + 5, py - 7, 6, 3, roof); R(px + 7, py - 9, 2, 2, h.grey ? '#CFCAC1' : '#F2D35B');
@@ -261,7 +261,7 @@ function worldHouses() {
   const out = [];
   UNITS.forEach((u, i) => { const st = townState(u.id); const off = st === 'later' || st === 'locked'; const r = worldRoles(i); const tp = u.built ? townProgress(u.id) : null;
     if (r.hall) out.push({...r.hall, grey: off || !(tp && tp.marktDone)});
-    r.pleinen.forEach((h, j) => out.push({...h, grey: off || !(tp && tp.pleinen[j] && tp.pleinen[j].complete)}));
+    r.pleinen.forEach((h, j) => { const pp = tp && tp.pleinen[j]; out.push({...h, grey: off || !(pp && pp.complete), gold: !off && !!pp && pp.ronde >= 3}); }); // 2.12: golden after Ronde 3
     r.rest.forEach(h => out.push({...h, grey: off})); });
   return out;
 }
@@ -284,7 +284,8 @@ function worldOverlay() {
       <rect x="${x - 30}" y="${y - 30}" width="60" height="60" fill="transparent"/>
       ${dim ? `<g opacity=".8" fill="#fff"><circle cx="${x - 12}" cy="${y + 2}" r="14"/><circle cx="${x + 3}" cy="${y - 8}" r="15"/><circle cx="${x + 15}" cy="${y + 5}" r="12"/><circle cx="${x - 1}" cy="${y + 12}" r="12"/></g>` : ''}
       ${sign(lx, ly, u.name, dim)}
-      ${tpw ? worldRoles(i).pleinen.map((h, j) => tpw.pleinen[j] && tpw.pleinen[j].complete ? miniFlag(h.x * TS + 10, h.y * TS - 9, tpw.pleinen[j].perfect) : '').join('') : ''}
+      ${tpw ? worldRoles(i).pleinen.map((h, j) => { const pp = tpw.pleinen[j]; if (!pp) return ''; const f = padFlag(pp); /* 2.12: 4 of the 5 guild houses decide the flag */
+        return roundsFlags(h.x * TS - 1, h.y * TS + 2, h.x * TS + 17, h.y * TS + 2, pp.ronde, .45) + (f ? miniFlag(h.x * TS + 10, h.y * TS - 9, f === 2) : ''); }).join('') : ''}
       ${tpw && tpw.marktDone ? bunting(x - 24, y - 24, x + 24, y - 24, tpw.perfect) + bunting(x - 24, y + 22, x + 24, y + 22, tpw.perfect) : ''}
       ${tpw && tpw.perfect ? sparkles(x, y, 26) : ''}
       ${st === 'open' || st === 'next' ? arrow(lx, ly - 6, st === 'next') : ''}

@@ -122,6 +122,9 @@ const {openApp} = require('./page');
       run(squaresOf('u3').map(q => q.id), 18, 20); const ok3 = marktOpen('u3') && sqOpen(squaresOf('u4')[0].id);
       if (!closed || failOpen || !ok1 || !ok3) bad.push('test-out: ' + JSON.stringify({closed, failOpen, ok1, ok3, st}));
       S.sq = JSON.parse(before); S.settings.test = tm; }
+    // 2.12 the plein's house on the Pad: a flag only when 4 of the 5 guild houses have one (the star when 4 are at 100%)
+    { const pf = lv => padFlag({levels: lv}); const r = [pf([1, 1, 1, 0, 0]), pf([1, 1, 1, 1, 0]), pf([2, 2, 2, 1, 1]), pf([2, 2, 2, 2, 0]), pf([2, 1, 1, 1, 1])];
+      if (r.join() !== '0,1,1,2,1') bad.push('Pad flag (4 of 5 rule): ' + r.join()); }
     // 2.6 woordenboek: every entry complete and consistent (see src/woordenboek/README.md)
     let nd2 = 0; const seenW = new Set(); const lexW = new Set(LEX.map(l => norm(l.w) + '|' + l.p));
     const PS = ['n', 'v', 'adj', 'adv', 'prep', 'pron', 'conj', 'num', 'int', 'q'];

@@ -23,7 +23,7 @@ A Flemish (Belgian Dutch) learning app for one learner (Antwerp, A2 → C1). It 
 
 ## Progress on the maps (one language on every level)
 - A building is a piece of work: **grey** until done, **in colour with a yellow flag** when gehaald (80%+), a **flag with a white star** at 100% (Ontdek and Gebruik count as 100% when done; a test-out is gehaald for Ontdek and Oefen).
-- Stad map: each plein has its own five guild houses in the plein's colours and order. Pad: each town has three plein houses and a town hall for its Grote Markt.
+- Stad map: each plein has its own five guild houses in the plein's colours and order. Pad: each town has three plein houses and a town hall for its Grote Markt. A plein house gets the yellow flag when 4 of its 5 guild houses are gehaald or better, the star flag when 4 are at 100% (`padFlag`), colourful flags over it after Ronde 2 and turns gold after Ronde 3.
 - **Ronde 2**: colourful flags across the plein (stad map) and across its guild houses (plein). **Ronde 3**: the same flags in gold, with sparkles.
 - **Bunting** over a Grote Markt (and around a town on the Pad): the Grote Markt is gehaald. **Theme sign** (a tram, frites…) in the middle of every square: gold on a plein that passed Ronde 3; on the Pad and on the grass of the town map when every plein of the town has. **Gold kerb + sparkles**: perfect (plein: all five at 100% and Ronde 3; town: all pleinen perfect, Grote Markt 100%, opdracht done).
 - The explanation lives in Ik → Hoe werkt Elke Dag Zin?, not on the maps.

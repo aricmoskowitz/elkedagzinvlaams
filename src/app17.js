@@ -23,6 +23,9 @@ function pleinProgress(q) {
   const ronde = stepDone(q, 'oefen') ? r : 0;
   return {levels, done: levels.filter(Boolean).length, top: levels.filter(l => l === 2).length, complete, ronde, perfect: levels.every(l => l === 2) && ronde >= 3};
 }
+// 2.12: the plein's little house on the Pad: a yellow flag when 4 of its 5 guild houses are gehaald (or better),
+// the flag with the star when 4 are at 100%; Ronde 2 colourful flags over it, Ronde 3 a golden house
+const padFlag = pp => pp.levels.filter(l => l === 2).length >= 4 ? 2 : pp.levels.filter(l => l >= 1).length >= 4 ? 1 : 0;
 const missionDone = u => !!(S.missions || {})[u];
 function townProgress(u) {
   const ps = squaresOf(u).map(q => pleinProgress(q.id)); const m = (S.markt || {})[u] || 0;
@@ -98,5 +101,5 @@ function progressLegend() {
     ${row(`<rect x="2" y="5" width="13" height="11" fill="#DDD4C3" stroke="#E0A82E" stroke-width="2"/>` + spark, 'Gouden stoeprand: plein perfect (alles 100% en Ronde 3)')}
     ${row(bunting(1, 6, 21, 6, false) + '<text x="11" y="17" text-anchor="middle" font-size="6" font-weight="700" fill="#2A2620">★</text>', 'Vlaggetjes over de Grote Markt, of rond een stad op het Pad: de Grote Markt gehaald')}
     ${typeof landmarkSVG === 'function' ? row(landmarkSVG('tram', 1, 2, 1.4, 'gold', 'Gouden tram', false), 'Het teken van het thema (een tram, een frietkot, …) midden op elk plein: goud als dat plein Ronde 3 gehaald heeft, op het Pad en in het gras als elk plein van de stad het gehaald heeft') : ''}
-  </div><div class="small">Op het Pad heeft elke stad drie huizen (één per plein) en een stadhuis voor de Grote Markt. Is alles perfect, ook de opdracht in de stad, dan wordt de hele stad goud.</div></div>`;
+  </div><div class="small">Op het Pad heeft elke stad drie huizen (één per plein) en een stadhuis voor de Grote Markt. Een pleinhuis krijgt een gele vlag als 4 van de 5 gildehuizen gehaald zijn, de vlag met de ster als 4 van de 5 op 100% staan. Na Ronde 2 hangen er vlaggetjes over het huis; na Ronde 3 wordt het goud. Is alles perfect, ook de opdracht in de stad, dan wordt de hele stad goud.</div></div>`;
 }
