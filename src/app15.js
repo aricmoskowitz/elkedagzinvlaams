@@ -40,6 +40,7 @@ function viewWoorden() {
   return `<div class="stack">
     <h1 data-en="Words">Woorden</h1>
     ${coachTip('woorden2', 'Bekijk je woorden per soort, per stad, per thema of per set. Open een groep om de woorden te zien. Met Herhaal en Kaarten oefen je precies die groep. Je eigen sets beheer je onder Set.')}
+    <button class="tapline" data-act="verslag"><div class="t"><div style="font-weight:600" data-en="Paste report">Verslag plakken</div><div class="small">Een woordenlijst of verslag van Claude toevoegen</div></div><span class="chev">›</span></button>
     <input type="search" id="wsearch" placeholder="Zoek een woord of betekenis" aria-label="Zoek een woord" value="${esc(WQ)}">
     <div class="row wrap" role="tablist" aria-label="Bekijk per"><span class="small" style="align-self:center">Bekijk per</span>${VIEWS.map(x => `<button class="chip${v === x[0] ? ' on' : ''}" data-act="wview" data-v="${x[0]}" role="tab" aria-selected="${v === x[0]}" data-en="${x[2]}">${x[1]}</button>`).join('')}</div>
     <div id="wlist">${wordList()}</div>
