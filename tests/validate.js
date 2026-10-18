@@ -109,6 +109,19 @@ const {openApp} = require('./page');
       const m = SCENARIOS.find(s => s.q === marktId(u.id)); const most = Math.max(...squaresOf(u.id).map(q => { const sc = SCENARIOS.find(s => s.q === q.id); return sc ? doelParts(sc.doel).length : 0; }));
       if (m && doelParts(m.doel).length < Math.max(4, most + 1)) bad.push(m.id + ': the Grote Markt doel should combine the pleinen (at least 4 parts)'); });
     if (new Set(SCENARIOS.map(s => s.id)).size !== SCENARIOS.length) bad.push('two scenes share an id');
+    // 2.12 test-out: 10 questions for a plein, 20 for a stad; a pass (90%) marks only Ontdek and Oefen, yet opens the next plein
+    { const before = JSON.stringify(S.sq), tm = S.settings.test; S.settings.test = false; S.sq = {};
+      const k1 = testoutKeys(['u1q2']), k3 = testoutKeys(squaresOf('u2').map(q => q.id));
+      if (k1.length !== 10 || k3.length !== 20 || new Set(k1).size !== 10) bad.push('test-out: ' + k1.length + ' / ' + k3.length + ' questions (want 10 / 20, no repeats)');
+      const closed = !sqOpen('u1q3');
+      const run = (qs, correct, total) => { SES = {testout: qs, total, correct, t0: Date.now(), i: total}; document.body.insertAdjacentHTML('beforeend', '<div id="session"><div id="ses-prog"></div><div id="ses-body"></div></div>'); sesEnd(); document.getElementById('session').remove(); SES = null; };
+      run(['u1q2'], 8, 10); const failOpen = sqOpen('u1q3'); // 80% is no longer enough
+      run(['u1q2'], 9, 10); const st = S.sq.u1q2.steps;
+      const ok1 = st.ontdek === 'test' && st.oefen === 'test' && !st.luister && !st.lees && !st.gebruik && sqOpen('u1q3') && !sqComplete('u1q2')
+        && houseLevel('u1q2', 'ontdek') === 1 && houseLevel('u1q2', 'oefen') === 1 && houseLevel('u1q2', 'luister') === 0;
+      run(squaresOf('u3').map(q => q.id), 18, 20); const ok3 = marktOpen('u3') && sqOpen(squaresOf('u4')[0].id);
+      if (!closed || failOpen || !ok1 || !ok3) bad.push('test-out: ' + JSON.stringify({closed, failOpen, ok1, ok3, st}));
+      S.sq = JSON.parse(before); S.settings.test = tm; }
     // 2.6 woordenboek: every entry complete and consistent (see src/woordenboek/README.md)
     let nd2 = 0; const seenW = new Set(); const lexW = new Set(LEX.map(l => norm(l.w) + '|' + l.p));
     const PS = ['n', 'v', 'adj', 'adv', 'prep', 'pron', 'conj', 'num', 'int', 'q'];

@@ -48,7 +48,7 @@ function readAnswer(i, j) {
 /* ---------- Grote Markt: the town review + mission ---------- */
 PLAN_SQ.filter(q => q.review && PT[q.u] && PT[q.u].built).forEach(q => { q.built = true; });
 const marktId = u => (PLAN_SQ.find(q => q.u === u && q.review) || {}).id;
-const marktOpen = u => testMode() || squaresOf(u).every(q => sqComplete(q.id));
+const marktOpen = u => testMode() || squaresOf(u).every(q => sqPassed(q.id));
 const marktDone = u => ((S.markt || {})[u] || 0) >= 80;
 function marktKeys(u) {
   const ks = [];

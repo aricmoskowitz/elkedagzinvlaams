@@ -22,14 +22,14 @@ A Flemish (Belgian Dutch) learning app for one learner (Antwerp, A2 → C1). It 
 - Every card names its kind in one label pill at the top (`kindLabel`), e.g. *⇄ Tegenovergestelde*. A multiple-choice card always has at least three choices, and exactly one of them fits.
 
 ## Progress on the maps (one language on every level)
-- A building is a piece of work: **grey** until done, **in colour with a yellow flag** when gehaald (80%+), a **flag with a white star** at 100% (Ontdek and Gebruik count as 100% when done; a test-out is gehaald).
+- A building is a piece of work: **grey** until done, **in colour with a yellow flag** when gehaald (80%+), a **flag with a white star** at 100% (Ontdek and Gebruik count as 100% when done; a test-out is gehaald for Ontdek and Oefen).
 - Stad map: each plein has its own five guild houses in the plein's colours and order. Pad: each town has three plein houses and a town hall for its Grote Markt.
 - **Ronde 2**: colourful flags across the plein (stad map) and across its guild houses (plein). **Ronde 3**: the same flags in gold, with sparkles.
 - **Bunting** over a Grote Markt (and around a town on the Pad): the Grote Markt is gehaald. **Theme sign** (a tram, frites…) in the middle of every square: gold on a plein that passed Ronde 3; on the Pad and on the grass of the town map when every plein of the town has. **Gold kerb + sparkles**: perfect (plein: all five at 100% and Ronde 3; town: all pleinen perfect, Grote Markt 100%, opdracht done).
 - The explanation lives in Ik → Hoe werkt Elke Dag Zin?, not on the maps.
 
 ## Standing rules (from the user, apply to every change)
-1. **Locking:** squares and towns open in order. A locked square or town offers a **test-out**. **Testmodus** (switch in Ik) opens everything for testing.
+1. **Locking:** squares and towns open in order. A locked square or town offers a **test-out**: 10 questions for a plein, 20 for a stad, 90% to pass (`TESTOUT_N`, `TESTOUT_PASS` in `app3.js`). A pass marks only Ontdek and Oefen (yellow flag, no star) and sets `S.sq[q].test`; Luister, Lees and Gebruik stay to do. `sqPassed` (complete or tested) opens the next plein, the Grote Markt and the next town; `sqComplete` (klaar) still needs Luister. **Testmodus** (switch in Ik) opens everything for testing.
 2. **Flashcards are welcome but never the default.** The default practice is sentences, in context.
 3. **Interface labels are Dutch**; long-press shows English (`data-en`).
 4. **Colour carries meaning, white UI:**

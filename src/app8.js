@@ -390,7 +390,7 @@ function viewTown(u) {
     ${coachTip('town2', 'Rond elk plein staan zijn vijf gildehuizen. Een huis krijgt kleur en een gele vlag als je het gehaald hebt, een vlag met een ster bij 100%. Na Ronde 2 hangen er vlaggetjes over het plein, na Ronde 3 gouden. Wat alles betekent, staat bij Ik → Hoe werkt Elke Dag Zin?')}
     ${sceneHTML('townmap', TGW, TGH, townOverlay(u), 'Plattegrond van ' + unit.name + ': ' + sum.join(', '))}
     <div class="small progsum">${sum.join(' · ')}</div>
-    ${locked ? `<div class="card soft stack" style="gap:8px"><div>${esc(unit.name)} is nog dicht. Test je erin: 15 vragen over de hele stad.</div><button class="btn line" data-act="testout" data-qs="${qs.map(q => q.id).join(',')}">Test je in</button></div>` : ''}
+    ${locked ? `<div class="card soft stack" style="gap:8px"><div>${esc(unit.name)} is nog dicht. Test je erin: 20 vragen over de hele stad, 18 juist om te slagen.</div><button class="btn line" data-act="testout" data-qs="${qs.map(q => q.id).join(',')}">Test je in</button></div>` : ''}
     ${missionRow(u)}
     <button class="link" data-act="unit-set" data-u="${u}">Oefen de woorden van ${esc(unit.name)} ›</button>
   </div>`;
@@ -441,7 +441,7 @@ function viewSquare(q) {
     <div><div class="eyebrow">Boog ${arcOf(sq.u).n} · Stad ${townIndexInArc(sq.u)} · Plein ${sq.n} van ${squareCount(sq.u)}</div><h1>${esc(sq.name)}</h1><div class="small" style="margin-top:2px">${esc(sq.title)} · ${esc(sq.en)}</div></div>
     ${coachTip('square', 'Op elk plein staan vijf gildehuizen. Het pijltje wijst naar je volgende stap; grijze huizen komen later. Tik op een huis.')}
     ${sceneHTML('sqmap', SGW, SGH, squareOverlay(q), 'Vijf gildehuizen op ' + sq.name)}
-    ${open ? '' : `<div class="card soft stack" style="gap:8px"><div>Dit plein gaat open als je het vorige plein klaar hebt. Of test je erin: 8 vragen.</div><button class="btn line" data-act="testout" data-qs="${q}">Test je in</button></div>`}
+    ${open ? '' : `<div class="card soft stack" style="gap:8px"><div>Dit plein gaat open als je het vorige plein klaar hebt. Of test je erin: 10 vragen, 9 juist om te slagen. Dan zijn Ontdek en Oefen klaar.</div><button class="btn line" data-act="testout" data-qs="${q}">Test je in</button></div>`}
     <div>${STEPS.map(st => { const built = ACTIVE_STEPS.includes(st); const sc = S.sq[q] && S.sq[q].steps && S.sq[q].steps[st];
       return `<button class="tapline" data-act="step" data-q="${q}" data-step="${st}" ${built && open ? '' : 'aria-disabled="true"'}><div class="t"><div style="font-weight:600;${built && open ? '' : 'color:var(--faint)'}">${STEP_NAME[st]}${sc ? ` <span class="small">· ${sc === 'test' ? 'getest' : sc === 1 ? (st === 'ontdek' ? 'gelezen' : 'gedaan') : sc + '%'}</span>` : ''}</div><div class="small">${STEP_DESC[st]}${built ? '' : ' · later'}</div></div><span class="chev" ${built && open ? '' : 'style="color:var(--faint)"'}>›</span></button>`; }).join('')}</div>
     ${roundsBlock(q)}
