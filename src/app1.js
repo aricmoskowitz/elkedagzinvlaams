@@ -186,10 +186,13 @@ const stepDone = (q, st) => !!(S.sq[q] && S.sq[q].steps && S.sq[q].steps[st]);
 const sqComplete = q => BUILT_STEPS.every(st => stepDone(q, st));
 const sqStarted = q => BUILT_STEPS.some(st => stepDone(q, st));
 const testMode = () => !!S.settings.test;
-function sqOpen(q) { const i = SQ_ORDER.indexOf(q); return testMode() || i === 0 || sqComplete(SQ_ORDER[i - 1]) || sqComplete(q) || sqStarted(q); }
+// 2.12: a passed test-out marks Ontdek and Oefen only (Luister, Lees and Gebruik stay open), but it still opens what comes next
+const sqTested = q => !!(S.sq[q] && S.sq[q].test);
+const sqPassed = q => sqComplete(q) || sqTested(q);
+function sqOpen(q) { const i = SQ_ORDER.indexOf(q); return testMode() || i === 0 || sqPassed(SQ_ORDER[i - 1]) || sqPassed(q) || sqStarted(q); }
 const unitComplete = u => UNIT[u].built && squaresOf(u).every(q => sqComplete(q.id));
 function townOpen(u) { const unit = UNIT[u]; if (!unit.built) return false; return squaresOf(u).some(q => sqOpen(q.id)); }
-function nextSquare() { return SQ_ORDER.find(q => sqOpen(q) && !sqComplete(q)) || SQ_ORDER[SQ_ORDER.length - 1]; }
+function nextSquare() { return SQ_ORDER.find(q => sqOpen(q) && !sqPassed(q)) || SQ_ORDER.find(q => !sqComplete(q)) || SQ_ORDER[SQ_ORDER.length - 1]; }
 function wordsKnown() {
   const ids = new Set(); Object.keys(S.items).forEach(k => { if (k[0] === 'w' && known(k)) ids.add(k.split(':')[1]); }); return ids.size;
 }

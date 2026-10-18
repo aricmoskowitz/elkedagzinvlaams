@@ -176,8 +176,10 @@ function sesEnd() {
   if (SES.markt) { S.markt = S.markt || {}; S.markt[SES.markt] = Math.max(S.markt[SES.markt] || 0, Math.round(score * 100)); msg = pass ? 'Checkpoint gehaald: deze stad is helemaal van jou.' : 'Voor de Grote Markt heb je 80% nodig. Wat je fout had, komt terug in je herhalingen.'; }
   if (SES.testout) {
     const ids = SES.testout;
-    if (pass) { ids.forEach(q => { const ss = sqstate(q); BUILT_STEPS.forEach(st => { ss.steps[st] = ss.steps[st] || 'test'; }); }); msg = ids.length > 1 ? 'Getest en gehaald: deze stad is open en klaar.' : 'Getest en gehaald: dit plein is klaar. Het volgende plein is open.'; }
-    else msg = 'Nog niet gehaald. Doe de gildehuizen van het vorige plein, of probeer later opnieuw.';
+    // 2.12: 90% to pass; Ontdek and Oefen get a yellow flag (no star), Luister, Lees and Gebruik stay to do; the next plein opens (sqTested)
+    if (score >= TESTOUT_PASS) { ids.forEach(q => { const ss = sqstate(q); ss.test = 1; ['ontdek', 'oefen'].forEach(st => { ss.steps[st] = ss.steps[st] || 'test'; }); });
+      msg = ids.length > 1 ? 'Getest en gehaald! In elk plein van deze stad zijn Ontdek en Oefen klaar, en de Grote Markt en de volgende stad zijn open. Luister, Lees en Gebruik doe je nog.' : 'Getest en gehaald! Ontdek en Oefen zijn klaar en het volgende plein is open. Luister, Lees en Gebruik doe je nog.'; }
+    else msg = `Nog niet gehaald: je hebt 90% nodig (${Math.ceil(SES.total * TESTOUT_PASS)} van ${SES.total} juist). Wat je fout had, komt terug in je herhalingen. Probeer later opnieuw, of doe eerst het vorige plein.`;
   }
   Store.mark('state', 'items');
   $('#ses-prog').style.width = '100%';
@@ -211,11 +213,15 @@ function listenKeys(q) {
   const ks = SQ[q].sents.map(id => 's:' + id + ':lis');
   return uniq([...ks.filter(k => !S.items[k]), ...ks.filter(isDue), ...shuffle(ks.filter(k => S.items[k] && !isDue(k)))]).slice(0, 7);
 }
+// 2.12: 10 questions for a plein, 20 for a stad (about 60% words, 40% sentences per plein); 90% to pass
+const TESTOUT_N = qs => qs.length > 1 ? 20 : 10, TESTOUT_PASS = 0.9;
 function testoutKeys(qs) {
-  const ks = []; qs.forEach(q => { const sq = SQ[q];
-    shuffle(sq.words).slice(0, 4).forEach(id => { const l = LX(id); ks.push('w:' + id + ':' + (l.g && Math.random() < .5 ? 'gen' : l.v && Math.random() < .5 ? 'conj' : 'prod')); });
-    shuffle(sq.sents).slice(0, 2).forEach(id => ks.push('s:' + id + ':ord')); });
-  return shuffle(ks).slice(0, qs.length > 1 ? 15 : 8);
+  const n = TESTOUT_N(qs), per = Math.ceil(n / qs.length); const ks = [];
+  const wkey = id => { const l = LX(id); return 'w:' + id + ':' + (l.g && Math.random() < .5 ? 'gen' : l.v && Math.random() < .5 ? 'conj' : 'prod'); };
+  qs.forEach(q => { const sq = SQ[q]; const ws = shuffle(sq.words), ss = shuffle(sq.sents);
+    let nw = Math.min(ws.length, Math.ceil(per * .6)), ns = Math.min(ss.length, per - nw); nw = Math.min(ws.length, per - ns); // fill up from the other kind when one runs short
+    ws.slice(0, nw).forEach(id => ks.push(wkey(id))); ss.slice(0, ns).forEach(id => ks.push('s:' + id + ':ord')); });
+  return shuffle(ks).slice(0, n);
 }
 function reviewKeys() { const left = Math.max(0, (S.settings.cap || 60) - doneToday()); return dueKeys().slice(0, left); }
 function startReview() {
