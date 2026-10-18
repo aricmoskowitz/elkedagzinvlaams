@@ -8,7 +8,7 @@ function toast(msg) {
 function openSheet(html, onClose) {
   closeSheet();
   const b = document.createElement('div'); b.className = 'backdrop'; b.id = 'sheetback';
-  b.innerHTML = `<div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div>`;
+  b.innerHTML = `<div class="sheet" role="dialog" aria-modal="true"><div class="sheet-top"><div class="grab"></div><button class="iconbtn sheet-x" data-act="sheet-close" aria-label="Sluiten" data-en="Close">✕</button></div>${html}</div>`; // 2.12: every sheet has a close button that stays in view
   b.addEventListener('click', e => { if (e.target === b) closeSheet(); });
   b._onClose = onClose; document.body.appendChild(b);
   return b.querySelector('.sheet');
