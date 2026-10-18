@@ -18,11 +18,11 @@ The app writes this block. It is plain text, one field per line, and fields the 
 EDZ-START v1
 modus: opdracht
 datum: 2026-10-12
-niveau: A2 · Boog 1 · Stad 7 Waaromberg (u7) · Plein 2 Denkplein (u7q2)
-focus: Dat, of en vraagwoorden (u7q2) · kan: Ik kan uitleggen waarom (omdat…).
-taak: Een babbel met de buurvrouw. Zij vraagt wat je van Antwerpen vindt.
-scène: sc-u7 · Jij bent een nieuwsgierige buurvrouw in de trappenhal · opener: "Dag buur! U woont hier nog niet lang, hé? Wat vindt u van Antwerpen?"
-doel: 1) Zeg 3 keer waarom (omdat/want) · 2) Gebruik 1 keer "als"
+niveau: A2 · Boog 1 · Stad 7 Waaromberg (u7) · Grote Markt (u7q4)
+focus: Bijzinnen (u7) · kan: Ik kan uitleggen waarom (omdat…).
+taak: Een babbel met de buurvrouw. Zeg wat je van Antwerpen vindt, waarom, en wat je plannen zijn.
+scène: sc-u7q4 · Jij bent een nieuwsgierige buurvrouw in de trappenhal, die graag weet wat nieuwe buren van Antwerpen vinden · opener: "Dag buur! U woont hier nog niet lang, hé? Wat vindt u van Antwerpen?"
+doel: 1) Zeg 2 keer waarom met omdat of want · 2) Zeg 1 zin met ik denk dat of ik vind dat · 3) Stel 1 indirecte vraag (Weet u of…?) · 4) Zeg 1 zin met als plus 1 zin met toen
 kanaal: spreken
 recent: vinden, weten, denken, hopen, buurt, zeker, mening, druk, regenen, paraplu
 zwak: u1q2 werkwoord op plaats 2 (4×) · u7q2 dat-zin (2×) · Algemeen: in het Nederlands (1×)
@@ -36,7 +36,7 @@ EDZ-EINDE
 | `niveau` | all | The user's current place in the curriculum (the next open square) |
 | `focus` | all | the grammar of that square, plus the town's can-do |
 | `taak` | all | **onderwerp**: a suggested theme from the current town and weak spots. **opdracht**: the scene in one sentence. **dagboek**: `vertel over je dag of je les`. **foto**: `verwerk de foto` |
-| `scène`, `doel` | opdracht | the town's scene from `Scenes.md` and a measurable goal, in numbered parts |
+| `scène`, `doel` | opdracht | the plein's own scene from `Scenes.md` (every plein and every Grote Markt has one; the Grote Markt's doel combines the town's three pleinen) and a measurable goal, in numbered parts |
 | `kanaal` | opdracht | `spreken` (the learner talks in voice mode) or `schrijven` (the learner types) |
 | `recent` | all | up to 30 words learned in the last 14 days (not new in the report) |
 | `zwak` | all | up to 5 open corrections, grouped by square, with counts |
@@ -52,7 +52,7 @@ Claude writes this block. Between the markers there must be exactly one JSON obj
 
 ```
 EDZ-VERSLAG v1
-{"v":1,"modus":"opdracht","datum":"2026-10-12","onderwerp":"Een babbel met de buurvrouw","plein":"u7q2","beurten":9,"doelBereikt":true,"doelen":[1,1],"kanaal":"spreken",
+{"v":1,"modus":"opdracht","datum":"2026-10-12","onderwerp":"Een babbel met de buurvrouw","plein":"u7q4","beurten":9,"doelBereikt":false,"doelen":[1,1,1,0.5],"kanaal":"spreken",
 "samenvatting":"Je vertelde wat je van Antwerpen vindt en waarom. Je gebruikte omdat drie keer.",
 "tip":"After omdat, wait with the verb until the end of the clause.",
 "goed":[{"topic":"Omdat + werkwoord achteraan (because + verb last)","plan":"u7q1","mastered":false}],
