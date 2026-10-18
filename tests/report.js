@@ -185,7 +185,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(block.startsWith('EDZ-WOORDEN v1\n{"v":1,"set":"Woorden oktober 2026"') && block.trim().endsWith('EDZ-EINDE') && parsed.n === 0 && parsed.e === 94 && parsed.rej === 0, 'Deel als woordenlijst gives a valid EDZ-WOORDEN v1 block with all 94 words');
   // import under Ik, with a new name for the set
   await q.evaluate(() => closeOverlay('setpage')); await q.click('#tabs [data-tab=ik]'); await q.waitForTimeout(100);
-  ok(await q.evaluate(() => { const b = document.querySelector('[data-act=word-import]'); const bk = [...document.querySelectorAll('.eyebrow')].find(e => e.textContent === 'Back-up'); return !!b && !!bk && b.closest('.stack').nextElementSibling === bk.closest('.stack'); }), 'Ik: "Importeer woordenlijst" sits right above Back-up');
+  ok(await q.evaluate(() => { const b = document.querySelector('[data-act=word-import]'); const bk = [...document.querySelectorAll('.eyebrow')].find(e => e.textContent === 'Back-up'); return !!b && !!bk && b.closest('.stack').nextElementSibling === bk.closest('.stack'); }), 'Ik: "Verslag plakken" (word lists) sits right above Back-up');
   await q.click('[data-act=word-import]'); await q.waitForTimeout(100); await q.fill('#wim-t', block); await q.click('#wim-go'); await q.waitForTimeout(200);
   ok(await q.evaluate(() => $('#wi-name').value === 'Woorden oktober 2026' && !!$('input[name="wi-mode"][value=add]:checked')), 'same name as an existing set: preview offers "voeg toe" (default) or a new set');
   await q.fill('#wi-name', 'Week 41'); await q.waitForTimeout(50);

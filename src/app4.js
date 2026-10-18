@@ -206,7 +206,7 @@ function viewIk() {
     </div>
     <div class="stack" style="gap:6px"><div class="eyebrow" data-en="Word lists">Woordenlijsten</div>
       <div class="small">Een lijst woorden uit Claude of uit een andere app (EDZ-WOORDEN v1) wordt een set in Woorden. Je kiest de naam bij het importeren.</div>
-      <button class="btn line" data-act="word-import" data-en="Import a word list">Importeer woordenlijst</button>
+      <button class="btn line" data-act="word-import" data-en="Paste a word list or report from Claude">Verslag plakken</button>
     </div>
     <div class="stack" style="gap:6px"><div class="eyebrow" data-en="Backup">Back-up</div>
       <div class="small">Je voortgang staat alleen op dit toestel. Bewaar af en toe een back-up in Bestanden, en zet hem ook in je Claude Project: de datum en het uur staan in de naam.${S.settings.lastBackup ? ' Laatste back-up: ' + esc(stamp(new Date(S.settings.lastBackup))) + '.' : ''}</div>

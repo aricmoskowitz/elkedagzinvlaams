@@ -43,7 +43,7 @@ function viewWoorden() {
     <input type="search" id="wsearch" placeholder="Zoek een woord of betekenis" aria-label="Zoek een woord" value="${esc(WQ)}">
     <div class="row wrap" role="tablist" aria-label="Bekijk per"><span class="small" style="align-self:center">Bekijk per</span>${VIEWS.map(x => `<button class="chip${v === x[0] ? ' on' : ''}" data-act="wview" data-v="${x[0]}" role="tab" aria-selected="${v === x[0]}" data-en="${x[2]}">${x[1]}</button>`).join('')}</div>
     <div id="wlist">${wordList()}</div>
-    <button class="tapline" style="margin-top:8px" data-act="verslag"><div class="t"><div style="font-weight:600" data-en="Paste report">Verslag plakken</div><div class="small">Een woordenlijst of verslag van Claude toevoegen</div></div><span class="chev">›</span></button>
+    <button class="btn line block" data-act="verslag" data-en="Paste a word list or report from Claude">Verslag plakken</button>
   </div>`;
 }
 // replaces app13 wordList: search results, or the groups of the current view
@@ -162,8 +162,8 @@ const themeLine = l => { const t = themeOf(l); return `<button class="link sm" d
 /* ---------- import a word list: Ik → Woordenlijsten ---------- */
 function openWordImport() {
   const s = openSheet(`<div class="stack">
-    <h2 data-en="Import a word list">Woordenlijst importeren</h2>
-    <div class="small">Plak een <b>EDZ-WOORDEN v1</b>-blok, van de eerste regel tot <b>EDZ-EINDE</b>, of kies een .txt-bestand. Je ziet eerst wat er binnenkomt, en je kiest de naam van de set.</div>
+    <h2 data-en="Paste a word list or report">Verslag plakken</h2>
+    <div class="small">Plak een woordenlijst (<b>EDZ-WOORDEN v1</b>) of een verslag (<b>EDZ-VERSLAG v1</b>), van de eerste regel tot <b>EDZ-EINDE</b>, of kies een .txt-bestand. Je ziet eerst wat er binnenkomt, en je kiest de naam van de set.</div>
     <textarea id="wim-t" rows="8" aria-label="Woordenlijst" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="EDZ-WOORDEN v1&#10;{…}&#10;EDZ-EINDE"></textarea>
     <div id="wim-err" role="alert"></div>
     <div class="grid2"><button class="btn line" type="button" id="wim-paste">Plak</button><button class="btn line" type="button" id="wim-file">Kies bestand</button></div>
