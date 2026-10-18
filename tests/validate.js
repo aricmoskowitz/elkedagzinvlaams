@@ -101,6 +101,14 @@ const {openApp} = require('./page');
     LEX.filter(l => l.d).forEach(l => { const e = defEx(l); const forms = new Set([l.pl, l.dim, l.e].concat(l.v ? allForms(l) : []).filter(Boolean).map(norm));
       if (e.options.length < 3 || !e.options.includes(l.w)) bad.push('definition card ' + l.w + ': ' + e.options.join('/'));
       e.options.filter(o => o !== l.w && forms.has(norm(o))).forEach(o => bad.push('definition card ' + l.w + ': ' + o + ' is a form of the answer')); });
+    // 2.12: every built plein has its own Gebruik scene, and the Grote Markt one combines the town's goals (the most parts)
+    UNITS.filter(u => u.built).forEach(u => { const qs = squaresOf(u.id).map(q => q.id).concat([marktId(u.id)]);
+      qs.forEach(q => { const sc = SCENARIOS.find(s => s.q === q); if (!sc) return bad.push(q + ': no own scene in content10.js');
+        ['title', 'role', 'roleEn', 'goal', 'goalEn', 'open', 'doel'].forEach(f => { if (!sc[f]) bad.push(sc.id + ': no ' + f); });
+        if (doelParts(sc.doel).length < 2) bad.push(sc.id + ': the doel needs at least 2 parts'); });
+      const m = SCENARIOS.find(s => s.q === marktId(u.id)); const most = Math.max(...squaresOf(u.id).map(q => { const sc = SCENARIOS.find(s => s.q === q.id); return sc ? doelParts(sc.doel).length : 0; }));
+      if (m && doelParts(m.doel).length < Math.max(4, most + 1)) bad.push(m.id + ': the Grote Markt doel should combine the pleinen (at least 4 parts)'); });
+    if (new Set(SCENARIOS.map(s => s.id)).size !== SCENARIOS.length) bad.push('two scenes share an id');
     // 2.6 woordenboek: every entry complete and consistent (see src/woordenboek/README.md)
     let nd2 = 0; const seenW = new Set(); const lexW = new Set(LEX.map(l => norm(l.w) + '|' + l.p));
     const PS = ['n', 'v', 'adj', 'adv', 'prep', 'pron', 'conj', 'num', 'int', 'q'];

@@ -76,7 +76,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
     ok(good, `start block ${i}: ${mode}${i > 3 ? ' (' + f.niveau.split(' · ').pop() + ')' : ''}`);
     if (i === 0) console.log(b.replace(/^/gm, '      '));
   });
-  ok(blocks[4].includes('(u7q2)') && blocks[4].includes('scène: sc-u7') && blocks[5].includes('Grote Markt (u7q4)'), 'opdracht from a square and from a Grote Markt');
+  ok(blocks[4].includes('(u7q2)') && blocks[4].includes('scène: sc-u7q2') && blocks[5].includes('scène: sc-u7q4') && /beurten (8–10|12–15)/.test(blocks[5]) && blocks[5].includes('Grote Markt (u7q4)'), 'opdracht from a square and from a Grote Markt: each has its own scene, the Grote Markt at least 8–10 turns');
   ok(/recent: .*omdat/.test(blocks[0]) && !/recent: .*\btram\b/.test(blocks[0]) && /recent: .*trappenhal/.test(blocks[0]), 'recent: words seen in the last 14 days plus own words');
   ok(/zwak: .*u1q2 inversie \(1×\)/.test(blocks[0]), 'zwak: open corrections grouped by square with counts');
 
@@ -328,7 +328,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
     saveReport({...base, datum: '2026-10-14', onderwerp: 'x', doelen: [1, 1], corrections: C(4), words: [], fill: []}, 'h3'); const afterLower = S.sq.u2q2.steps.gebruik;
     const lv = houseLevel('u2q2', 'gebruik'); S.sq.u2q3 = {steps: {gebruik: 1}}; const legacy = houseLevel('u2q3', 'gebruik');
     return {txt, items: c ? c.querySelectorAll('ul.doel li').length : 0, doelLine: blk.split('\n').find(l => l.startsWith('doel:')), full: full.score, part: part.score, old: old.score, many: many.score, html, afterFail, afterPass, afterLower, lv, legacy}; });
-  ok(/Plein 2 Theaterplein/.test(op.txt) && /Om te slagen/.test(op.txt) && /verkoper/.test(op.txt) && /80%/.test(op.txt) && op.items === 2 && op.doelLine === 'doel: 1) Gebruik 3 scheidbare werkwoorden (uitkiezen, meenemen, afrekenen) · 2) Vraag 1 keer de prijs',
+  ok(/Plein 2 Theaterplein/.test(op.txt) && /Om te slagen/.test(op.txt) && /vriendin/.test(op.txt) && /80%/.test(op.txt) && op.items === 2 && op.doelLine === 'doel: 1) Begin 2 zinnen met een tijd plus een scheidbaar werkwoord (Om zeven uur haal ik je op, Daarna komen we aan) · 2) Stel 1 vraag met een scheidbaar werkwoord (Bel je me nog op?)',
     'opdracht: the Praten sheet shows the plein, the role, the pass conditions and the 80% rule; the start block numbers the goals (' + op.doelLine + ')');
   ok(op.full === 93 && op.part === 12 && op.old === 100 && op.many === 78 && /Gebruik: 12%/.test(op.html) && /nog niet gehaald/.test(op.html) && /6 fouten in 4 beurten/.test(op.html),
     'Gebruik score: all goals + 2 fouten in 8 beurten = 93%, a third of one goal + 6 in 4 = 12%, an old report with doelBereikt = 100%, all goals + 6 in 8 = 78%, not gehaald (' + [op.full, op.part, op.old, op.many] + ')');

@@ -45,7 +45,9 @@ function weakGroups() {
     return {k, label, n: fs.length};
   });
 }
-function sceneFor(u) { return SCENARIOS.find(s => s.u === u) || SCENARIOS.find(s => s.id === 'sc-free'); }
+function sceneFor(u) { return SCENARIOS.find(s => s.u === u && !s.q) || SCENARIOS.find(s => s.id === 'sc-free'); }
+// 2.12: every plein and every Grote Markt has its own scene (content10.js); the town scene is the fallback
+function sceneOf(q) { return SCENARIOS.find(s => s.q === q) || sceneFor(PSQ[q] && PSQ[q].u); }
 // o: {mode, q (a square) or u (a town: its Grote Markt)}
 function startBlock(o) {
   const P = S.settings.praten; const mode = o.mode || P.mode;
@@ -53,7 +55,7 @@ function startBlock(o) {
   const sq = PSQ[q]; const unit = PT[sq.u];
   const lines = ['EDZ-START v1', 'modus: ' + mode, 'datum: ' + dateKey(), 'niveau: ' + placeLine(q)];
   lines.push('focus: ' + (sq.review ? `${unit.gram} (${sq.u})` : `${sq.title} (${q})`) + ' · kan: ' + unit.can);
-  const weak = weakGroups(); const sc = sceneFor(sq.u);
+  const weak = weakGroups(); const sc = sceneOf(q);
   if (mode === 'onderwerp') lines.push(`taak: Praat over ${String(unit.theme || '').toLowerCase()} en gebruik ${sq.review ? String(unit.gram).toLowerCase() : sq.title.toLowerCase()}.${weak[0] ? ' Oefen ook: ' + weak[0].label.replace(/^u\d+q\d+ /, '') + '.' : ''}`);
   if (mode === 'opdracht') {
     lines.push(`taak: ${sc.title}. ${sc.goal}`);
@@ -67,7 +69,8 @@ function startBlock(o) {
   if (weak.length) lines.push('zwak: ' + weak.map(w => `${w.label} (${w.n}×)`).join(' · '));
   // 2.7: no translations any more; the Project ignores an old vertaling value (Formats §1)
   // 2.8: corrections always come at the end (the per-beurt option is gone); the field stays so the block stays v1
-  lines.push(`instellingen: verbeteren op het einde · beurten ${P.beurten}`);
+  const beurten = mode === 'opdracht' && sq.review && BEURTEN.indexOf(P.beurten) < 1 ? BEURTEN[1] : P.beurten; // 2.12: a Grote Markt scene has four goals, so at least 8–10 turns
+  lines.push(`instellingen: verbeteren op het einde · beurten ${beurten}`);
   lines.push('EDZ-EINDE');
   return lines.join('\n');
 }
@@ -84,7 +87,7 @@ function openPraten(o = {}) {
 const doelParts = d => String(d || '').split(/ en (?![^(]*\))/).map(x => x.trim()).filter(Boolean).map(x => x[0].toUpperCase() + x.slice(1));
 const kanaalOf = () => S.settings.praten.kanaal === 'schrijven' ? 'schrijven' : 'spreken';
 function opdrachtCard(R) {
-  const q = R.u ? marktId(R.u) : (R.q && PSQ[R.q] ? R.q : nextSquare()); const sq = PSQ[q]; const sc = sceneFor(sq.u);
+  const q = R.u ? marktId(R.u) : (R.q && PSQ[R.q] ? R.q : nextSquare()); const sq = PSQ[q]; const sc = sceneOf(q);
   const where = sq.review ? 'Grote Markt van ' + PT[sq.u].name : 'Plein ' + sq.n + ' ' + sq.name; const done = stepDone(q, 'gebruik') && S.sq[q].steps.gebruik;
   return `<div class="card stack opdr" style="gap:8px">
       <div class="eyebrow" data-en="Your task">Je opdracht · ${esc(where)}</div>
@@ -219,7 +222,7 @@ function importReport(text) {
 // and 30% for accuracy (1 − corrections ÷ turns). 80% or more is gehaald.
 function gebruikScore(r) {
   const sq = r.plein && PSQ[r.plein]; if (!sq) return null;
-  const parts = doelParts(sceneFor(sq.u).doel || sceneFor(sq.u).goal);
+  const sc = sceneOf(r.plein); const parts = doelParts(sc.doel || sc.goal);
   // older reports have only doelBereikt: all parts or none
   const got = parts.map((_, i) => r.doelen && r.doelen.length ? (r.doelen[i] || 0) : (r.doelBereikt ? 1 : 0));
   const goal = parts.length ? got.reduce((a, b) => a + b, 0) / parts.length : (r.doelBereikt ? 1 : 0);
@@ -297,11 +300,12 @@ const DOCS = {
     return out.join('\n').replace(/\n+$/, '\n');
   },
   'Scenes.md': () => {
-    const out = ['# Scènes — Elke Dag Zin', '', 'Per built town: the conversation scene, the writing prompt and the field mission. Use these for **opdracht** sessions. Stay in the role; the learner is always the one who wants something.', ''];
+    const out = ['# Scènes — Elke Dag Zin', '', 'Per built town: one conversation scene per plein and one for the Grote Markt (its doel combines the goals of the three pleinen), the writing prompt and the field mission. Use the scene named in `scène` for **opdracht** sessions. Stay in the role; the learner is always the one who wants something.', ''];
     UNITS.filter(u => u.built).forEach(u => {
-      const sc = SCENARIOS.find(s => s.u === u.id); const w = WRITING[u.id];
+      const w = WRITING[u.id];
       out.push(`## ${u.id} · ${u.name} — ${u.gram} (${u.gramEn})`, `- Kan: ${u.can}`);
-      if (sc) out.push(`- Scène: **${sc.title}**. Jij bent ${sc.role} (${sc.roleEn}).`, `- Doel van de leerder: ${sc.goal} (${sc.goalEn})`, ...(sc.doel ? [`- Meetbaar doel: ${sc.doel}`] : []), `- Opener: “${sc.open}”`);
+      squaresOf(u.id).concat([PSQ[marktId(u.id)]]).filter(Boolean).forEach(q => { const sc = sceneOf(q.id); if (!sc) return;
+        out.push(`### ${q.id} · ${q.review ? 'Grote Markt' : 'Plein ' + q.n + ' ' + q.name + ' — ' + q.title} · ${sc.id}`, `- Scène: **${sc.title}**. Jij bent ${sc.role} (${sc.roleEn}).`, `- Doel van de leerder: ${sc.goal} (${sc.goalEn})`, ...(sc.doel ? [`- Meetbaar doel: ${sc.doel}`] : []), `- Opener: “${sc.open}”`); });
       if (w) out.push(`- Schrijfopdracht: ${w.prompt}`);
       if (u.mission) out.push(`- Opdracht in de stad: ${u.mission}`);
       out.push('');
