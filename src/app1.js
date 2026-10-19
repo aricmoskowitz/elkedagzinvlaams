@@ -157,7 +157,7 @@ function doneToday() { const a = S.activity[dateKey()]; return a ? a.n : 0; }
 function dueKeys() {
   return shuffle(Object.keys(S.items).filter(k => isDue(k) && keyValid(k))).sort((a, b) => S.items[a].d - S.items[b].d);
 }
-function keyValid(k) { const [t, id] = k.split(':'); if (t === 'w') return !!LX(id); if (t === 'c') return !!(S.fix && S.fix[id]); if (t === 'e') return !!extraSentence(id); return !!SX[id]; }
+function keyValid(k) { const [t, id] = k.split(':'); if (t === 'v') return false; /* 2.13: Speelfort cards (v:) stay out of Herhalen */ if (t === 'w') return !!LX(id); if (t === 'c') return !!(S.fix && S.fix[id]); if (t === 'e') return !!extraSentence(id); return !!SX[id]; }
 function extraSentence(id) { const [xid, i] = id.split('~'); const x = (S.extras || []).find(e => e.id === xid); return x && x.examples && x.examples[+i]; }
 function lexKeys(l) {
   const ks = ['w:' + l.id + ':rec', 'w:' + l.id + ':prod'];

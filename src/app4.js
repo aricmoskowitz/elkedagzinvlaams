@@ -179,7 +179,7 @@ function viewSquare(q) {
 let WQ = '';
 /* wordList: see app15 */
 function viewIk() {
-  const bars = [['Woordenschat', 'Vocabulary', skillStat(k => /:(rec|prod)$/.test(k))], ['De / het', 'Articles', skillStat(k => k.endsWith(':gen'))], ['Vervoegen', 'Conjugation', skillStat(k => k.endsWith(':conj'))], ['Grammatica', 'Word order', skillStat(k => k.endsWith(':ord'))], ['Luisteren', 'Listening', skillStat(k => k.endsWith(':lis'))], ['Lezen', 'Reading', meterStat('lees')], ['Spreken', 'Speaking', meterStat('spreken')], ['Schrijven', 'Writing', meterStat('schrijven')]];
+  const bars = [['Woordenschat', 'Vocabulary', skillStat(k => /:(rec|prod)$/.test(k))], ['De / het', 'Articles', skillStat(k => k.endsWith(':gen'))], ['Vervoegen', 'Conjugation', vervoegStat()], ['Grammatica', 'Word order', skillStat(k => k.endsWith(':ord'))], ['Luisteren', 'Listening', skillStat(k => k.endsWith(':lis'))], ['Lezen', 'Reading', meterStat('lees')], ['Spreken', 'Speaking', meterStat('spreken')], ['Schrijven', 'Writing', meterStat('schrijven')]];
   const voices = Audio.voices;
   return `<div class="stack">
     <h1 data-en="Me">Ik</h1>
@@ -187,7 +187,7 @@ function viewIk() {
     ${weekBlock()}
     <div class="stack" style="gap:10px"><div class="eyebrow" data-en="Your eight skills">Je acht vaardigheden</div>
       ${bars.map(b => b[2] === null ? `<div class="bar soon"><span data-en="${b[1]}">${b[0]}</span><div class="track"></div><span class="num">later</span></div>` : `<div class="bar"><span data-en="${b[1]}">${b[0]}</span><div class="track"><div class="fill" style="width:${Math.round(b[2] * 100)}%"></div></div><span class="num">${Math.round(b[2] * 100)}%</span></div>`).join('')}
-      <div class="small">Lezen: je beste score op elke Lees-tekst. Spreken en Schrijven: je beste Gebruik-score op elk plein en elke Grote Markt, gesproken of getypt. Wat je nog niet deed, telt als 0.</div>
+      <div class="small">Vervoegen: je vervoegingen in Herhalen en in het Speelfort (elk werkwoord in elke tijd). Lezen: je beste score op elke Lees-tekst. Spreken en Schrijven: je beste Gebruik-score op elk plein en elke Grote Markt, gesproken of getypt. Wat je nog niet deed, telt als 0.</div>
     </div>
     <button class="tapline" data-act="then"><div class="t"><div style="font-weight:600">Toen en nu</div><div class="small">Je eerste gesprek en tekst naast je laatste</div></div><span class="chev">›</span></button>
     <button class="tapline" data-act="docs"><div class="t"><div style="font-weight:600" data-en="Documents for Claude">Documenten voor Claude</div><div class="small">Curriculum, woorden en scènes voor je Claude Project</div></div><span class="chev">›</span></button>
