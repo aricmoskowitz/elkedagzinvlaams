@@ -74,6 +74,11 @@ function drawScene(cv, sc) {
     if (t === 'mtn' && x % 2 === 0 && g[y][x + 1] === 'mtn') { c.fillStyle = W.mtn; c.beginPath(); c.moveTo(px - 1, py + 8); c.lineTo(px + 8, py - 6); c.lineTo(px + 17, py + 8); c.fill(); c.fillStyle = W.mtn2; c.beginPath(); c.moveTo(px + 8, py - 6); c.lineTo(px + 17, py + 8); c.lineTo(px + 9, py + 8); c.fill(); if (hsh(x, y) > .55) { c.fillStyle = W.snow; c.beginPath(); c.moveTo(px + 5, py - 2); c.lineTo(px + 8, py - 6); c.lineTo(px + 11, py - 2); c.fill(); } }
   }
   houses.forEach(h => {
+    if (h.k) { // 2.14: a bigger Pad building: the same drawing, scaled around the middle of its ground line
+      c.save(); c.translate(h.x * TS + TS, h.y * TS + 2 * TS); c.scale(h.k, h.k); c.translate(-TS, -2 * TS); drawHouse(R, {...h, x: 0, y: 0}); c.restore(); return; }
+    drawHouse(R, h);
+  });
+  function drawHouse(R, h) {
     const px = h.x * TS, py = h.y * TS, roof = h.gold ? '#E0A82E' : h.grey ? W.greyRoof : h.roof, wall = h.gold ? '#F6DA7A' : h.grey ? '#E4E0D8' : W.wall;
     if (h.guild) { drawMiniGuild(R, px, py, h.col, h.on); return; }
     if (h.hall) { const win = h.grey ? '#E4E0D8' : '#F4EFE4';
@@ -81,7 +86,7 @@ function drawScene(cv, sc) {
       R(px - 3, py + 15, 22, 1, 'rgba(0,0,0,.25)'); R(px, py + 4, 4, 4, win); R(px + 12, py + 4, 4, 4, win); R(px + 6, py, 4, 3, win); R(px + 6, py + 9, 4, 6, h.grey ? '#8C877E' : W.ink); return; }
     R(px + 1, py + 7, 14, 8, wall); R(px, py + 1, 16, 7, roof); R(px, py + 7, 16, 1, 'rgba(0,0,0,.22)');
     R(px + 6, py + 10, 3, 5, h.grey ? '#8C877E' : W.ink); R(px + 2, py + 9, 3, 3, h.grey ? '#CFCAC1' : '#8FB8DE'); R(px + 11, py + 9, 3, 3, h.grey ? '#CFCAC1' : '#8FB8DE');
-  });
+  }
 }
 /* ---------- the cyclist (original 16×14 pixel sprite, two pedal frames) ---------- */
 const BIKE = [
@@ -257,13 +262,20 @@ function buildWorld() {
     legs: WROADS.map((r, k) => legPts(WSQ[r.from], WSQ[r.to], roads[k], r.out, r.in))};
 }
 // 2.4: per town the town hall is its Grote Markt and three houses are its pleinen: grey until done, in colour once done
-function worldRoles(i) { if (!WORLD) buildWorld(); const hs = WORLD.spots[i]; const pleinen = hs.filter(h => !h.hall).slice(0, 3); return {hall: hs.find(h => h.hall), pleinen, rest: hs.filter(h => !h.hall && !pleinen.includes(h))}; }
+const PAD_K = 1.4; // 2.14: the Pad's buildings are drawn 1.4× so flags and bunting read well
+// 2.14: the bigger buildings need room above them, so a spot on the top rows of the map is used last (any spot can hold the hall)
+function worldRoles(i) {
+  if (!WORLD) buildWorld(); const ok = h => h.y >= 2; const hs = WORLD.spots[i].filter(ok).concat(WORLD.spots[i].filter(h => !ok(h)));
+  const hall0 = hs.find(h => h.hall && ok(h)) || hs.find(h => h.hall) && hs[0]; const hall = hall0 && {...hall0, hall: true};
+  const pleinen = hs.filter(h => h !== hall0).slice(0, 3).map(h => ({...h, hall: false}));
+  return {hall, pleinen, rest: hs.filter(h => h !== hall0 && !pleinen.some(p => p.x === h.x && p.y === h.y))};
+}
 function worldHouses() {
   const out = [];
   UNITS.forEach((u, i) => { const st = townState(u.id); const off = st === 'later' || st === 'locked'; const r = worldRoles(i); const tp = u.built ? townProgress(u.id) : null;
-    if (r.hall) out.push({...r.hall, grey: off || !(tp && tp.marktDone)});
-    r.pleinen.forEach((h, j) => { const pp = tp && tp.pleinen[j]; out.push({...h, grey: off || !(pp && pp.complete), gold: !off && !!pp && pp.ronde >= 3}); }); // 2.12: golden after Ronde 3
-    r.rest.forEach(h => out.push({...h, grey: off})); });
+    if (r.hall) out.push({...r.hall, k: PAD_K, grey: off || !(tp && tp.marktDone)});
+    r.pleinen.forEach((h, j) => { const pp = tp && tp.pleinen[j]; out.push({...h, k: PAD_K, grey: off || !(pp && pp.complete), gold: !off && !!pp && pp.ronde >= 3}); }); // 2.12: golden after Ronde 3
+    }); // 2.14: no filler houses on the Pad: only the buildings that mean something, drawn bigger
   return out;
 }
 const townPx = i => sqCenter(WSQ[i]);
@@ -272,7 +284,7 @@ const standPx = ([x, y]) => [x + 14, y + 8]; // where the cyclist waits on a squ
 function worldSigns() {
   if (!WORLD) buildWorld();
   const here = UNIT[SQ[nextSquare()].u].n - 1; // the cyclist waits in one town only
-  const taken = UNITS.flatMap((u, i) => { const [x, y] = townPx(i); return [[x - 26, y - 26, 52, 14], [x - 26, y + 20, 52, 14]].concat(i === here ? [heroRect(x, y)] : []); }).concat(lmRects('pad')); // bunting above and below, the theme signs
+  const taken = UNITS.flatMap((u, i) => { const [x, y] = townPx(i); return [[x - 26, y - 26, 52, 14], [x - 26, y + 20, 52, 14]].concat(i === here ? [heroRect(x, y)] : [], worldRoles(i).pleinen.map(h => [h.x * TS + 9, h.y * TS - 12 * PAD_K, 14, 12 * PAD_K])); }).concat(lmRects('pad')); // bunting above and below, the theme signs
   return UNITS.map((u, i) => { const [x, y] = townPx(i); return placeSign(WORLD.g, u.name, x, y, taken, TOWN_LABEL[i]); });
 }
 function worldOverlay() {
@@ -286,7 +298,8 @@ function worldOverlay() {
       ${dim ? `<g opacity=".8" fill="#fff"><circle cx="${x - 12}" cy="${y + 2}" r="14"/><circle cx="${x + 3}" cy="${y - 8}" r="15"/><circle cx="${x + 15}" cy="${y + 5}" r="12"/><circle cx="${x - 1}" cy="${y + 12}" r="12"/></g>` : ''}
       ${sign(lx, ly, u.name, dim)}
       ${tpw ? worldRoles(i).pleinen.map((h, j) => { const pp = tpw.pleinen[j]; if (!pp) return ''; const f = padFlag(pp); /* 2.12: 4 of the 5 guild houses decide the flag */
-        return roundsFlags(h.x * TS - 1, h.y * TS + 2, h.x * TS + 17, h.y * TS + 2, pp.ronde, .45) + (f ? miniFlag(h.x * TS + 10, h.y * TS - 9, f === 2) : ''); }).join('') : ''}
+        const k = PAD_K, bx = h.x * TS + TS, by = h.y * TS + 2 * TS, at = (dx, dy) => [bx + (dx - TS) * k, by + (dy - 2 * TS) * k]; const [x1, y1] = at(-1, 2), [x2] = at(17, 2), [fx, fy] = at(10, -9);
+        return roundsFlags(x1, y1, x2, y1, pp.ronde, .45 * k) + (f ? `<g transform="translate(${fx},${fy}) scale(${k})">${miniFlag(0, 0, f === 2)}</g>` : ''); }).join('') : ''}
       ${tpw && tpw.marktDone ? bunting(x - 24, y - 24, x + 24, y - 24, tpw.perfect) + bunting(x - 24, y + 22, x + 24, y + 22, tpw.perfect) : ''}
       ${tpw && tpw.perfect ? sparkles(x, y, 26) : ''}
       ${st === 'next' ? arrow(lx, ly - 6, true) : ''}

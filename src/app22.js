@@ -51,7 +51,7 @@ function fortSVG(n, x, y, s) {
 const bastionAt = (n, k) => { const c = (n - 1) / 2, a = (-90 + 72 * k) * Math.PI / 180, R = n * .5 * .74; return [c + R * Math.cos(a), c + n * .04 + R * Math.sin(a)]; };
 
 /* ---------- on the Pad: a free block of grass, away from roads, squares and the names ---------- */
-const FORT_CELLS = 5, FORT_PX = FORT_CELLS * TS;
+const FORT_CELLS = 7, FORT_PX = FORT_CELLS * TS;
 const _buildWorldFort = buildWorld; // wrapped on purpose: the fort is placed once the towns, roads and houses are there
 buildWorld = function () {
   _buildWorldFort();
