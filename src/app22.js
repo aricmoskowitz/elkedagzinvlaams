@@ -51,23 +51,24 @@ function fortSVG(n, x, y, s) {
 const bastionAt = (n, k) => { const c = (n - 1) / 2, a = (-90 + 72 * k) * Math.PI / 180, R = n * .5 * .74; return [c + R * Math.cos(a), c + n * .04 + R * Math.sin(a)]; };
 
 /* ---------- on the Pad: a free block of grass, away from roads, squares and the names ---------- */
-const FORT_CELLS = 5, FORT_PX = FORT_CELLS * TS;
+const FORT_CELLS = 7, FORT_PX = FORT_CELLS * TS;
 const _buildWorldFort = buildWorld; // wrapped on purpose: the fort is placed once the towns, roads and houses are there
 buildWorld = function () {
   _buildWorldFort();
   const g = WORLD.g, n = FORT_CELLS, hard = t => ['road', 'house', 'plaza', 'path', 'bridge', 'water', 'deep', 'mtn', 'sand'].includes(t);
   const ok = (x, y) => { for (let dy = -1; dy <= n; dy++) for (let dx = -1; dx <= n; dx++) { const t = g[y + dy] && g[y + dy][x + dx]; if (t === undefined || hard(t)) return false; } return true; };
   const clearOfSquares = (x, y) => WSQ.every(({t: [sx, sy]}) => x + n <= sx - 5 || x >= sx + 5 || y + n <= sy - 5 || y >= sy + 6);
-  let best = null; // the open meadow in the north-east of the boog, where no road goes
+  let best = null; // the top-right corner of the boog, where no road goes
   for (let y = 1; y + n < g.length - 1; y++) for (let x = 1; x + n < g[0].length - 1; x++) {
-    if (!ok(x, y) || !clearOfSquares(x, y)) continue; const sc = Math.hypot(x + n / 2 - 29, y + n / 2 - 4); if (!best || sc < best.sc) best = {x, y, sc}; }
+    if (!ok(x, y) || !clearOfSquares(x, y)) continue; const sc = Math.hypot(x + n / 2 - 40, y + n / 2 - 2); if (!best || sc < best.sc) best = {x, y, sc}; }
   if (best) for (let dy = 0; dy < n; dy++) for (let dx = 0; dx < n; dx++) g[best.y + dy][best.x + dx] = 'house'; // names and trees keep off it
   WORLD.fort = best && {x: best.x * TS, y: best.y * TS};
 };
 function fortSign() {
   const F = WORLD.fort; if (!F) return null;
-  const taken = worldSigns().flatMap(s => [s.r, s.a]);
-  return placeSign(WORLD.g, FORT.name, F.x + FORT_PX / 2, F.y + FORT_PX / 2, taken, 'S');
+  // the name stands right under the fort, centred (pulled in at the edge of the map)
+  const w = signW(FORT.name), W2 = WORLD.g[0].length * TS; const x = Math.max(w / 2 + 3, Math.min(W2 - w / 2 - 3, F.x + FORT_PX / 2)), y = F.y + FORT_PX + 3;
+  return {x, y, r: [x - w / 2, y, w, 17], a: [x, y, 0, 0]};
 }
 const _worldOverlayFort = worldOverlay; // wrapped on purpose: the fort goes under the names, its own name on top
 worldOverlay = function () {

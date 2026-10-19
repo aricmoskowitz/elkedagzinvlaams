@@ -74,6 +74,11 @@ function drawScene(cv, sc) {
     if (t === 'mtn' && x % 2 === 0 && g[y][x + 1] === 'mtn') { c.fillStyle = W.mtn; c.beginPath(); c.moveTo(px - 1, py + 8); c.lineTo(px + 8, py - 6); c.lineTo(px + 17, py + 8); c.fill(); c.fillStyle = W.mtn2; c.beginPath(); c.moveTo(px + 8, py - 6); c.lineTo(px + 17, py + 8); c.lineTo(px + 9, py + 8); c.fill(); if (hsh(x, y) > .55) { c.fillStyle = W.snow; c.beginPath(); c.moveTo(px + 5, py - 2); c.lineTo(px + 8, py - 6); c.lineTo(px + 11, py - 2); c.fill(); } }
   }
   houses.forEach(h => {
+    if (h.k) { // 2.14: a bigger Pad building: the same drawing, scaled around the middle of its ground line
+      c.save(); c.translate(h.x * TS + TS, h.y * TS + 2 * TS); c.scale(h.k, h.k); c.translate(-TS, -2 * TS); drawHouse(R, {...h, x: 0, y: 0}); c.restore(); return; }
+    drawHouse(R, h);
+  });
+  function drawHouse(R, h) {
     const px = h.x * TS, py = h.y * TS, roof = h.gold ? '#E0A82E' : h.grey ? W.greyRoof : h.roof, wall = h.gold ? '#F6DA7A' : h.grey ? '#E4E0D8' : W.wall;
     if (h.guild) { drawMiniGuild(R, px, py, h.col, h.on); return; }
     if (h.hall) { const win = h.grey ? '#E4E0D8' : '#F4EFE4';
@@ -81,7 +86,7 @@ function drawScene(cv, sc) {
       R(px - 3, py + 15, 22, 1, 'rgba(0,0,0,.25)'); R(px, py + 4, 4, 4, win); R(px + 12, py + 4, 4, 4, win); R(px + 6, py, 4, 3, win); R(px + 6, py + 9, 4, 6, h.grey ? '#8C877E' : W.ink); return; }
     R(px + 1, py + 7, 14, 8, wall); R(px, py + 1, 16, 7, roof); R(px, py + 7, 16, 1, 'rgba(0,0,0,.22)');
     R(px + 6, py + 10, 3, 5, h.grey ? '#8C877E' : W.ink); R(px + 2, py + 9, 3, 3, h.grey ? '#CFCAC1' : '#8FB8DE'); R(px + 11, py + 9, 3, 3, h.grey ? '#CFCAC1' : '#8FB8DE');
-  });
+  }
 }
 /* ---------- the cyclist (original 16×14 pixel sprite, two pedal frames) ---------- */
 const BIKE = [
@@ -212,7 +217,7 @@ function squareHouses(g, s, used, roof) {
 /* ---------- LEVEL 1: the arc (world) ---------- */
 const WGW = 42, WGH = 64;
 // three towns to the right, one long road back, then right again; always on down the map
-const TOWN_T = [[6, 5], [19, 10], [31, 17], [24, 29], [7, 29], [12, 42], [29, 46]];
+const TOWN_T = [[6, 7], [19, 10], [31, 17], [24, 29], [7, 29], [12, 42], [29, 46]];
 const WSQ = TOWN_T.map(t => ({t, h: 2.5}));
 const WROADS = [
   {from: 0, out: 'E', to: 1, in: 'N', kind: 'L'},
@@ -243,6 +248,16 @@ function buildWorld() {
   WSQ.forEach(s => markSquare(g, s));
   const used = WSQ.map((_, i) => usedSides(WROADS, i).concat(i === 6 ? ['S'] : []));
   const spots = WSQ.map((s, i) => squareHouses(g, s, used[i], ROOF[i]));
+  // 2.14: a few more spots on free grass close around each square, so the bigger buildings can stand apart
+  WSQ.forEach((s, i) => { const [cx, cy] = s.t; const lo = Math.ceil(s.h - .5); const cand = [];
+    for (let y = cy - lo - 6; y <= cy + lo + 5; y++) for (let x = cx - lo - 6; x <= cx + lo + 5; x++) {
+      if (x + 1 >= cx - lo - 1 && x <= cx + lo + 1 && y + 1 >= cy - lo - 1 && y <= cy + lo + 1) continue;
+      let ok = true; for (let dy = -1; dy <= 2 && ok; dy++) for (let dx = -1; dx <= 2 && ok; dx++) { const t = g[y + dy] && g[y + dy][x + dx]; const inside = dy >= 0 && dy < 2 && dx >= 0 && dx < 2;
+        if (t === undefined || (inside ? !['grass', 'flower', 'tuft'].includes(t) : ['road', 'plaza', 'house', 'water', 'deep'].includes(t))) ok = false; }
+      if (ok) cand.push([x, y]); }
+    cand.sort((a, b) => Math.hypot(a[0] + 1 - cx, a[1] + 1 - cy) - Math.hypot(b[0] + 1 - cx, b[1] + 1 - cy));
+    for (const [x, y] of cand) { if (spots[i].length >= 9) break; if ([[0, 0], [1, 0], [0, 1], [1, 1]].some(([dx, dy]) => g[y + dy][x + dx] === 'house')) continue;
+      if (spots[i].some(h => Math.abs(h.x - x) < 3 && Math.abs(h.y - y) < 3)) continue; spots[i].push({x, y, roof: ROOF[i], extra: true}); } }); // marked as a house only when used (worldRoles)
   // fields by Smulstad, flower meadows here and there
   for (let y = 20; y <= 24; y++) for (let x = 14; x <= 21; x++) if (g[y][x] === 'grass') g[y][x] = (x + y) % 3 ? 'field' : 'field2';
   const meadow = (x0, x1, y0, y1, p) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (g[y] && g[y][x] === 'grass' && hsh(x * 1.3, y) > p) g[y][x] = 'flower'; };
@@ -251,19 +266,43 @@ function buildWorld() {
   for (let y = 58; y < WGH; y++) for (let x = 0; x < WGW; x += 2) if ((x < PASS[0] - 3 || x > PASS[0] + 2) && g[y][x] !== 'road' && g[y][x + 1] !== 'road') { g[y][x] = 'mtn'; g[y][x + 1] = 'mtn'; }
   for (let y = 56; y <= 57; y++) for (let x = 0; x < WGW; x += 2) if ((x < 10 || x > 30) && hsh(x, y) > .45 && g[y][x] === 'grass' && g[y][x + 1] === 'grass') { g[y][x] = 'mtn'; g[y][x + 1] = 'mtn'; }
   // a few woods, not everywhere
-  plantTrees(g, 35, 41, 0, 13, .55); plantTrees(g, 0, 4, 9, 22, .55); plantTrees(g, 31, 41, 52, 57, .6); plantTrees(g, 2, 12, 34, 38, .4); plantTrees(g, 18, 28, 33, 41, .3); plantTrees(g, 8, 14, 12, 20, .35); plantTrees(g, 0, 7, 0, 1, .5);
+  plantTrees(g, 35, 41, 0, 13, .3); plantTrees(g, 0, 4, 9, 22, .25); plantTrees(g, 31, 41, 52, 57, .35); plantTrees(g, 2, 12, 34, 38, .2); plantTrees(g, 18, 28, 33, 41, .15); plantTrees(g, 8, 14, 12, 20, .15); // 2.14: fewer trees
   for (let y = 0; y < WGH; y++) for (let x = 0; x < WGW; x++) if (g[y][x] === 'grass' && hsh(x + 3, y + 7) < 0.03) g[y][x] = 'tuft';
   WORLD = {g, spots, roads: roads.concat([pass]), squares: WSQ.map((s, i) => ({...s, open: used[i]})),
     legs: WROADS.map((r, k) => legPts(WSQ[r.from], WSQ[r.to], roads[k], r.out, r.in))};
 }
 // 2.4: per town the town hall is its Grote Markt and three houses are its pleinen: grey until done, in colour once done
-function worldRoles(i) { if (!WORLD) buildWorld(); const hs = WORLD.spots[i]; const pleinen = hs.filter(h => !h.hall).slice(0, 3); return {hall: hs.find(h => h.hall), pleinen, rest: hs.filter(h => !h.hall && !pleinen.includes(h))}; }
+const PAD_K = 1.4; // 2.14: the Pad's buildings are drawn 1.4× so flags and bunting read well
+// 2.14: the bigger buildings need room above them, so a spot on the top rows of the map is used last (any spot can hold the hall)
+function worldRoles(i) {
+  if (!WORLD) buildWorld(); WORLD.roles = WORLD.roles || {}; if (WORLD.roles[i]) return WORLD.roles[i];
+  const ok = h => h.y >= 3; const hs = WORLD.spots[i].filter(ok).concat(WORLD.spots[i].filter(h => !ok(h)));
+  // the box a building covers when drawn k× around the middle of its ground line (a plein house with its flag)
+  const box = (h, k, hall, flag = true) => { const bx = h.x * TS + TS, by = h.y * TS + 2 * TS, [x0, y0, x1, y1] = hall ? [-3, -9, 19, 16] : flag ? [0, -9, 20, 16] : [0, 1, 16, 16];
+    return [bx + (x0 - TS) * k, by + (y0 - 2 * TS) * k, bx + (x1 - TS) * k, by + (y1 - 2 * TS) * k]; }; // the boxes are generous already (a flag is thinner than its box)
+  const hit = (a, b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]; const used = [];
+  const fits = b => !used.some(u => hit(u, b));
+  const hall0 = hs.find(h => h.hall && ok(h)) || hs.find(h => h.hall) && hs[0];
+  const fortHit = h => WORLD.fort && h.extra && h.x * TS < WORLD.fort.x + 7 * TS + TS && (h.x + 2) * TS > WORLD.fort.x - TS && h.y * TS < WORLD.fort.y + 7 * TS + TS && (h.y + 2) * TS > WORLD.fort.y - TS;
+  // the town hall and the plein houses take the biggest size that fits (1.4×, else 1.2×, else 1×), so no two buildings overlap
+  let hall, pleinen;
+  for (const hk of [PAD_K, 1.2, 1]) {
+    used.length = 0; hall = hall0 && {...hall0, hall: true, k: hk}; if (hall) used.push(box(hall, hk, true)); pleinen = [];
+    for (const k of [PAD_K, 1.2, 1]) for (const h of hs) { if (pleinen.length === 3) break; if (h === hall0 || fortHit(h) || pleinen.some(p => p.x === h.x && p.y === h.y)) continue; const b = box(h, k, false); if (fits(b)) { used.push(b); pleinen.push({...h, hall: false, k}); } }
+    if (pleinen.length === 3) break;
+  }
+  for (const h of hs) { if (pleinen.length === 3) break; if (h !== hall0 && !pleinen.some(p => p.x === h.x && p.y === h.y)) pleinen.push({...h, hall: false, k: 1}); } // only if there is no room at all
+  const rest = [];
+  for (const h of hs) { if (rest.length === 2) break; if (h.extra || h === hall0 || pleinen.some(p => p.x === h.x && p.y === h.y)) continue; const b = box(h, 1, false, false); if (fits(b)) { used.push(b); rest.push({...h, hall: false}); } } // small grey filler houses, only on the old spots
+  [hall].concat(pleinen, rest).filter(h => h && h.extra).forEach(h => [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([dx, dy]) => { WORLD.g[h.y + dy][h.x + dx] = 'house'; })); // an extra spot in use is a house
+  return (WORLD.roles[i] = {hall, pleinen, rest});
+}
 function worldHouses() {
   const out = [];
   UNITS.forEach((u, i) => { const st = townState(u.id); const off = st === 'later' || st === 'locked'; const r = worldRoles(i); const tp = u.built ? townProgress(u.id) : null;
     if (r.hall) out.push({...r.hall, grey: off || !(tp && tp.marktDone)});
     r.pleinen.forEach((h, j) => { const pp = tp && tp.pleinen[j]; out.push({...h, grey: off || !(pp && pp.complete), gold: !off && !!pp && pp.ronde >= 3}); }); // 2.12: golden after Ronde 3
-    r.rest.forEach(h => out.push({...h, grey: off})); });
+    r.rest.forEach(h => out.push({...h, grey: off})); }); // 2.14: the four buildings drawn bigger; at most two small filler houses that touch nothing
   return out;
 }
 const townPx = i => sqCenter(WSQ[i]);
@@ -272,7 +311,7 @@ const standPx = ([x, y]) => [x + 14, y + 8]; // where the cyclist waits on a squ
 function worldSigns() {
   if (!WORLD) buildWorld();
   const here = UNIT[SQ[nextSquare()].u].n - 1; // the cyclist waits in one town only
-  const taken = UNITS.flatMap((u, i) => { const [x, y] = townPx(i); return [[x - 26, y - 26, 52, 14], [x - 26, y + 20, 52, 14]].concat(i === here ? [heroRect(x, y)] : []); }).concat(lmRects('pad')); // bunting above and below, the theme signs
+  const taken = UNITS.flatMap((u, i) => { const [x, y] = townPx(i); return [[x - 21, y - 19, 42, 14]].concat(i === here ? [heroRect(x, y)] : [], worldRoles(i).pleinen.map(h => [h.x * TS + 9, h.y * TS - 12 * (h.k || 1), 14, 12 * (h.k || 1)])); }).concat(lmRects('pad')); // bunting above and below, the theme signs
   return UNITS.map((u, i) => { const [x, y] = townPx(i); return placeSign(WORLD.g, u.name, x, y, taken, TOWN_LABEL[i]); });
 }
 function worldOverlay() {
@@ -286,8 +325,9 @@ function worldOverlay() {
       ${dim ? `<g opacity=".8" fill="#fff"><circle cx="${x - 12}" cy="${y + 2}" r="14"/><circle cx="${x + 3}" cy="${y - 8}" r="15"/><circle cx="${x + 15}" cy="${y + 5}" r="12"/><circle cx="${x - 1}" cy="${y + 12}" r="12"/></g>` : ''}
       ${sign(lx, ly, u.name, dim)}
       ${tpw ? worldRoles(i).pleinen.map((h, j) => { const pp = tpw.pleinen[j]; if (!pp) return ''; const f = padFlag(pp); /* 2.12: 4 of the 5 guild houses decide the flag */
-        return roundsFlags(h.x * TS - 1, h.y * TS + 2, h.x * TS + 17, h.y * TS + 2, pp.ronde, .45) + (f ? miniFlag(h.x * TS + 10, h.y * TS - 9, f === 2) : ''); }).join('') : ''}
-      ${tpw && tpw.marktDone ? bunting(x - 24, y - 24, x + 24, y - 24, tpw.perfect) + bunting(x - 24, y + 22, x + 24, y + 22, tpw.perfect) : ''}
+        const k = h.k || PAD_K, bx = h.x * TS + TS, by = h.y * TS + 2 * TS, at = (dx, dy) => [bx + (dx - TS) * k, by + (dy - 2 * TS) * k]; const [x1, y1] = at(-1, 2), [x2] = at(17, 2), [fx, fy] = at(10, -9);
+        return roundsFlags(x1, y1, x2, y1, pp.ronde, .45 * k) + (f ? `<g transform="translate(${fx},${fy}) scale(${k})">${miniFlag(0, 0, f === 2)}</g>` : ''); }).join('') : ''}
+      ${tpw && tpw.marktDone && tpw.pleinen.length && tpw.pleinen.every(p => p.ronde >= 2) ? bunting(x - 19, y - 17, x + 19, y - 17, tpw.pleinen.every(p => p.ronde >= 3)) : ''}<!-- 2.14: one banner across the square: Ronde 2 on every plein plus the Grote Markt (gold after Ronde 3 everywhere) -->
       ${tpw && tpw.perfect ? sparkles(x, y, 26) : ''}
       ${st === 'next' ? arrow(lx, ly - 6, true) : ''}
     </g>`;

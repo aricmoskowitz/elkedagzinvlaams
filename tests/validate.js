@@ -141,6 +141,12 @@ const {openApp} = require('./page');
       SES = keep; if (nv < 1000) bad.push('Vervoeg: only ' + nv + ' cards checked');
       if (keyValid('v:wandelen:nu')) bad.push('Vervoeg cards must stay out of Herhalen');
       const ks = vvKeys(); if (ks.length !== VV_ROUND || !ks.every(k => /^v:[^:]+:(nu|verl|volt|toek|bevel)$/.test(k))) bad.push('Vervoeg round: ' + ks.length + ' cards'); }
+    // 2.14 the Pad: the town hall and the three plein houses (drawn 1.4×) never overlap, nor sit in the top rows
+    UNITS.forEach((u, i) => { const r = worldRoles(i); const bs = [r.hall].concat(r.pleinen).filter(Boolean);
+      if (bs.length !== 4) bad.push('Pad ' + u.id + ': ' + bs.length + ' buildings');
+      const box = h => { const bx = h.x * TS + TS, by = h.y * TS + 2 * TS, [x0, y0, x1, y1] = h.hall ? [-3, -9, 19, 16] : [0, -9, 20, 16]; const k = h.k || 1; return [bx + (x0 - TS) * k, by + (y0 - 2 * TS) * k, bx + (x1 - TS) * k, by + (y1 - 2 * TS) * k]; };
+      bs.forEach((a, k) => { const A = box(a); if (A[1] < 0) bad.push('Pad ' + u.id + ': a building is cut off at the top');
+        bs.slice(k + 1).forEach(b => { const B = box(b); if (A[0] < B[2] && B[0] < A[2] && A[1] < B[3] && B[1] < A[3]) bad.push('Pad ' + u.id + ': two buildings overlap'); }); }); });
     // 2.6 woordenboek: every entry complete and consistent (see src/woordenboek/README.md)
     let nd2 = 0; const seenW = new Set(); const lexW = new Set(LEX.map(l => norm(l.w) + '|' + l.p));
     const PS = ['n', 'v', 'adj', 'adv', 'prep', 'pron', 'conj', 'num', 'int', 'q'];
