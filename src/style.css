@@ -53,6 +53,8 @@ h1{font-size:28px} h2{font-size:22px} h3{font-size:18px}
 .tapline .chev{color:var(--go);font-size:22px;line-height:1}
 .back{border:0;background:none;color:var(--go);font-weight:600;cursor:pointer;padding:8px 0;min-height:44px;font-size:15px}
 .chip{display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;min-height:34px;color:var(--ink)}
+.fortmap{border:2px solid var(--ink);border-radius:18px;overflow:hidden;background:#A9D38C}
+.fortmap svg{display:block;width:100%;height:auto}
 .chip.on{border-color:var(--ink);background:var(--ink);color:#fff}
 .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;border-radius:999px;padding:3px 9px;background:var(--soft);color:var(--ink2)}
 .pill.test{background:var(--warn-tint);color:var(--warn)}

@@ -125,6 +125,22 @@ const {openApp} = require('./page');
     // 2.12 the plein's house on the Pad: a flag only when 4 of the 5 guild houses have one (the star when 4 are at 100%)
     { const pf = lv => padFlag({levels: lv}); const r = [pf([1, 1, 1, 0, 0]), pf([1, 1, 1, 1, 0]), pf([2, 2, 2, 1, 1]), pf([2, 2, 2, 2, 0]), pf([2, 1, 1, 1, 1])];
       if (r.join() !== '0,1,1,2,1') bad.push('Pad flag (4 of 5 rule): ' + r.join()); }
+    // 2.13 Speelfort: on free grass on the Pad (no road, no square), its name nearby and clear of the town names;
+    // Vervoeg accepts its own answer for every verb, tense and person; its cards stay out of Herhalen
+    { const F = WORLD.fort; if (!F) bad.push('Speelfort: no spot on the Pad'); else {
+        const r = [F.x, F.y, FORT_PX, FORT_PX], ov = (a, b) => a[0] < b[0] + b[2] && a[0] + a[2] > b[0] && a[1] < b[1] + b[3] && a[1] + a[3] > b[1];
+        if (WORLD.roads.some(rd => rd.some(([x, y]) => ov(r, [x - RW / 2, y - RW / 2, RW, RW])))) bad.push('Speelfort: on a road');
+        if (WSQ.some(q => { const [cx, cy] = sqCenter(q), hp = q.h * TS + 2; return ov(r, [cx - hp, cy - hp, 2 * hp, 2 * hp]); })) bad.push('Speelfort: on a square');
+        const n = fortSign(), ws = worldSigns();
+        if (!n || ws.some(s => ov(n.r, s.r) || ov(n.r, s.a))) bad.push('Speelfort: its name covers a town name');
+        else { const gx = Math.max(0, n.r[0] - (F.x + FORT_PX), F.x - (n.r[0] + n.r[2])), gy = Math.max(0, n.r[1] - (F.y + FORT_PX), F.y - (n.r[1] + n.r[3])); if (Math.hypot(gx, gy) > 16) bad.push('Speelfort: its name is far from the fort'); } }
+      const keep = SES; SES = {vx: {}}; let nv = 0;
+      allWords().filter(l => l.v && vForms(l)).forEach(l => VV_TENSES.forEach(([t]) => { if (!vvApplies(l, t)) return;
+        (t === 'bevel' ? [['jij', 'jij']] : VV_PERS).forEach(pp => { SES.vx = {['v:' + l.id + ':' + t]: pp}; const ex = vervoegEx('v:' + l.id + ':' + t); nv++;
+          if (!ex.answer || /undefined|null/.test(ex.answer) || !check(ex, ex.answer).ok) bad.push('Vervoeg ' + l.w + ' ' + t + ' ' + pp[0] + ': ' + ex.answer); }); }));
+      SES = keep; if (nv < 1000) bad.push('Vervoeg: only ' + nv + ' cards checked');
+      if (keyValid('v:wandelen:nu')) bad.push('Vervoeg cards must stay out of Herhalen');
+      const ks = vvKeys(); if (ks.length !== VV_ROUND || !ks.every(k => /^v:[^:]+:(nu|verl|volt|toek|bevel)$/.test(k))) bad.push('Vervoeg round: ' + ks.length + ' cards'); }
     // 2.6 woordenboek: every entry complete and consistent (see src/woordenboek/README.md)
     let nd2 = 0; const seenW = new Set(); const lexW = new Set(LEX.map(l => norm(l.w) + '|' + l.p));
     const PS = ['n', 'v', 'adj', 'adv', 'prep', 'pron', 'conj', 'num', 'int', 'q'];
