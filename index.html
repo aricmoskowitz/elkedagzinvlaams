@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "112404a221";</script>
+<script>const APP_VERSION = "d28d56be2f";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -2858,8 +2858,8 @@ function worldOverlay() {
       ${sign(lx, ly, u.name, dim)}
       ${tpw ? worldRoles(i).pleinen.map((h, j) => { const pp = tpw.pleinen[j]; if (!pp) return ''; const f = padFlag(pp); /* 2.12: 4 of the 5 guild houses decide the flag */
         const k = h.k || PAD_K, bx = h.x * TS + TS, by = h.y * TS + 2 * TS, at = (dx, dy) => [bx + (dx - TS) * k, by + (dy - 2 * TS) * k]; const [x1, y1] = at(-1, 2), [x2] = at(17, 2), [fx, fy] = at(10, -9);
-        return (f ? `<g transform="translate(${fx},${fy}) scale(${k})">${miniFlag(0, 0, f === 2)}</g>` : ''); }).join('') : ''}
-      ${tpw && tpw.marktDone ? bunting(x - 19, y - 17, x + 19, y - 17, tpw.perfect) : ''}
+        return roundsFlags(x1, y1, x2, y1, pp.ronde, .45 * k) + (f ? `<g transform="translate(${fx},${fy}) scale(${k})">${miniFlag(0, 0, f === 2)}</g>` : ''); }).join('') : ''}
+      ${tpw && tpw.marktDone && tpw.pleinen.length && tpw.pleinen.every(p => p.ronde >= 2) ? bunting(x - 19, y - 17, x + 19, y - 17, tpw.pleinen.every(p => p.ronde >= 3)) : ''}<!-- 2.14: one banner across the square: Ronde 2 on every plein plus the Grote Markt (gold after Ronde 3 everywhere) -->
       ${tpw && tpw.perfect ? sparkles(x, y, 26) : ''}
       ${st === 'next' ? arrow(lx, ly - 6, true) : ''}
     </g>`;
@@ -4958,9 +4958,9 @@ function progressLegend() {
     ${row(bunting(1, 6, 21, 6, false), 'Vlaggetjes over een plein: Ronde 2 gehaald')}
     ${row(bunting(1, 6, 15, 6, true) + spark, 'Gouden vlaggetjes met glitter: Ronde 3 gehaald')}
     ${row(`<rect x="2" y="5" width="13" height="11" fill="#DDD4C3" stroke="#E0A82E" stroke-width="2"/>` + spark, 'Gouden stoeprand: plein perfect (alles 100% en Ronde 3)')}
-    ${row(bunting(1, 6, 21, 6, false) + '<text x="11" y="17" text-anchor="middle" font-size="6" font-weight="700" fill="#2A2620">★</text>', 'Vlaggetjes over de Grote Markt, of over het plein van een stad op het Pad: de Grote Markt gehaald')}
+    ${row(bunting(1, 6, 21, 6, false) + '<text x="11" y="17" text-anchor="middle" font-size="6" font-weight="700" fill="#2A2620">★</text>', 'Vlaggetjes over de Grote Markt: gehaald. Op het Pad hangen ze over het plein van de stad als ook elk plein Ronde 2 gehaald heeft')}
     ${typeof landmarkSVG === 'function' ? row(landmarkSVG('tram', 1, 2, 1.4, 'gold', 'Gouden tram', false), 'Het teken van het thema (een tram, een frietkot, …) midden op elk plein: goud als dat plein Ronde 3 gehaald heeft, op het Pad en in het gras als elk plein van de stad het gehaald heeft') : ''}
-  </div><div class="small">Op het Pad heeft elke stad drie huizen (één per plein) en een stadhuis voor de Grote Markt. Een pleinhuis krijgt een gele vlag als 4 van de 5 gildehuizen gehaald zijn, de vlag met de ster als 4 van de 5 op 100% staan. Na Ronde 3 wordt het goud. Is de Grote Markt gehaald, dan hangen er vlaggetjes over het plein van de stad. Is alles perfect, ook de opdracht in de stad, dan wordt de hele stad goud.</div></div>`;
+  </div><div class="small">Op het Pad heeft elke stad drie huizen (één per plein) en een stadhuis voor de Grote Markt. Een pleinhuis krijgt een gele vlag als 4 van de 5 gildehuizen gehaald zijn, de vlag met de ster als 4 van de 5 op 100% staan. Na Ronde 2 hangen er vlaggetjes over het huis, na Ronde 3 wordt het goud. Hebben alle pleinen Ronde 2 gehaald en is ook de Grote Markt gehaald, dan hangt er één vlaggenlijn over het plein van de stad. Is alles perfect, ook de opdracht in de stad, dan wordt de hele stad goud.</div></div>`;
 }
 
 /* ===== VERSION 2.5: clearer cards (from the user's review) =====
@@ -5387,16 +5387,17 @@ buildWorld = function () {
   const g = WORLD.g, n = FORT_CELLS, hard = t => ['road', 'house', 'plaza', 'path', 'bridge', 'water', 'deep', 'mtn', 'sand'].includes(t);
   const ok = (x, y) => { for (let dy = -1; dy <= n; dy++) for (let dx = -1; dx <= n; dx++) { const t = g[y + dy] && g[y + dy][x + dx]; if (t === undefined || hard(t)) return false; } return true; };
   const clearOfSquares = (x, y) => WSQ.every(({t: [sx, sy]}) => x + n <= sx - 5 || x >= sx + 5 || y + n <= sy - 5 || y >= sy + 6);
-  let best = null; // the open meadow in the north-east of the boog, where no road goes
+  let best = null; // the top-right corner of the boog, where no road goes
   for (let y = 1; y + n < g.length - 1; y++) for (let x = 1; x + n < g[0].length - 1; x++) {
-    if (!ok(x, y) || !clearOfSquares(x, y)) continue; const sc = Math.hypot(x + n / 2 - 29, y + n / 2 - 4); if (!best || sc < best.sc) best = {x, y, sc}; }
+    if (!ok(x, y) || !clearOfSquares(x, y)) continue; const sc = Math.hypot(x + n / 2 - 40, y + n / 2 - 2); if (!best || sc < best.sc) best = {x, y, sc}; }
   if (best) for (let dy = 0; dy < n; dy++) for (let dx = 0; dx < n; dx++) g[best.y + dy][best.x + dx] = 'house'; // names and trees keep off it
   WORLD.fort = best && {x: best.x * TS, y: best.y * TS};
 };
 function fortSign() {
   const F = WORLD.fort; if (!F) return null;
-  const taken = worldSigns().flatMap(s => [s.r, s.a]);
-  return placeSign(WORLD.g, FORT.name, F.x + FORT_PX / 2, F.y + FORT_PX / 2, taken, 'S');
+  // the name stands right under the fort, centred (pulled in at the edge of the map)
+  const w = signW(FORT.name), W2 = WORLD.g[0].length * TS; const x = Math.max(w / 2 + 3, Math.min(W2 - w / 2 - 3, F.x + FORT_PX / 2)), y = F.y + FORT_PX + 3;
+  return {x, y, r: [x - w / 2, y, w, 17], a: [x, y, 0, 0]};
 }
 const _worldOverlayFort = worldOverlay; // wrapped on purpose: the fort goes under the names, its own name on top
 worldOverlay = function () {

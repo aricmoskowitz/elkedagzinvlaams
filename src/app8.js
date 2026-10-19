@@ -326,8 +326,8 @@ function worldOverlay() {
       ${sign(lx, ly, u.name, dim)}
       ${tpw ? worldRoles(i).pleinen.map((h, j) => { const pp = tpw.pleinen[j]; if (!pp) return ''; const f = padFlag(pp); /* 2.12: 4 of the 5 guild houses decide the flag */
         const k = h.k || PAD_K, bx = h.x * TS + TS, by = h.y * TS + 2 * TS, at = (dx, dy) => [bx + (dx - TS) * k, by + (dy - 2 * TS) * k]; const [x1, y1] = at(-1, 2), [x2] = at(17, 2), [fx, fy] = at(10, -9);
-        return (f ? `<g transform="translate(${fx},${fy}) scale(${k})">${miniFlag(0, 0, f === 2)}</g>` : ''); }).join('') : ''}
-      ${tpw && tpw.marktDone ? bunting(x - 19, y - 17, x + 19, y - 17, tpw.perfect) : ''}
+        return roundsFlags(x1, y1, x2, y1, pp.ronde, .45 * k) + (f ? `<g transform="translate(${fx},${fy}) scale(${k})">${miniFlag(0, 0, f === 2)}</g>` : ''); }).join('') : ''}
+      ${tpw && tpw.marktDone && tpw.pleinen.length && tpw.pleinen.every(p => p.ronde >= 2) ? bunting(x - 19, y - 17, x + 19, y - 17, tpw.pleinen.every(p => p.ronde >= 3)) : ''}<!-- 2.14: one banner across the square: Ronde 2 on every plein plus the Grote Markt (gold after Ronde 3 everywhere) -->
       ${tpw && tpw.perfect ? sparkles(x, y, 26) : ''}
       ${st === 'next' ? arrow(lx, ly - 6, true) : ''}
     </g>`;
