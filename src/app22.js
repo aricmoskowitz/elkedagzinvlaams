@@ -1,15 +1,16 @@
 /* ===== 2.13: het Speelfort — a star fort with mini games, the same in every boog =====
    Like the forts in the ring around Antwerp: a five-pointed star with a moat, earth walls and a brick wall. It stands
    on free grass on the Pad (never on a road or a square); tap it to go inside. Each of its five bastions holds one mini
-   game: the first is Vervoeg, the other four are kept for later (GAMES). The fort is always open.
+   game: the first is Vervoeg, the second Onthoud (app23.js), the others are kept for later (GAMES). The fort is always open.
    Vervoeg: "hij · nu · wandelen" → type "wandelt". Five tenses: nu, verleden, voltooid, toekomst (zal + infinitief),
    bevel (gebiedende wijs). Progress: one review item per verb per tense (v:<word id>:<tense>) in S.items, with the
    persons you got wrong in it.px so they come back first. v: items stay out of Herhalen (keyValid rejects them);
    the Ik meter Vervoegen counts them together with the conjugation cards. */
 const FORT = {name: 'Speelfort', en: 'Play fort: mini games'};
 const GAMES = [
-  {id: 'vervoeg', name: 'Vervoeg', en: 'Conjugate', sub: 'Persoon, tijd en werkwoord: typ de juiste vorm'},
-  null, null, null, null, // room for four more mini games, one per bastion
+  {id: 'vervoeg', name: 'Vervoeg', en: 'Conjugate', sub: 'Persoon, tijd en werkwoord: typ de juiste vorm',
+    open: () => openVervoeg(), stat: () => { const st = vvStats(); return st.total ? `${st.known} van ${st.total} gekend` : ''; }},
+  null, null, null, null, // room for more mini games, one per bastion (2.15: Onthoud in app23.js); each has open() and stat()
 ];
 
 /* ---------- the star fort as pixel art: n × n pixels, layer by distance to the star's edge ---------- */
@@ -83,11 +84,11 @@ worldOverlay = function () {
 const _viewPadFort = viewPad; // wrapped on purpose: one more level on the Pad
 viewPad = function () { return PAD.lvl === 'fort' ? viewFort() : _viewPadFort(); };
 function viewFort() {
-  const N = 72, vb = N; const st = vvStats();
+  const N = 72, vb = N;
   const marks = GAMES.map((gm, k) => { const [x, y] = bastionAt(N, k);
     return `<g ${gm ? `data-act="game" data-g="${gm.id}" role="button" tabindex="0" aria-label="${esc(gm.name)}"` : 'aria-hidden="true"'} style="cursor:${gm ? 'pointer' : 'default'}"><circle cx="${x}" cy="${y}" r="5.2" fill="${gm ? 'var(--go)' : '#DAD5CC'}" stroke="#fff" stroke-width="1"/><text x="${x}" y="${y + 2.3}" text-anchor="middle" font-size="6.4" font-weight="700" fill="${gm ? '#fff' : '#8C877E'}">${gm ? k + 1 : '?'}</text></g>`; }).join('');
   const rows = GAMES.map((gm, k) => gm
-    ? `<button class="tapline" data-act="game" data-g="${gm.id}"><div class="t"><div style="font-weight:600" data-en="${esc(gm.en)}">${k + 1} · ${esc(gm.name)}${gm.id === 'vervoeg' && st.total ? ` <span class="small">· ${st.known} van ${st.total} gekend</span>` : ''}</div><div class="small">${esc(gm.sub)}</div></div><span class="chev">›</span></button>`
+    ? `<button class="tapline" data-act="game" data-g="${gm.id}"><div class="t"><div style="font-weight:600" data-en="${esc(gm.en)}">${k + 1} · ${esc(gm.name)}${gm.stat && gm.stat() ? ` <span class="small">· ${gm.stat()}</span>` : ''}</div><div class="small">${esc(gm.sub)}</div></div><span class="chev">›</span></button>`
     : `<button class="tapline" aria-disabled="true" disabled><div class="t"><div style="font-weight:600;color:var(--faint)">${k + 1} · Nog leeg</div><div class="small">Hier komt later een nieuw spel.</div></div></button>`).join('');
   return `<div class="stack">
     <button class="back" data-act="pad-up">‹ Pad</button>
@@ -99,7 +100,7 @@ function viewFort() {
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el) return; const a = el.dataset.act;
   if (a === 'fort') { closeSheet(); TAB = 'pad'; PAD.lvl = 'fort'; render(); $('#main').scrollTop = 0; }
-  else if (a === 'game') { if (el.dataset.g === 'vervoeg') openVervoeg(); }
+  else if (a === 'game') { const gm = GAMES.find(g => g && g.id === el.dataset.g); if (gm) gm.open(); }
   else if (a === 'vv-t') { const v = vvSet(); const t = el.dataset.v; v.tenses = v.tenses.includes(t) ? v.tenses.filter(x => x !== t) : VV_TENSES.map(x => x[0]).filter(x => x === t || v.tenses.includes(x)); if (!v.tenses.length) v.tenses = [t]; Store.mark('state'); openVervoeg(); }
   else if (a === 'vv-p') { vvSet().pool = el.dataset.v; Store.mark('state'); openVervoeg(); }
   else if (a === 'vv-go') { const keys = vvKeys(); closeSheet(); if (!keys.length) return toast('Geen werkwoorden om te vervoegen'); startSession({keys, intros: false, fort: 'vervoeg'}); }

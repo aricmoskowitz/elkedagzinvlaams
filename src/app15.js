@@ -75,8 +75,9 @@ function groupBody(g) {
   return `<div class="wbody">${chips}${wordRows(ls, g.key === 'g:soort:v')}</div>`;
 }
 function wordRows(ls, verbs) {
-  return `<div class="list">${ls.map(l => { const f = verbs && l.v ? vForms(l) : null;
-    return `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">${f ? `<span class="verbword">${esc(f.ik)} · ${esc(f.pl)} · ${esc(f.im[0])} · ${esc(f.sep + f.pp)}</span>` : esc(l.d || '')}</span></div>`; }).join('')}</div>`;
+  const any = ls.some(l => S.kaart && S.kaart[l.id]);
+  return `${any ? kaartLegend() : ''}<div class="list">${ls.map(l => { const f = verbs && l.v ? vForms(l) : null;
+    return `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">${f ? `<span class="verbword">${esc(f.ik)} · ${esc(f.pl)} · ${esc(f.im[0])} · ${esc(f.sep + f.pp)}</span>` : esc(l.d || '')}</span>${kaartMini(l.id)}</div>`; }).join('')}</div>`;
 }
 
 /* ---------- a set's own page ---------- */
@@ -93,7 +94,7 @@ function openSetPage(id) {
       ${own ? `<button class="link sm" data-act="set-rename" data-id="${esc(id)}" style="padding-left:0">Hernoem ›</button>` : ''}</div>
     <div class="grid2">${studyButtons(id, ls.length)}</div>
     ${ls.length ? `<button class="link sm" data-act="set-export" data-id="${esc(id)}" style="padding-left:0" data-en="Share as a word list (EDZ-WOORDEN v1)">Deel als woordenlijst ›</button>` : ''}
-    <div class="list">${ls.map(l => `<div class="li"><span class="w" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0">${wordHTML(l)}</span><span class="d">${esc(l.d || '')}</span>${own ? `<button class="iconbtn" data-act="set-remove" data-set="${esc(id)}" data-id="${esc(l.id)}" aria-label="Haal ${esc(l.w)} uit de set">✕</button>` : ''}</div>`).join('') || '<div class="small" style="padding:10px 0">Nog leeg.</div>'}</div>
+    ${ls.some(l => S.kaart && S.kaart[l.id]) ? kaartLegend() : ''}<div class="list">${ls.map(l => `<div class="li"><span class="w" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0">${wordHTML(l)}</span><span class="d">${esc(l.d || '')}</span>${kaartMini(l.id)}${own ? `<button class="iconbtn" data-act="set-remove" data-set="${esc(id)}" data-id="${esc(l.id)}" aria-label="Haal ${esc(l.w)} uit de set">✕</button>` : ''}</div>`).join('') || '<div class="small" style="padding:10px 0">Nog leeg.</div>'}</div>
     ${own ? `<input type="search" id="set-q" placeholder="Zoek een woord om toe te voegen" aria-label="Zoek een woord om toe te voegen"><div id="set-res"></div>
       <button class="btn line block" data-act="word-new" data-set="${esc(id)}">+ Nieuw woord in deze set</button>
       <button class="link" data-act="set-delete" data-id="${esc(id)}" style="color:var(--warn)">Verwijder deze set</button>` : ''}
