@@ -188,26 +188,34 @@ function openCards(setId) {
     <div class="small">Eenvoudig: woord ↔ vertaling; een werkwoord krijgt een persoon (<i>jij neemt</i> ↔ <i>you take</i>). Volledig: het woord, en achteraan alle vormen, de uitleg en een voorbeeldzin.</div>
     <div class="eyebrow">Voorkant</div>
     <div class="row wrap"><label class="chip"><input type="radio" name="cd-dir" value="nl" ${pre.dir === 'nl' ? 'checked' : ''}> Nederlands</label><label class="chip"><input type="radio" name="cd-dir" value="en" ${pre.dir === 'en' ? 'checked' : ''}> Engels</label><label class="chip"><input type="radio" name="cd-dir" value="mix" ${pre.dir === 'mix' ? 'checked' : ''}> Door elkaar</label></div>
+    <label class="chip" style="align-self:flex-start"><input type="checkbox" id="cd-skip" ${pre.skip ? 'checked' : ''}> Sla over wat ik al ken</label>
+    <div class="small">Wat je weet, onthoudt de app apart per soort kaart en per kant: eenvoudig of volledig, Nederlands of Engels vooraan (<span data-en="known status">${KAART_PARTS.map(p => p[1]).join(' · ')}</span>).</div>
     <label class="f">Hoeveel?<select id="cd-n">${[10, 20, 40, 999].map(n => `<option value="${n}" ${pre.n === n ? 'selected' : ''}>${n === 999 ? 'alle' : n}</option>`).join('')}</select></label>
     <button class="btn block" id="cd-go">Start</button>
   </div>`);
   s.querySelector('#cd-go').onclick = () => {
     const deck = decks.find(d => d.id === s.querySelector('#cd-deck').value);
-    const mode = s.querySelector('input[name="cd-mode"]:checked').value, dir = s.querySelector('input[name="cd-dir"]:checked').value, n = +s.querySelector('#cd-n').value;
-    S.settings.cards = {mode, dir, n}; Store.mark('state'); closeSheet();
-    startCards(shuffle(deck.ids.filter(id => LX(id))).slice(0, n), {mode, dir, name: deck.name});
+    const mode = s.querySelector('input[name="cd-mode"]:checked').value, dir = s.querySelector('input[name="cd-dir"]:checked').value, n = +s.querySelector('#cd-n').value, skip = s.querySelector('#cd-skip').checked;
+    S.settings.cards = {mode, dir, n, skip}; Store.mark('state');
+    let ids = deck.ids.filter(id => LX(id)); if (skip) ids = ids.filter(id => !kaartKnownFor(id, mode, dir));
+    if (!ids.length) { toast(skip ? 'Je kent alle kaarten van deze stapel al' : 'Geen woorden in deze stapel'); return; }
+    closeSheet(); startCards(shuffle(ids).slice(0, n), {mode, dir, name: deck.name});
   };
 }
 function startCards(ids, o) {
   if (!ids.length) { toast('Geen woorden in deze stapel'); return; }
-  CARDS = {ids, i: 0, known: [], unknown: [], flipped: false, ...o};
+  CARDS = {ids, i: 0, known: [], unknown: [], flipped: false, faces: [], hist: [], ...o};
   openOverlay('cards', `<button class="iconbtn" data-act="overlay-close" data-id="cards" aria-label="Sluiten">✕</button><div class="progress"><div id="cd-prog" style="width:0%"></div></div><span class="small" id="cd-count"></span>`, `<div id="cd-body" class="stack"></div>`);
   cardRender();
 }
 function cardFaces(l) {
   const front = CARDS.dir === 'mix' ? (rnd(2) ? 'nl' : 'en') : CARDS.dir;
+  return {...cardFaces2(l, front), dir: front};
+}
+function cardFaces2(l, front) {
   if (CARDS.mode === 'full') {
-    const nlFace = `<div class="eyebrow">${POS[l.p] || ''}</div><div class="wc-word">${wordHTML(l)}</div>`;
+    // volledig: the front gives only the word (no article); the back has every form, so you test them all
+    const nlFace = `<div class="eyebrow">${POS[l.p] || ''}</div><div class="wc-word"><span>${esc(l.w)}</span></div>`;
     const enFace = `<div class="eyebrow">${POS_EN[l.p] || ''}</div><div class="wc-word" style="font-family:var(--ui)">${esc(l.en || l.d)}</div>`;
     const back = `<div class="stack" style="gap:10px;text-align:left">${front === 'en' ? `<div class="wc-word">${wordHTML(l)}</div>` : `<div class="small">${esc(l.en || '')}</div>`}${wordFacts(l)}<div class="nl" style="font-size:17px">${esc(l.d || '')}</div>${l.s ? `<div class="nl" style="font-size:17px"><i>${highlight(l.s, l.w)}</i></div>` : ''}</div>`;
     return {front: front === 'en' ? enFace : nlFace, back, say: (l.g ? l.g + ' ' : '') + l.w};
@@ -224,15 +232,17 @@ function cardRender() {
   if (C.i >= C.ids.length) {
     b.innerHTML = `<div class="stack" style="padding-top:20px"><div class="eyebrow">Klaar · ${esc(C.name)}</div><div class="grid2"><div><div class="big-num" style="color:var(--go)">${C.known.length}</div><div class="small">wist ik</div></div><div><div class="big-num" style="color:var(--warn)">${C.unknown.length}</div><div class="small">nog niet</div></div></div>
       ${C.unknown.length ? `<div class="list">${C.unknown.map(id => LX(id)).map(l => `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">${esc(l.en || '')}</span></div>`).join('')}</div><button class="btn block" data-act="cards-again">Oefen de ${C.unknown.length} onbekende opnieuw</button>` : ''}
+      ${C.hist.length ? '<button class="btn line block" data-act="card-undo" data-en="Back to the last card">↶ Vorige kaart</button>' : ''}
       <button class="btn line block" data-act="overlay-close" data-id="cards">Terug</button></div>`;
     Store.mark('items', 'state'); return;
   }
-  const l = LX(C.ids[C.i]); C.face = cardFaces(l); C.flipped = false;
+  const l = LX(C.ids[C.i]); C.face = C.faces[C.i] = C.faces[C.i] || cardFaces(l); C.flipped = false;
   b.innerHTML = `${C.i === 0 ? coachTip('cards', 'Tik op de kaart om ze om te draaien. Veeg naar rechts als je het wist, naar links als je het nog niet wist. De knoppen eronder doen hetzelfde.') : ''}
     <div class="swipe-wrap"><div class="swipe-hint left">nog niet</div><div class="swipe-hint right">wist ik</div>
     <div class="fcard2" id="fcard" role="button" tabindex="0" aria-label="Draai de kaart om"><div class="face">${C.face.front}</div><div class="small tapnote">Tik om om te draaien</div></div></div>
     <div class="grid2"><button class="btn line warnline" data-act="card-grade" data-ok="0">← Nog niet</button><button class="btn" data-act="card-grade" data-ok="1">Wist ik →</button></div>
-    <div class="row" style="justify-content:center">${speakBtn(C.face.say)}</div>`;
+    <div class="row" style="justify-content:center;gap:14px">${C.hist.length ? '<button class="btn line sm" data-act="card-undo" data-en="Back to the previous card">↶ Vorige kaart</button>' : ''}${speakBtn(C.face.say)}</div>
+    ${kaartStatusHTML(l.id, KAART_PART(C.mode, C.face.dir))}`;
   bindSwipe($('#fcard'));
 }
 function cardFlip() {
@@ -243,7 +253,9 @@ function cardFlip() {
 }
 function cardGrade(ok) {
   const C = CARDS; if (!C || C.i >= C.ids.length) return;
-  const id = C.ids[C.i]; grade('w:' + id + ':rec', ok); (ok ? C.known : C.unknown).push(id);
+  const id = C.ids[C.i], key = 'w:' + id + ':rec', part = KAART_PART(C.mode, C.face.dir), kc = kaartOf(id);
+  C.hist.push({i: C.i, id, ok, part, item: S.items[key] ? JSON.stringify(S.items[key]) : null, was: kc[part]});
+  grade(key, ok); kc[part] = ok ? 1 : 0; (ok ? C.known : C.unknown).push(id); Store.mark('items', 'state');
   const el = $('#fcard');
   if (el && !reduceMotion) { el.style.transition = 'transform .22s ease-in, opacity .22s'; el.style.transform = `translateX(${ok ? 420 : -420}px) rotate(${ok ? 18 : -18}deg)`; el.style.opacity = '0'; setTimeout(() => { C.i++; cardRender(); }, 200); }
   else { C.i++; cardRender(); }
@@ -263,7 +275,7 @@ function bindSwipe(el) {
     if (!moved) cardFlip();
   };
   el.addEventListener('pointerup', end); el.addEventListener('pointercancel', () => { x0 = null; el.style.transform = ''; });
-  el.addEventListener('keydown', e => { if (e.key === 'ArrowRight') cardGrade(true); if (e.key === 'ArrowLeft') cardGrade(false); if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); cardFlip(); } });
+  el.addEventListener('keydown', e => { if (e.key === 'ArrowRight') cardGrade(true); if (e.key === 'ArrowLeft') cardGrade(false); if (e.key === 'Backspace') { e.preventDefault(); cardUndo(); } if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); cardFlip(); } });
 }
 
 /* ---------- NASLAG: the whole curriculum, Boog → Stad → Plein ---------- */
@@ -327,3 +339,28 @@ function afterNaslag() {
 function openPlan(focus) {
   if ($('#proc') && focus) { const L = planLoc(focus); const q = PSQ[focus]; openSheet(`<div class="stack"><div class="loc">${locLine(L)}</div><h2>${esc(L ? L.townName + ' · ' + L.sqName : '')}</h2>${q ? `<div class="small">${esc(q.title)} · ${esc(q.en)}</div><p class="why" style="margin:0">${q.rule || ''}</p>` : ''}<div class="small">Na het bewaren vind je dit terug in Naslag.</div><button class="btn block" data-act="sheet-close">Terug naar je verslag</button></div>`); return; }
   closeOverlay('proc'); closeSheet(); TAB = 'naslag'; NFOCUS = focus || null; render(); if (!focus) $('#main').scrollTop = 0; }
+
+/* ---------- 2.16: Kaarten remembers what you know in four parts, and you can go back ----------
+   One status per word for each kind of card and each side in front: eenvoudig NL → EN, eenvoudig EN → NL,
+   volledig NL → EN, volledig EN → NL (S.kaart[id] = {sn, se, fn, fe}: 1 = wist ik, 0 = nog niet, missing = not yet asked).
+   Eenvoudig = the word itself; volledig = the word with every form (the article, plural and diminutive of a noun,
+   the conjugations of a verb, the forms of an adjective). "↶ Vorige kaart" undoes the last card: its status, the
+   review item and the count, and shows that card again. */
+const KAART_PARTS = [['sn', 'eenvoudig NL → EN'], ['se', 'eenvoudig EN → NL'], ['fn', 'volledig NL → EN'], ['fe', 'volledig EN → NL']];
+const KAART_PART = (mode, dir) => (mode === 'full' ? 'f' : 's') + (dir === 'en' ? 'e' : 'n');
+const kaartOf = id => { S.kaart = S.kaart || {}; return S.kaart[id] = S.kaart[id] || {}; };
+// known for this kind of card; "door elkaar" asks both sides
+const kaartKnownFor = (id, mode, dir) => { const k = (S.kaart || {})[id] || {}; return (dir === 'mix' ? ['nl', 'en'] : [dir]).every(d => k[KAART_PART(mode, d)] === 1); };
+const kaartCount = id => { const k = (S.kaart || {})[id] || {}; return KAART_PARTS.filter(([p]) => k[p] === 1).length; };
+function kaartStatusHTML(id, cur) {
+  const k = (S.kaart || {})[id] || {};
+  return `<div class="small" style="text-align:center;margin-bottom:-6px">Wat je weet van dit woord</div><div class="kstat" aria-label="Gekend: ${kaartCount(id)} van 4">${KAART_PARTS.map(([p, lab]) => `<span class="${k[p] === 1 ? 'y' : k[p] === 0 ? 'n' : ''}${p === cur ? ' cur' : ''}" title="${lab}">${k[p] === 1 ? '✓' : k[p] === 0 ? '·' : ''}<i>${lab.replace('eenvoudig', 'eenv.').replace('volledig', 'voll.')}</i></span>`).join('')}</div>`;
+}
+function cardUndo() {
+  const C = CARDS; if (!C || !C.hist.length) return; const h = C.hist.pop(), key = 'w:' + h.id + ':rec';
+  if (h.item) S.items[key] = JSON.parse(h.item); else delete S.items[key];
+  const kc = kaartOf(h.id); if (h.was == null) delete kc[h.part]; else kc[h.part] = h.was;
+  const list = h.ok ? C.known : C.unknown; const j = list.lastIndexOf(h.id); if (j >= 0) list.splice(j, 1);
+  C.i = h.i; Store.mark('items', 'state'); cardRender();
+}
+document.addEventListener('click', e => { if (e.target.closest('[data-act="card-undo"]')) cardUndo(); });

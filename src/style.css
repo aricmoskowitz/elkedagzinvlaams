@@ -370,3 +370,10 @@ ul.doel.got li::before{content:attr(data-mark);border:none;top:0;width:auto;heig
 .mg-dots{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
 .mg-dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}
 .mg-dots i.half{background:#A9C9AE} .mg-dots i.full{background:var(--go)}
+/* 2.16 Kaarten: what you know, in four parts */
+.kstat{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.kstat span{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);border-radius:10px;padding:5px 2px;font-weight:700;color:var(--go);min-height:22px;font-size:14px}
+.kstat span i{font-style:normal;font-weight:500;font-size:10.5px;color:var(--ink2);text-align:center;line-height:1.2}
+.kstat span.y{background:var(--go-tint);border-color:#A9C9AE}
+.kstat span.n{background:var(--warn-tint);color:var(--warn)}
+.kstat span.cur{border-color:var(--ink);border-width:1.5px}

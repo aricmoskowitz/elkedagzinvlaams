@@ -119,7 +119,15 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(await p.inputValue('#cd-deck') === 'g:soort:v', 'Kaarten on the Werkwoorden group opens the cards with that group'); await p.click('#cd-go'); await p.waitForTimeout(150);
   const box = await (await p.$('#fcard')).boundingBox();
   await p.mouse.move(box.x + box.width / 2, box.y + 100); await p.mouse.down(); await p.mouse.move(box.x + box.width / 2 + 160, box.y + 110, {steps: 8}); await p.mouse.up(); await p.waitForTimeout(400);
-  ok(await p.evaluate(() => CARDS.known.length === 1), 'swipe right counts as known'); await p.evaluate(() => closeOverlay('cards'));
+  ok(await p.evaluate(() => CARDS.known.length === 1), 'swipe right counts as known');
+  // 2.16: a mistaken swipe can be undone; known is kept in four parts (eenvoudig/volledig × NL/EN in front)
+  const kd = await p.evaluate(() => { const id = CARDS.ids[0], part = KAART_PART(CARDS.mode, CARDS.faces[0].dir), had = S.kaart[id][part];
+    document.querySelector('[data-act=card-undo]').click(); return {id, part, had, now: S.kaart[id][part], i: CARDS.i, n: CARDS.known.length}; });
+  ok(kd.had === 1 && kd.now === undefined && kd.i === 0 && kd.n === 0, '↶ Vorige kaart undoes the swipe: the card is back and its status is gone'); await shot('11_cards_undo');
+  const parts = await p.evaluate(id => { CARDS.mode = 'simple'; CARDS.faces = [{...cardFaces2(LX(id), 'en'), dir: 'en'}]; cardRender(); cardGrade(false);
+    const k = S.kaart[id]; return {k: JSON.stringify(k), simpleEn: kaartKnownFor(id, 'simple', 'en'), fullNl: kaartKnownFor(id, 'full', 'nl')}; }, kd.id);
+  ok(parts.k === '{"se":0}' && !parts.simpleEn && !parts.fullNl, 'each kind of card and each side keeps its own status ' + parts.k);
+  await p.evaluate(() => closeOverlay('cards'));
 
   // quick add a word from a lesson sentence (no Claude draft button)
   await p.evaluate(() => { TAB = 'pad'; render(); openLesson('u7q1', true); }); await p.waitForTimeout(150);
