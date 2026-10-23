@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "1d5634fcef";</script>
+<script>const APP_VERSION = "740756f291";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -390,13 +390,13 @@ ul.doel.got li::before{content:attr(data-mark);border:none;top:0;width:auto;heig
 .mg-dots{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
 .mg-dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}
 .mg-dots i.half{background:#A9C9AE} .mg-dots i.full{background:var(--go)}
-/* 2.16 Kaarten: what you know, in four parts */
-.kstat{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.kstat span{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);border-radius:10px;padding:5px 2px;font-weight:700;color:var(--go);min-height:22px;font-size:14px}
-.kstat span i{font-style:normal;font-weight:500;font-size:10.5px;color:var(--ink2);text-align:center;line-height:1.2}
-.kstat span.y{background:var(--go-tint);border-color:#A9C9AE}
-.kstat span.n{background:var(--warn-tint);color:var(--warn)}
-.kstat span.cur{border-color:var(--ink);border-width:1.5px}
+/* 2.16 Kaarten: what you know, in four parts, in the Woorden lists */
+.kmini{display:inline-grid;grid-template-columns:7px 7px;gap:2px;flex:none;vertical-align:middle}
+.kmini.none{width:16px}
+.kmini i{width:7px;height:7px;border-radius:2px;background:var(--line)}
+.kmini i.y{background:var(--go)} .kmini i.n{background:var(--warn)}
+.kleg{display:flex;align-items:flex-start;gap:10px;line-height:1.4;padding:4px 0 6px}
+.kleg .kmini{margin-top:3px}
 
 </style>
 </head>
@@ -3996,8 +3996,7 @@ function cardFaces(l) {
 }
 function cardFaces2(l, front) {
   if (CARDS.mode === 'full') {
-    // volledig: the front gives only the word (no article); the back has every form, so you test them all
-    const nlFace = `<div class="eyebrow">${POS[l.p] || ''}</div><div class="wc-word"><span>${esc(l.w)}</span></div>`;
+    const nlFace = `<div class="eyebrow">${POS[l.p] || ''}</div><div class="wc-word">${wordHTML(l)}</div>`; // always with its article, to build memory
     const enFace = `<div class="eyebrow">${POS_EN[l.p] || ''}</div><div class="wc-word" style="font-family:var(--ui)">${esc(l.en || l.d)}</div>`;
     const back = `<div class="stack" style="gap:10px;text-align:left">${front === 'en' ? `<div class="wc-word">${wordHTML(l)}</div>` : `<div class="small">${esc(l.en || '')}</div>`}${wordFacts(l)}<div class="nl" style="font-size:17px">${esc(l.d || '')}</div>${l.s ? `<div class="nl" style="font-size:17px"><i>${highlight(l.s, l.w)}</i></div>` : ''}</div>`;
     return {front: front === 'en' ? enFace : nlFace, back, say: (l.g ? l.g + ' ' : '') + l.w};
@@ -4023,8 +4022,7 @@ function cardRender() {
     <div class="swipe-wrap"><div class="swipe-hint left">nog niet</div><div class="swipe-hint right">wist ik</div>
     <div class="fcard2" id="fcard" role="button" tabindex="0" aria-label="Draai de kaart om"><div class="face">${C.face.front}</div><div class="small tapnote">Tik om om te draaien</div></div></div>
     <div class="grid2"><button class="btn line warnline" data-act="card-grade" data-ok="0">← Nog niet</button><button class="btn" data-act="card-grade" data-ok="1">Wist ik →</button></div>
-    <div class="row" style="justify-content:center;gap:14px">${C.hist.length ? '<button class="btn line sm" data-act="card-undo" data-en="Back to the previous card">↶ Vorige kaart</button>' : ''}${speakBtn(C.face.say)}</div>
-    ${kaartStatusHTML(l.id, KAART_PART(C.mode, C.face.dir))}`;
+    <div class="row" style="justify-content:center;gap:14px">${C.hist.length ? '<button class="btn line sm" data-act="card-undo" data-en="Back to the previous card">↶ Vorige kaart</button>' : ''}${speakBtn(C.face.say)}</div>`;
   bindSwipe($('#fcard'));
 }
 function cardFlip() {
@@ -4126,7 +4124,8 @@ function openPlan(focus) {
    One status per word for each kind of card and each side in front: eenvoudig NL → EN, eenvoudig EN → NL,
    volledig NL → EN, volledig EN → NL (S.kaart[id] = {sn, se, fn, fe}: 1 = wist ik, 0 = nog niet, missing = not yet asked).
    Eenvoudig = the word itself; volledig = the word with every form (the article, plural and diminutive of a noun,
-   the conjugations of a verb, the forms of an adjective). "↶ Vorige kaart" undoes the last card: its status, the
+   the conjugations of a verb, the forms of an adjective). A noun always shows its article. The status is shown in
+   the word lists of the Woorden tab (kaartMini), not on the card. "↶ Vorige kaart" undoes the last card: its status, the
    review item and the count, and shows that card again. */
 const KAART_PARTS = [['sn', 'eenvoudig NL → EN'], ['se', 'eenvoudig EN → NL'], ['fn', 'volledig NL → EN'], ['fe', 'volledig EN → NL']];
 const KAART_PART = (mode, dir) => (mode === 'full' ? 'f' : 's') + (dir === 'en' ? 'e' : 'n');
@@ -4134,10 +4133,13 @@ const kaartOf = id => { S.kaart = S.kaart || {}; return S.kaart[id] = S.kaart[id
 // known for this kind of card; "door elkaar" asks both sides
 const kaartKnownFor = (id, mode, dir) => { const k = (S.kaart || {})[id] || {}; return (dir === 'mix' ? ['nl', 'en'] : [dir]).every(d => k[KAART_PART(mode, d)] === 1); };
 const kaartCount = id => { const k = (S.kaart || {})[id] || {}; return KAART_PARTS.filter(([p]) => k[p] === 1).length; };
-function kaartStatusHTML(id, cur) {
-  const k = (S.kaart || {})[id] || {};
-  return `<div class="small" style="text-align:center;margin-bottom:-6px">Wat je weet van dit woord</div><div class="kstat" aria-label="Gekend: ${kaartCount(id)} van 4">${KAART_PARTS.map(([p, lab]) => `<span class="${k[p] === 1 ? 'y' : k[p] === 0 ? 'n' : ''}${p === cur ? ' cur' : ''}" title="${lab}">${k[p] === 1 ? '✓' : k[p] === 0 ? '·' : ''}<i>${lab.replace('eenvoudig', 'eenv.').replace('volledig', 'voll.')}</i></span>`).join('')}</div>`;
+// what you know of a word, shown in the word lists of the Woorden tab (not on the card): a 2 × 2 grid,
+// rows eenvoudig / volledig, columns NL → EN / EN → NL; green = wist ik, brown = nog niet, empty = not asked yet
+function kaartMini(id) {
+  const k = (S.kaart || {})[id] || {}; if (!KAART_PARTS.some(([p]) => k[p] != null)) return '<span class="kmini none" aria-hidden="true"></span>';
+  return `<span class="kmini" title="${KAART_PARTS.map(([p, lab]) => lab + ': ' + (k[p] === 1 ? 'wist ik' : k[p] === 0 ? 'nog niet' : '—')).join('\n')}" aria-label="Kaarten: ${kaartCount(id)} van 4 gekend">${KAART_PARTS.map(([p]) => `<i class="${k[p] === 1 ? 'y' : k[p] === 0 ? 'n' : ''}"></i>`).join('')}</span>`;
 }
+const kaartLegend = () => `<div class="small kleg"><span class="kmini"><i class="y"></i><i class="n"></i><i></i><i></i></span><span>Kaarten: boven eenvoudig, onder volledig; links NL → EN, rechts EN → NL. <b style="color:var(--go)">Groen</b> wist ik, <b style="color:var(--warn)">bruin</b> nog niet.</span></div>`;
 function cardUndo() {
   const C = CARDS; if (!C || !C.hist.length) return; const h = C.hist.pop(), key = 'w:' + h.id + ':rec';
   if (h.item) S.items[key] = JSON.parse(h.item); else delete S.items[key];
@@ -4734,8 +4736,9 @@ function groupBody(g) {
   return `<div class="wbody">${chips}${wordRows(ls, g.key === 'g:soort:v')}</div>`;
 }
 function wordRows(ls, verbs) {
-  return `<div class="list">${ls.map(l => { const f = verbs && l.v ? vForms(l) : null;
-    return `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">${f ? `<span class="verbword">${esc(f.ik)} · ${esc(f.pl)} · ${esc(f.im[0])} · ${esc(f.sep + f.pp)}</span>` : esc(l.d || '')}</span></div>`; }).join('')}</div>`;
+  const any = ls.some(l => S.kaart && S.kaart[l.id]);
+  return `${any ? kaartLegend() : ''}<div class="list">${ls.map(l => { const f = verbs && l.v ? vForms(l) : null;
+    return `<div class="li" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0"><span class="w">${wordHTML(l)}</span><span class="d">${f ? `<span class="verbword">${esc(f.ik)} · ${esc(f.pl)} · ${esc(f.im[0])} · ${esc(f.sep + f.pp)}</span>` : esc(l.d || '')}</span>${kaartMini(l.id)}</div>`; }).join('')}</div>`;
 }
 
 /* ---------- a set's own page ---------- */
@@ -4752,7 +4755,7 @@ function openSetPage(id) {
       ${own ? `<button class="link sm" data-act="set-rename" data-id="${esc(id)}" style="padding-left:0">Hernoem ›</button>` : ''}</div>
     <div class="grid2">${studyButtons(id, ls.length)}</div>
     ${ls.length ? `<button class="link sm" data-act="set-export" data-id="${esc(id)}" style="padding-left:0" data-en="Share as a word list (EDZ-WOORDEN v1)">Deel als woordenlijst ›</button>` : ''}
-    <div class="list">${ls.map(l => `<div class="li"><span class="w" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0">${wordHTML(l)}</span><span class="d">${esc(l.d || '')}</span>${own ? `<button class="iconbtn" data-act="set-remove" data-set="${esc(id)}" data-id="${esc(l.id)}" aria-label="Haal ${esc(l.w)} uit de set">✕</button>` : ''}</div>`).join('') || '<div class="small" style="padding:10px 0">Nog leeg.</div>'}</div>
+    ${ls.some(l => S.kaart && S.kaart[l.id]) ? kaartLegend() : ''}<div class="list">${ls.map(l => `<div class="li"><span class="w" data-act="word" data-id="${esc(l.id)}" role="button" tabindex="0">${wordHTML(l)}</span><span class="d">${esc(l.d || '')}</span>${kaartMini(l.id)}${own ? `<button class="iconbtn" data-act="set-remove" data-set="${esc(id)}" data-id="${esc(l.id)}" aria-label="Haal ${esc(l.w)} uit de set">✕</button>` : ''}</div>`).join('') || '<div class="small" style="padding:10px 0">Nog leeg.</div>'}</div>
     ${own ? `<input type="search" id="set-q" placeholder="Zoek een woord om toe te voegen" aria-label="Zoek een woord om toe te voegen"><div id="set-res"></div>
       <button class="btn line block" data-act="word-new" data-set="${esc(id)}">+ Nieuw woord in deze set</button>
       <button class="link" data-act="set-delete" data-id="${esc(id)}" style="color:var(--warn)">Verwijder deze set</button>` : ''}

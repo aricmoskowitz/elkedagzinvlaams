@@ -214,8 +214,7 @@ function cardFaces(l) {
 }
 function cardFaces2(l, front) {
   if (CARDS.mode === 'full') {
-    // volledig: the front gives only the word (no article); the back has every form, so you test them all
-    const nlFace = `<div class="eyebrow">${POS[l.p] || ''}</div><div class="wc-word"><span>${esc(l.w)}</span></div>`;
+    const nlFace = `<div class="eyebrow">${POS[l.p] || ''}</div><div class="wc-word">${wordHTML(l)}</div>`; // always with its article, to build memory
     const enFace = `<div class="eyebrow">${POS_EN[l.p] || ''}</div><div class="wc-word" style="font-family:var(--ui)">${esc(l.en || l.d)}</div>`;
     const back = `<div class="stack" style="gap:10px;text-align:left">${front === 'en' ? `<div class="wc-word">${wordHTML(l)}</div>` : `<div class="small">${esc(l.en || '')}</div>`}${wordFacts(l)}<div class="nl" style="font-size:17px">${esc(l.d || '')}</div>${l.s ? `<div class="nl" style="font-size:17px"><i>${highlight(l.s, l.w)}</i></div>` : ''}</div>`;
     return {front: front === 'en' ? enFace : nlFace, back, say: (l.g ? l.g + ' ' : '') + l.w};
@@ -241,8 +240,7 @@ function cardRender() {
     <div class="swipe-wrap"><div class="swipe-hint left">nog niet</div><div class="swipe-hint right">wist ik</div>
     <div class="fcard2" id="fcard" role="button" tabindex="0" aria-label="Draai de kaart om"><div class="face">${C.face.front}</div><div class="small tapnote">Tik om om te draaien</div></div></div>
     <div class="grid2"><button class="btn line warnline" data-act="card-grade" data-ok="0">← Nog niet</button><button class="btn" data-act="card-grade" data-ok="1">Wist ik →</button></div>
-    <div class="row" style="justify-content:center;gap:14px">${C.hist.length ? '<button class="btn line sm" data-act="card-undo" data-en="Back to the previous card">↶ Vorige kaart</button>' : ''}${speakBtn(C.face.say)}</div>
-    ${kaartStatusHTML(l.id, KAART_PART(C.mode, C.face.dir))}`;
+    <div class="row" style="justify-content:center;gap:14px">${C.hist.length ? '<button class="btn line sm" data-act="card-undo" data-en="Back to the previous card">↶ Vorige kaart</button>' : ''}${speakBtn(C.face.say)}</div>`;
   bindSwipe($('#fcard'));
 }
 function cardFlip() {
@@ -344,7 +342,8 @@ function openPlan(focus) {
    One status per word for each kind of card and each side in front: eenvoudig NL → EN, eenvoudig EN → NL,
    volledig NL → EN, volledig EN → NL (S.kaart[id] = {sn, se, fn, fe}: 1 = wist ik, 0 = nog niet, missing = not yet asked).
    Eenvoudig = the word itself; volledig = the word with every form (the article, plural and diminutive of a noun,
-   the conjugations of a verb, the forms of an adjective). "↶ Vorige kaart" undoes the last card: its status, the
+   the conjugations of a verb, the forms of an adjective). A noun always shows its article. The status is shown in
+   the word lists of the Woorden tab (kaartMini), not on the card. "↶ Vorige kaart" undoes the last card: its status, the
    review item and the count, and shows that card again. */
 const KAART_PARTS = [['sn', 'eenvoudig NL → EN'], ['se', 'eenvoudig EN → NL'], ['fn', 'volledig NL → EN'], ['fe', 'volledig EN → NL']];
 const KAART_PART = (mode, dir) => (mode === 'full' ? 'f' : 's') + (dir === 'en' ? 'e' : 'n');
@@ -352,10 +351,13 @@ const kaartOf = id => { S.kaart = S.kaart || {}; return S.kaart[id] = S.kaart[id
 // known for this kind of card; "door elkaar" asks both sides
 const kaartKnownFor = (id, mode, dir) => { const k = (S.kaart || {})[id] || {}; return (dir === 'mix' ? ['nl', 'en'] : [dir]).every(d => k[KAART_PART(mode, d)] === 1); };
 const kaartCount = id => { const k = (S.kaart || {})[id] || {}; return KAART_PARTS.filter(([p]) => k[p] === 1).length; };
-function kaartStatusHTML(id, cur) {
-  const k = (S.kaart || {})[id] || {};
-  return `<div class="small" style="text-align:center;margin-bottom:-6px">Wat je weet van dit woord</div><div class="kstat" aria-label="Gekend: ${kaartCount(id)} van 4">${KAART_PARTS.map(([p, lab]) => `<span class="${k[p] === 1 ? 'y' : k[p] === 0 ? 'n' : ''}${p === cur ? ' cur' : ''}" title="${lab}">${k[p] === 1 ? '✓' : k[p] === 0 ? '·' : ''}<i>${lab.replace('eenvoudig', 'eenv.').replace('volledig', 'voll.')}</i></span>`).join('')}</div>`;
+// what you know of a word, shown in the word lists of the Woorden tab (not on the card): a 2 × 2 grid,
+// rows eenvoudig / volledig, columns NL → EN / EN → NL; green = wist ik, brown = nog niet, empty = not asked yet
+function kaartMini(id) {
+  const k = (S.kaart || {})[id] || {}; if (!KAART_PARTS.some(([p]) => k[p] != null)) return '<span class="kmini none" aria-hidden="true"></span>';
+  return `<span class="kmini" title="${KAART_PARTS.map(([p, lab]) => lab + ': ' + (k[p] === 1 ? 'wist ik' : k[p] === 0 ? 'nog niet' : '—')).join('\n')}" aria-label="Kaarten: ${kaartCount(id)} van 4 gekend">${KAART_PARTS.map(([p]) => `<i class="${k[p] === 1 ? 'y' : k[p] === 0 ? 'n' : ''}"></i>`).join('')}</span>`;
 }
+const kaartLegend = () => `<div class="small kleg"><span class="kmini"><i class="y"></i><i class="n"></i><i></i><i></i></span><span>Kaarten: boven eenvoudig, onder volledig; links NL → EN, rechts EN → NL. <b style="color:var(--go)">Groen</b> wist ik, <b style="color:var(--warn)">bruin</b> nog niet.</span></div>`;
 function cardUndo() {
   const C = CARDS; if (!C || !C.hist.length) return; const h = C.hist.pop(), key = 'w:' + h.id + ':rec';
   if (h.item) S.items[key] = JSON.parse(h.item); else delete S.items[key];
