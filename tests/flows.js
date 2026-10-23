@@ -278,6 +278,25 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   const weight = require('fs').statSync(require('path').join(require('./page').ROOT, 'index.html')).size;
   ok(weight < 1024 * 1024, `page weight ${Math.round(weight / 1024)} KB < 1 MB`);
   errs.push(...A.errs); await A.close();
+  // 2.15 Onthoud in the Speelfort: menu easiest first, rounds open in order, word bank in text order, round 5 typed; 100% in gold
+  const O = await openApp(); const op = O.p;
+  await op.click('#mig-new'); await op.waitForTimeout(150); await op.click('[data-act=tour-end]'); await op.waitForTimeout(150);
+  await op.evaluate(() => { TAB = 'pad'; PAD.lvl = 'fort'; render(); }); await op.click('.list [data-act=game][data-g=onthoud]'); await op.waitForTimeout(150);
+  const lvls = await op.$$eval('[data-act=mg-text]', b => b.map(x => MX(x.dataset.id).lvl));
+  ok(lvls.length === await op.evaluate(() => MEMO.length) && lvls.every((l, i) => !i || l >= lvls[i - 1]), 'Onthoud: every text in the menu, easiest first'); await shot('19_onthoud', op);
+  await op.click('[data-act=mg-text][data-id=m4]'); await op.waitForTimeout(150);
+  ok(await op.$$eval('#mg-body .tapline[disabled]', b => b.length) === 4, 'Onthoud: only round 1 is open at first');
+  for (let k = 0; k < 4; k++) {
+    await op.click('#mg-body .btn.block[data-act=mg-round]'); await op.waitForTimeout(80);
+    if (k === 0) { const wrong = await op.evaluate(() => { const w = memoKey(MG.toks[MG.gaps[0]].w); return MG.bank.findIndex(b => memoKey(b.w) !== w); });
+      await op.click(`[data-act=mg-pick][data-j="${wrong}"]`); ok(await op.evaluate(() => MG.at === 0 && MG.miss === 1), 'Onthoud: a word out of order is a mistake and stays in the bank'); await shot('20_onthoud_round1', op); }
+    while (await op.evaluate(() => MG.at < MG.gaps.length && !!document.querySelector('[data-act=mg-pick]'))) {
+      const j = await op.evaluate(() => { const w = memoKey(MG.toks[MG.gaps[MG.at]].w); return MG.bank.findIndex(b => !b.used && memoKey(b.w) === w); }); await op.click(`[data-act=mg-pick][data-j="${j}"]`); }
+  }
+  ok(await op.evaluate(() => S.memo.m4.r.slice(0, 4).every(x => x != null) && MG.gaps.length === memoToks(MX('m4')).length), 'Onthoud: round 4 puts back every word');
+  await op.click('#mg-body .btn.block[data-act=mg-round]'); await op.fill('#mg-in', await op.evaluate(() => MX('m4').nl.toLowerCase())); await op.click('#mg-form button'); await op.waitForTimeout(100);
+  ok(await op.evaluate(() => memoScore('m4') === 100 && !!document.querySelector('#mg-body .mg-score.gold')), 'Onthoud: five rounds and a perfect round 5 give 100% in gold'); await shot('21_onthoud_gold', op);
+  errs.push(...O.errs); await O.close();
   if (errs.length) { console.log('PAGE ERRORS', errs); fails.push('page errors'); }
   console.log(fails.length ? `FAIL: ${fails.length}` : 'OK: flows passed, no page errors');
   process.exit(fails.length ? 1 : 0);

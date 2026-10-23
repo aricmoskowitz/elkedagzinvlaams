@@ -352,3 +352,21 @@ ul.doel li{position:relative;padding-left:26px;font-size:16px;line-height:1.35}
 ul.doel li::before{content:'';position:absolute;left:2px;top:3px;width:14px;height:14px;border:1.5px solid var(--ink2);border-radius:4px}
 .opdr{border-left:4px solid var(--go)}
 ul.doel.got li::before{content:attr(data-mark);border:none;top:0;width:auto;height:auto;font-weight:700;font-family:var(--ui)}
+/* 2.15 Onthoud */
+.mg-text{font-size:19px;line-height:1.9}
+.mg-gap{display:inline-block;height:1.2em;vertical-align:-.25em;border-bottom:2px solid var(--line);margin:0 1px}
+.mg-gap.cur{border-bottom-color:var(--go);background:var(--go-tint);border-radius:4px 4px 0 0}
+.mg-fill{color:var(--go);font-weight:600}
+.mg-miss{color:var(--warn);background:var(--warn-tint);border-radius:4px;padding:0 2px;font-weight:600}
+.mg-bank{justify-content:center}
+.tok.mg-no{border-color:var(--warn);background:var(--warn-tint);animation:mgshake .35s}
+.tok.mg-hint{background:var(--go-tint);box-shadow:0 0 0 3px var(--go-tint)}
+@keyframes mgshake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media (prefers-reduced-motion:reduce){.tok.mg-no{animation:none}}
+.mg-score{display:inline-block;font-size:13px;font-weight:700;border-radius:999px;padding:3px 10px;background:var(--go-tint);color:var(--go);white-space:nowrap}
+.mg-score.none{background:var(--soft);color:var(--faint);font-weight:500}
+.mg-score.gold{background:#F2C14E;color:#4A3500;box-shadow:0 0 0 2px #FBE3A0}
+.mg-goldcard{background:#FDF3D6;border-color:#F2C14E;color:#4A3500;font-weight:600}
+.mg-dots{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
+.mg-dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.mg-dots i.half{background:#A9C9AE} .mg-dots i.full{background:var(--go)}
