@@ -47,6 +47,7 @@ function weakGroups() {
 }
 function sceneFor(u) { return SCENARIOS.find(s => s.u === u && !s.q) || SCENARIOS.find(s => s.id === 'sc-free'); }
 // 2.12: every plein and every Grote Markt has its own scene (content10.js); the town scene is the fallback
+const VINKJE = 'vinkje per gehaald doel (laatste regel, bv. ✓ 1 · 3)';
 function sceneOf(q) { return SCENARIOS.find(s => s.q === q) || sceneFor(PSQ[q] && PSQ[q].u); }
 // o: {mode, q (a square) or u (a town: its Grote Markt)}
 function startBlock(o) {
@@ -70,7 +71,8 @@ function startBlock(o) {
   // 2.7: no translations any more; the Project ignores an old vertaling value (Formats §1)
   // 2.8: corrections always come at the end (the per-beurt option is gone); the field stays so the block stays v1
   const beurten = mode === 'opdracht' && sq.review && BEURTEN.indexOf(P.beurten) < 1 ? BEURTEN[1] : P.beurten; // 2.12: a Grote Markt scene has four goals, so at least 8–10 turns
-  lines.push(`instellingen: verbeteren op het einde · beurten ${beurten}`);
+  // 2.19: in an opdracht Claude marks a reached goal part with a short ✓ line, so the learner sees progress without a break
+  lines.push(`instellingen: verbeteren op het einde${mode === 'opdracht' ? ' · ' + VINKJE : ''} · beurten ${beurten}`);
   lines.push('EDZ-EINDE');
   return lines.join('\n');
 }
