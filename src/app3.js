@@ -168,6 +168,7 @@ function sesEnd() {
   const pass = score >= 0.8;
   if (SES.sq && SES.step) {
     const ss = sqstate(SES.sq);
+    if (!SES.round) { ss.tried = ss.tried || {}; ss.tried[SES.step] = Math.max(ss.tried[SES.step] || 0, Math.round(score * 100)); } // 2.18: the best attempt, also below 80%
     if (pass && SES.round) { ss.rounds = ss.rounds || {}; ss.rounds[SES.step] = Math.max(ss.rounds[SES.step] || 1, SES.round); }
     else if (pass) ss.steps[SES.step] = Math.max(ss.steps[SES.step] || 0, Math.round(score * 100));
     S.cur = SES.sq;

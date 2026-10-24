@@ -485,11 +485,21 @@ function viewSquare(q) {
     ${sceneHTML('sqmap', SGW, SGH, squareOverlay(q), 'Vijf gildehuizen op ' + sq.name)}
     ${open ? '' : `<div class="card soft stack" style="gap:8px"><div>Dit plein gaat open als je het vorige plein klaar hebt. Of test je erin: 10 vragen, 9 juist om te slagen. Dan zijn Ontdek en Oefen klaar.</div><button class="btn line" data-act="testout" data-qs="${q}">Test je in</button></div>`}
     <div>${STEPS.map(st => { const built = ACTIVE_STEPS.includes(st); const sc = S.sq[q] && S.sq[q].steps && S.sq[q].steps[st];
-      return `<button class="tapline" data-act="step" data-q="${q}" data-step="${st}" ${built && open ? '' : 'aria-disabled="true"'}><div class="t"><div style="font-weight:600;${built && open ? '' : 'color:var(--faint)'}">${STEP_NAME[st]}${sc ? ` <span class="small">· ${sc === 'test' ? 'getest' : sc === 1 ? (st === 'ontdek' ? 'gelezen' : 'gedaan') : sc + '%'}</span>` : ''}</div><div class="small">${STEP_DESC[st]}${built ? '' : ' · later'}</div></div><span class="chev" ${built && open ? '' : 'style="color:var(--faint)"'}>›</span></button>`; }).join('')}</div>
+      return `<button class="tapline" data-act="step" data-q="${q}" data-step="${st}" ${built && open ? '' : 'aria-disabled="true"'}><div class="t"><div style="font-weight:600;${built && open ? '' : 'color:var(--faint)'}">${STEP_NAME[st]}${sc ? ` <span class="small">· ${sc === 'test' ? 'getest' : sc === 1 ? (st === 'ontdek' ? 'gelezen' : 'gedaan') : sc + '%'}</span>` : ''}</div><div class="small">${STEP_DESC[st]}${built ? '' : ' · later'}</div>${!sc && built && open ? bestTryHTML(q, st) : ''}</div><span class="chev" ${built && open ? '' : 'style="color:var(--faint)"'}>›</span></button>`; }).join('')}</div>
     ${roundsBlock(q)}
     ${mineBlock(q)}
   </div>`;
 }
+
+// 2.18: a guild house that is not gehaald yet shows your best attempt (Oefen: the session score, Gebruik: the best report
+// score in either kanaal); the house itself stays grey until 80%
+function bestTry(q, st) {
+  const ss = S.sq[q] || {};
+  if (st === 'oefen') return (ss.tried || {}).oefen || 0;
+  if (st === 'gebruik') { const b = ss.best || {}; return Math.max(+b.spreken || 0, +b.schrijven || 0); }
+  return 0;
+}
+const bestTryHTML = (q, st) => { const t = bestTry(q, st); return t ? `<div class="small" style="color:var(--warn)" data-en="Best attempt · 80% needed">Beste poging: ${t}% · 80% nodig</div>` : ''; };
 
 /* ---------- navigation with movement ---------- */
 function afterRenderMaps() {

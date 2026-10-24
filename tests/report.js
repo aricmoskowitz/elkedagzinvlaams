@@ -72,7 +72,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   blocks.forEach((b, i) => {
     const L = b.split('\n'); const f = Object.fromEntries(L.slice(1, -1).map(l => [l.slice(0, l.indexOf(':')), l.slice(l.indexOf(':') + 1).trim()]));
     const mode = f.modus; const fields = need.all.concat(mode === 'opdracht' ? need.opdracht : []);
-    const good = L[0] === 'EDZ-START v1' && L[L.length - 1] === 'EDZ-EINDE' && fields.every(k => f[k]) && (mode === 'opdracht' || (!f['scène'] && !f.doel)) && /^A2 · Boog \d+ · Stad \d+ \S+ \(u\d+\) · (Plein \d+ \S+|Grote Markt) \(u\d+q\d+\)$/.test(f.niveau) && /^verbeteren (per beurt|op het einde) · beurten \S+$/.test(f.instellingen) && !/vertaling/.test(b);
+    const good = L[0] === 'EDZ-START v1' && L[L.length - 1] === 'EDZ-EINDE' && fields.every(k => f[k]) && (mode === 'opdracht' || (!f['scène'] && !f.doel)) && /^A2 · Boog \d+ · Stad \d+ \S+ \(u\d+\) · (Plein \d+ \S+|Grote Markt) \(u\d+q\d+\)$/.test(f.niveau) && /^verbeteren (per beurt|op het einde)( · vinkje per gehaald doel \(laatste regel, bv\. ✓ 1 · 3\))? · beurten \S+$/.test(f.instellingen) && !/vertaling/.test(b);
     ok(good, `start block ${i}: ${mode}${i > 3 ? ' (' + f.niveau.split(' · ').pop() + ')' : ''}`);
     if (i === 0) console.log(b.replace(/^/gm, '      '));
   });
@@ -95,6 +95,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   // Gebruik house opens the sheet in opdracht for that square
   await p.evaluate(() => { closeFeed && FEED && closeFeed(); closeOverlay('welcome'); closeOverlay('tour'); startStep('u7q1', 'gebruik'); }); await p.waitForTimeout(150);
   ok((await p.inputValue('#pr-block')).includes('modus: opdracht') && (await p.inputValue('#pr-block')).includes('(u7q1)'), 'Gebruik house opens the start block in opdracht for its square');
+  ok((await p.inputValue('#pr-block')).includes('· vinkje per gehaald doel (laatste regel, bv. ✓ 1 · 3) ·') && !(await p.evaluate(() => startBlock({mode: 'onderwerp'}))).includes('vinkje'), 'opdracht asks Claude for a ✓ line per goal part reached; other modes don\'t');
 
   await close();
 

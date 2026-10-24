@@ -57,6 +57,12 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   const answerAll = () => p.evaluate(() => { for (let i = 0; i < 200; i++) { if (!SES || SES.finished) break; const st = SES.steps[SES.i]; if (!st) { sesRender(); break; } if (st.intro) { sesNext(); continue; } const ex = SES.ex; if (ex.type === 'order') ex.type = 'type'; submitAnswer(ex.answer); sesNext(); } return SES && SES.finished; });
   ok(await answerAll(), 'Oefen session runs to the end'); await shot('05_session_end');
   ok(await p.evaluate(() => (S.sq.u1q1.steps.oefen || 0) >= 80), 'Oefen checkpoint stored');
+  // 2.18: below 80% the guild house stays grey and the plein shows the best attempt for Oefen and Gebruik
+  const bt = await p.evaluate(() => { const ss = sqstate('u1q2'); const keep = JSON.stringify(ss); ss.tried = {oefen: 60}; ss.best = {spreken: 44, schrijven: 30};
+    const h = viewSquare('u1q2'); const tmp = document.createElement('div'); tmp.innerHTML = h;
+    const line = st => (tmp.querySelector(`.tapline[data-step=${st}]`) || {}).textContent || ''; const r = {oefen: line('oefen'), gebruik: line('gebruik'), luister: line('luister')};
+    S.sq.u1q2 = JSON.parse(keep); return r; });
+  ok(bt.oefen.includes('Beste poging: 60% · 80% nodig') && bt.gebruik.includes('Beste poging: 44% · 80% nodig') && !bt.luister.includes('Beste poging'), 'a guild house below 80% shows its best attempt (Oefen, Gebruik)');
   await p.evaluate(() => closeSession());
   ok(await p.evaluate(() => nextStep('u1q1') === 'lees'), 'after Oefen the next guild house (and the cyclist) is Lees, not Luister');
 
