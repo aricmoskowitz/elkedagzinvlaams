@@ -7,7 +7,7 @@
    Score per text (memoScore): rounds 1–4 give up to 15% each, round 5 up to 40%, each times its best accuracy, at most
    99%. 100% (in gold) only when all five rounds are done and round 5 had no mistakes.
    Progress: S.memo[id] = {r: [best accuracy of round 1..5, null while not done], at}. */
-GAMES[1] = {id: 'onthoud', name: 'Onthoud', en: 'Learn by heart', sub: 'Een rijmpje of gezegde in vijf rondes uit het hoofd leren',
+GAMES[1] = {id: 'onthoud', name: 'Onthoud', en: 'Learn by heart', sub: 'Een rijmpje, spreekwoord of gedichtje in vijf rondes uit het hoofd leren',
   open: () => { closeSheet(); TAB = 'pad'; PAD.lvl = 'onthoud'; render(); $('#main').scrollTop = 0; },
   stat: () => { const n = MEMO.filter(t => memoScore(t.id) > 0).length, g = MEMO.filter(t => memoScore(t.id) === 100).length; return n ? `${n} van ${MEMO.length} teksten${g ? ` · ${g} in goud` : ''}` : ''; }};
 
@@ -31,9 +31,13 @@ const memoOpen = (id, k) => k === 0 || (S.memo && S.memo[id] && S.memo[id].r[k -
 // a word is compared without case, accents, apostrophes or hyphens
 const memoKey = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/['’‘\-]/g, '');
 // the text as tokens: what goes before the word (a quote), the word itself, and what follows (punctuation)
+// 2.20: a poem keeps its lines: br marks the last word of a line
 function memoToks(t) {
-  return t.nl.split(/\s+/).map(w => { const m = w.match(/^([“"(]*)(.+?)([.,!?:;”")]*)$/); return {pre: m[1], w: m[2], post: m[3]}; });
+  return t.nl.split('\n').flatMap(line => { const ws = line.trim().split(/\s+/);
+    return ws.map((w, i) => { const m = w.match(/^([“"(]*)(.+?)([.,!?:;”")]*)$/); return {pre: m[1], w: m[2], post: m[3], br: i === ws.length - 1}; }); });
 }
+const memoJoin = (toks, f) => toks.map((x, i) => f(x, i) + (x.br ? '<br>' : ' ')).join('');
+const memoLines = t => esc(t.nl).replace(/\n/g, '<br>');
 // which words go, round by round: key words first (no small words, longer first), the same order every time
 function memoRank(t) {
   const toks = memoToks(t); let h = 0; for (const c of t.id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
@@ -57,7 +61,7 @@ function viewOnthoud() {
   return `<div class="stack">
     <button class="back" data-act="fort">‹ ${esc(FORT.name)}</button>
     <div><div class="eyebrow">${esc(FORT.name)} · Spel 2</div><h1 data-en="Learn by heart">Onthoud</h1>
-    <div class="small" style="margin-top:2px">Leer een kort tekstje uit het hoofd in vijf rondes. Eerst vul je een paar woorden in, dan steeds meer, tot je de hele tekst zelf typt. Alle vijf rondes gedaan en ronde 5 zonder fout: <b>100%</b> in goud.</div>
+    <div class="small" style="margin-top:2px">Leer een kort gedichtje of spreekwoord uit het hoofd in vijf rondes, met een kwinkslag op het einde. Eerst vul je een paar woorden in, dan steeds meer, tot je de hele tekst zelf typt. Alle vijf rondes gedaan en ronde 5 zonder fout: <b>100%</b> in goud.</div>
     ${g ? `<div class="small" style="margin-top:4px"><span class="mg-score gold">★ ${g}</span> van ${MEMO.length} teksten in goud</div>` : ''}</div>
     ${lv.map(n => `<div><div class="eyebrow">Niveau ${n} · ${esc(MEMO_LVL[n])}</div><div class="list">${MEMO.filter(t => t.lvl === n).sort((a, b) => memoToks(a).length - memoToks(b).length).map(t =>
       `<button class="tapline" data-act="mg-text" data-id="${t.id}"><div class="t"><div style="font-weight:600">${esc(t.title)}</div><div class="small">${esc(MEMO_KIND[t.kind])} · ${memoToks(t).length} woorden ${memoDots(t.id)}</div></div>${memoBadge(t.id)}<span class="chev">›</span></button>`).join('')}</div></div>`).join('')}
@@ -76,7 +80,7 @@ function memoIntro() {
   $('#mg-prog').style.width = (20 * m.r.filter(x => x != null).length) + '%'; $('#mg-count').textContent = m.r.filter(x => x != null).length + ' / 5';
   $('#mg-body').innerHTML = `<div class="eyebrow">${esc(MEMO_KIND[t.kind])} · Niveau ${t.lvl}</div>
     <div class="row" style="justify-content:space-between;align-items:flex-start"><h2>${esc(t.title)}</h2>${memoBadge(t.id)}</div>
-    <div class="card"><div class="row" style="align-items:flex-start">${speakBtn(t.nl)}<div class="nl mg-text">${esc(t.nl)}</div></div><div class="small" style="margin-top:6px">${esc(t.en)}</div></div>
+    <div class="card"><div class="row" style="align-items:flex-start">${speakBtn(t.nl)}<div class="nl mg-text">${memoLines(t)}</div></div><div class="small" style="margin-top:6px">${esc(t.en)}</div></div>
     ${s === 100 ? '<div class="card mg-goldcard">★ Helemaal uit het hoofd, zonder fout. Deze tekst is van jou.</div>' : ''}
     <div class="list">${MEMO_ROUNDS.map((R, k) => { const open = memoOpen(t.id, k), b = m.r[k];
       return `<button class="tapline" data-act="mg-round" data-k="${k}"${open ? '' : ' disabled aria-disabled="true"'}><div class="t"><div style="font-weight:600${open ? '' : ';color:var(--faint)'}" data-en="Round ${k + 1}: ${esc(R.en)}">Ronde ${k + 1} · ${esc(R.n)}</div><div class="small">${open ? esc(R.sub) : 'Eerst ronde ' + k}</div></div>${b != null ? `<span class="mg-score${k === 4 && b === 1 ? ' gold' : ''}">${Math.round(b * 100)}%</span>` : ''}${open ? '<span class="chev">›</span>' : ''}</button>`; }).join('')}</div>
@@ -95,9 +99,9 @@ function memoStart(k) {
 function memoRender() {
   const t = MX(MG.id), R = MEMO_ROUNDS[MG.k], gapSet = new Set(MG.gaps), cur = MG.gaps[MG.at];
   $('#mg-prog').style.width = Math.round(100 * MG.at / MG.gaps.length) + '%'; $('#mg-count').textContent = MG.at + ' / ' + MG.gaps.length;
-  const words = MG.toks.map((x, i) => { const filled = gapSet.has(i) && MG.gaps.indexOf(i) < MG.at;
+  const words = memoJoin(MG.toks, (x, i) => { const filled = gapSet.has(i) && MG.gaps.indexOf(i) < MG.at;
     const w = !gapSet.has(i) ? esc(x.w) : filled ? `<span class="mg-fill">${esc(x.w)}</span>` : `<span class="mg-gap${i === cur ? ' cur' : ''}" style="min-width:${Math.max(2, x.w.length * .55)}em" aria-label="${i === cur ? 'hier' : 'leeg'}"></span>`;
-    return esc(x.pre) + w + esc(x.post); }).join(' ');
+    return esc(x.pre) + w + esc(x.post); });
   const hint = MG.here >= 2 ? memoKey(MG.toks[cur].w) : null; let lit = false;
   $('#mg-body').innerHTML = `${kindLabel('mg', 'ex-label')}
     <div class="row" style="justify-content:space-between"><div class="eyebrow">Ronde ${MG.k + 1} van 5 · ${esc(R.n)}</div>${speakBtn(t.nl)}</div>
@@ -153,9 +157,9 @@ function memoDone(acc, miss) {
   const a = S.activity[dateKey()] = S.activity[dateKey()] || {n: 0, m: 0}; a.n = (a.n || 0) + 1;
   $('#mg-prog').style.width = '100%';
   const ck = k === 4 && MG.check;
-  const shown = ck ? `<div class="card"><div class="nl mg-text">${toks.map((x, i) => esc(x.pre) + (ck.badT.has(i) ? `<span class="mg-miss">${esc(x.w)}</span>` : esc(x.w)) + esc(x.post)).join(' ')}</div>
+  const shown = ck ? `<div class="card"><div class="nl mg-text">${memoJoin(toks, (x, i) => esc(x.pre) + (ck.badT.has(i) ? `<span class="mg-miss">${esc(x.w)}</span>` : esc(x.w)) + esc(x.post))}</div>
       ${ck.errors ? `<div class="small yours" style="margin-top:6px">Jij: <span class="nl">${ck.typed.map((w, i) => ck.badY.has(i) ? `<s class="d">${esc(w)}</s>` : esc(w)).join(' ')}</span></div>` : ''}</div>`
-    : `<div class="card"><div class="nl mg-text">${esc(t.nl)}</div></div>`;
+    : `<div class="card"><div class="nl mg-text">${memoLines(t)}</div></div>`;
   const head = k === 4 ? (miss ? `${miss} ${miss === 1 ? 'fout' : 'fouten'}` : 'Zonder fout!') : miss ? `${Math.round(acc * 100)}% in één keer juist` : 'Alles in één keer juist!';
   $('#mg-body').innerHTML = `<div class="eyebrow">Ronde ${k + 1} klaar</div>
     <div class="fb ${miss ? 'no' : 'ok'}" role="status"><h3>${head}</h3><div class="small">${k === 4 ? `${toks.length - (ck ? ck.badT.size : 0)} van ${toks.length} woorden juist.` : `${MG.gaps.length} woorden ingevuld${miss ? `, ${miss} keer mis getikt` : ''}.`} Je beste score voor deze ronde: ${Math.round(m.r[k] * 100)}%.</div></div>

@@ -148,17 +148,17 @@ const {openApp} = require('./page');
       SES = keep; if (nv < 1000) bad.push('Vervoeg: only ' + nv + ' cards checked');
       if (keyValid('v:wandelen:nu')) bad.push('Vervoeg cards must stay out of Herhalen');
       const ks = vvKeys(); if (ks.length !== VV_ROUND || !ks.every(k => /^v:[^:]+:(nu|verl|volt|toek|bevel)$/.test(k))) bad.push('Vervoeg round: ' + ks.length + ' cards'); }
-    // 2.15 Onthoud: the second game; every text 2–4 sentences with a title, a level and English; the gaps grow round by round
+    // 2.15 Onthoud: the second game; every text (2.20: a short poem or proverb with a twist) 3–5 lines with a title, a level and English; the gaps grow round by round
     // (each round keeps the gaps of the one before) until round 4 has every word; the score is gold only for five rounds and a perfect round 5
     { if (!GAMES[1] || GAMES[1].id !== 'onthoud' || typeof GAMES[1].open !== 'function') bad.push('Speelfort: game 2 is Onthoud');
       if (new Set(MEMO.map(t => t.id)).size !== MEMO.length) bad.push('Onthoud: duplicate ids');
       MEMO.forEach(t => { const ns = (t.nl.match(/[.!?](\s|$)/g) || []).length, N = memoToks(t).length;
         if (!t.title || !t.en || !MEMO_KIND[t.kind] || !(t.lvl >= 1 && t.lvl <= 5)) bad.push('Onthoud ' + t.id + ': title, kind, lvl 1–5 and en');
-        if (ns < 2 || ns > 4) bad.push('Onthoud ' + t.id + ': ' + ns + ' sentences (2–4)');
+        const nl = t.nl.split('\n').length; if (nl < 3 || nl > 5 || N < 8 || N > 30) bad.push('Onthoud ' + t.id + ': ' + nl + ' lines, ' + N + ' words (3–5 lines, 8–30 words)');
         if (memoToks(t).some(x => !/[\p{L}\p{N}]/u.test(x.w))) bad.push('Onthoud ' + t.id + ': a token without a word');
         const g = [0, 1, 2, 3].map(k => memoGaps(t, k));
         if (!g.every((x, k) => !k || (x.length > g[k - 1].length && g[k - 1].every(i => x.includes(i)))) || g[3].length !== N) bad.push('Onthoud ' + t.id + ': gaps ' + g.map(x => x.length));
-        const d = memoDiff(memoToks(t).map(x => x.w), t.nl.toUpperCase().replace(/[.,!?;:]/g, '').split(/\s+/)); if (d.errors) bad.push('Onthoud ' + t.id + ': its own text is not perfect'); });
+        const d = memoDiff(memoToks(t).map(x => x.w), t.nl.toUpperCase().replace(/[.,!?;:]/g, '').trim().split(/\s+/)); if (d.errors) bad.push('Onthoud ' + t.id + ': its own text is not perfect'); });
       const keepM = S.memo; S.memo = {m1: {r: [1, 1, 1, 1, 1]}, m2: {r: [.5, .5, .5, .5, 1]}, m3: {r: [1, 1, 1, 1, .96]}, m4: {r: [1, 1, null, null, null]}};
       if (memoScore('m1') !== 100 || memoScore('m2') !== 100 || memoScore('m3') !== 98 || memoScore('m4') !== 30 || memoScore('m5') !== 0) bad.push('Onthoud score: ' + ['m1', 'm2', 'm3', 'm4', 'm5'].map(memoScore));
       S.memo = keepM; }

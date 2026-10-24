@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "a49b41ec71";</script>
+<script>const APP_VERSION = "c16f8a67a7";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -1537,31 +1537,34 @@ SCENARIOS.push(
 );
 
 /* ===== 2.15: Onthoud — short texts to learn by heart (the Speelfort's second game) =====
-   Two to four sentences: a rhyme, a little poem, a saying with what it means, or a short cute text. Belgian Dutch.
-   lvl 1–5 is the difficulty; the menu shows them easiest first. Ids never change: progress is kept per id in S.memo. */
+   2.20 (the user's review): only clever texts. Rhymes, proverbs and little poems where the first lines set a scene and
+   the last line turns it around (like a haiku or a short Gary Snyder poem). Most take a well-known Flemish proverb and
+   add the twist. Lines are separated by \n and kept on screen. Belgian Dutch. lvl 1–5 is the difficulty; the menu shows
+   them easiest first. Ids never change: progress is kept per id in S.memo (m1–m20 were the first set; only m7 stayed). */
 const MEMO = [
-  {id: 'm1', lvl: 1, kind: 'rijm', title: 'De kat in de zon', nl: 'De kat ligt in de zon. Ze slaapt de hele dag. Ze droomt van een vis, met een grote lach.', en: 'The cat lies in the sun. She sleeps all day. She dreams of a fish, with a big smile.'},
-  {id: 'm2', lvl: 1, kind: 'gezegde', title: 'Oost west, thuis best', nl: 'Oost west, thuis best. Je reist naar zee of naar de bergen, maar in je eigen bed slaap je het best.', en: 'East, west, home is best. You travel to the sea or the mountains, but you sleep best in your own bed.'},
-  {id: 'm3', lvl: 1, kind: 'rijm', title: 'Elke dag een zin', nl: 'Elke dag een zin, zo leer ik er wat bij. Vandaag een woord, morgen twee: het Vlaams is nu van mij!', en: 'A sentence every day, that way I learn a bit more. One word today, two tomorrow: Flemish is mine now!'},
-  {id: 'm4', lvl: 1, kind: 'tekst', title: 'De tram', nl: 'De tram rijdt door de stad. Ik zit aan het raam en kijk naar buiten. Wat een mooie dag!', en: 'The tram rides through the city. I sit at the window and look outside. What a lovely day!'},
-  {id: 'm5', lvl: 2, kind: 'rijm', title: 'Fietsen in de regen', nl: 'Ik fiets door de regen naar de bakker op de hoek. Mijn jas is nat, mijn haar is nat, maar ik krijg een warme koek.', en: 'I cycle through the rain to the baker on the corner. My coat is wet, my hair is wet, but I get a warm bun.'},
-  {id: 'm6', lvl: 2, kind: 'gezegde', title: 'Wie niet waagt, die niet wint', nl: 'Wie niet waagt, die niet wint. Probeer het dus gewoon. Een fout is geen ramp: zo leer je het snelst.', en: 'Nothing ventured, nothing gained. So just try it. A mistake is no disaster: that is how you learn fastest.'},
-  {id: 'm7', lvl: 2, kind: 'liedje', title: 'Altijd is Kortjakje ziek', nl: "Altijd is Kortjakje ziek, midden in de week, maar 's zondags niet. 's Zondags gaat zij naar de kerk, met haar boek vol zilverwerk.", en: 'Kortjakje is always ill, in the middle of the week, but not on Sundays. On Sundays she goes to church, with her book full of silver.'},
-  {id: 'm8', lvl: 2, kind: 'tekst', title: 'Mijn buurvrouw', nl: 'Mijn buurvrouw heeft een kleine hond. Hij heet Max en hij blaft naar de postbode. Maar naar mij kwispelt hij altijd.', en: 'My neighbour has a small dog. He is called Max and he barks at the postman. But he always wags his tail at me.'},
-  {id: 'm9', lvl: 3, kind: 'gedicht', title: 'Brabo', nl: 'Op de Grote Markt staat Brabo, met zijn arm hoog in de lucht. De gildehuizen kijken toe, en de duiven slaan op de vlucht.', en: 'On the Grote Markt stands Brabo, with his arm high in the air. The guild houses look on, and the pigeons take flight.'},
-  {id: 'm10', lvl: 3, kind: 'gezegde', title: 'Al doende leert men', nl: 'Al doende leert men. Je leert niet zwemmen uit een boek, je leert het in het water. Zo is het ook met een taal: praten, praten en nog eens praten.', en: 'You learn by doing. You do not learn to swim from a book, you learn it in the water. It is the same with a language: talk, talk and talk again.'},
-  {id: 'm11', lvl: 3, kind: 'liedje', title: 'De stoomboot', nl: 'Zie ginds komt de stoomboot uit Spanje weer aan. Hij brengt ons Sint-Nicolaas, ik zie hem al staan.', en: 'Look, there comes the steamboat from Spain again. It brings us Saint Nicholas, I can already see him standing there.'},
-  {id: 'm12', lvl: 3, kind: 'tekst', title: 'Een pak frieten', nl: 'Een pak frieten met mayonaise, warm en krokant uit het frietkot. Ik eet ze op een bank in het park, en de duiven kijken jaloers toe.', en: 'A portion of chips with mayonnaise, warm and crispy from the chip shop. I eat them on a bench in the park, and the pigeons watch jealously.'},
-  {id: 'm13', lvl: 4, kind: 'gezegde', title: 'De appel en de boom', nl: 'De appel valt niet ver van de boom. Kinderen lijken vaak op hun ouders, in hoe ze praten en in wat ze doen. Mijn moeder lacht heel luid, en ik ook.', en: 'The apple does not fall far from the tree. Children are often like their parents, in how they talk and in what they do. My mother laughs very loudly, and so do I.'},
-  {id: 'm14', lvl: 4, kind: 'tekst', title: 'April', nl: "April doet wat hij wil, zegt men in Vlaanderen. 's Morgens schijnt de zon, 's middags valt er hagel, en 's avonds staat er een regenboog boven de Schelde.", en: 'April does what it wants, they say in Flanders. In the morning the sun shines, in the afternoon it hails, and in the evening there is a rainbow above the Scheldt.'},
-  {id: 'm15', lvl: 4, kind: 'tekst', title: 'Het café op de hoek', nl: 'In het café op de hoek ruikt het naar koffie en vers brood. De ober kent mijn naam en weet al wat ik wil: een koffie met een wolkje melk en een speculoosje erbij.', en: 'In the café on the corner it smells of coffee and fresh bread. The waiter knows my name and already knows what I want: a coffee with a dash of milk and a little speculoos biscuit with it.'},
-  {id: 'm16', lvl: 4, kind: 'gezegde', title: 'Met vallen en opstaan', nl: 'Met vallen en opstaan leer je fietsen. Wie nooit valt, zit nooit op de fiets. Dus sta op, veeg je knieën af en rij verder.', en: 'You learn to cycle by falling and getting up. Whoever never falls never sits on a bike. So get up, brush off your knees and ride on.'},
-  {id: 'm17', lvl: 5, kind: 'gezegde', title: 'Een goede buur', nl: 'Beter een goede buur dan een verre vriend. Als je verwarming in de winter stukgaat, of als je je sleutel vergeten bent, helpt de buurvrouw je meteen. Je vriend in Gent kan dat niet.', en: 'Better a good neighbour than a distant friend. When your heating breaks down in winter, or when you have forgotten your key, the neighbour helps you straight away. Your friend in Ghent cannot do that.'},
-  {id: 'm18', lvl: 5, kind: 'tekst', title: 'Op de kaaien', nl: 'Op zondagmorgen wandel ik over de kaaien, en de wind van de Schelde waait in mijn gezicht. De schepen glijden traag voorbij, en de stad wordt langzaam wakker.', en: 'On Sunday morning I walk along the quays, and the wind from the Scheldt blows in my face. The ships glide slowly past, and the city slowly wakes up.'},
-  {id: 'm19', lvl: 5, kind: 'tekst', title: 'Een taal is een stad', nl: 'Een taal leren is als een stad leren kennen. Eerst ken je alleen de grote straten; daarna vind je de steegjes, de pleintjes en de kleine cafés. Op een dag verdwaal je niet meer, en dan voel je je thuis.', en: 'Learning a language is like getting to know a city. At first you only know the big streets; then you find the alleys, the little squares and the small cafés. One day you no longer get lost, and then you feel at home.'},
-  {id: 'm20', lvl: 5, kind: 'gezegde', title: 'Het kleine eren', nl: 'Wie het kleine niet eert, is het grote niet weerd. Een euro is ook geld, en een klein woord is ook een woord. Wie elke dag een beetje spaart, heeft na een jaar een schat.', en: 'Whoever does not value the small is not worthy of the great. One euro is money too, and a small word is a word too. Whoever saves a little every day has a treasure after a year.'},
+  {id: 'm21', lvl: 1, kind: 'gedicht', title: 'De kat en de vis', nl: 'De kat ligt in de zon\nen droomt van een dikke vis.\nIn de vijver lacht de vis.', en: 'The cat lies in the sun / and dreams of a fat fish. / In the pond, the fish laughs.'},
+  {id: 'm22', lvl: 1, kind: 'gezegde', title: 'Thuis best', nl: 'Oost west,\nthuis best,\nzei mijn kat,\nen ging bij de buren eten.', en: 'East, west, / home is best, / said my cat, / and went to eat at the neighbours\'.'},
+  {id: 'm23', lvl: 1, kind: 'gezegde', title: 'De slak', nl: 'Haastige spoed\nis zelden goed,\nzei de slak.\nHij kwam een week te laat.', en: 'More haste, / less speed, / said the snail. / He arrived a week late.'},
+  {id: 'm24', lvl: 1, kind: 'gedicht', title: 'Op de Meir', nl: 'Op de Meir\nduizend mensen met haast.\nEén duif\ngaat te voet.', en: 'On the Meir / a thousand people in a hurry. / One pigeon / goes on foot.'},
+  {id: 'm25', lvl: 2, kind: 'gezegde', title: 'Na regen', nl: 'Na regen komt zonneschijn,\nzegt het spreekwoord.\nIn Antwerpen komt er na regen\nnog meer regen.', en: 'After rain comes sunshine, / says the proverb. / In Antwerp, after rain comes / more rain.'},
+  {id: 'm26', lvl: 2, kind: 'rijm', title: 'De leugen', nl: 'Al is de leugen nog zo snel,\nde waarheid achterhaalt ze wel.\nTenzij de leugen fietst.', en: 'However fast the lie may be, / the truth will catch up with it. / Unless the lie rides a bike.'},
+  {id: 'm7', lvl: 2, kind: 'liedje', title: 'Altijd is Kortjakje ziek', nl: "Altijd is Kortjakje ziek,\nmidden in de week,\nmaar 's zondags niet.\n's Zondags gaat zij naar de kerk,\nmet haar boek vol zilverwerk.", en: 'Kortjakje is always ill, / in the middle of the week, / but not on Sundays. / On Sundays she goes to church, / with her book full of silver.'},
+  {id: 'm27', lvl: 2, kind: 'gezegde', title: 'Als de kat van huis is', nl: 'Als de kat van huis is,\ndansen de muizen op tafel.\nDe kat kijkt mee\nop haar gsm.', en: 'When the cat is away, / the mice dance on the table. / The cat watches along / on her phone.'},
+  {id: 'm28', lvl: 3, kind: 'gezegde', title: 'Spreken is zilver', nl: 'Spreken is zilver,\nzwijgen is goud.\nMaar wie Vlaams wil leren,\nkiest voor het zilver.', en: 'Speech is silver, / silence is golden. / But whoever wants to learn Flemish / goes for the silver.'},
+  {id: 'm29', lvl: 3, kind: 'gezegde', title: 'Wie het laatst lacht', nl: 'Wie het laatst lacht,\nlacht het best.\nMijn opa lacht altijd het laatst:\nhij hoort niet zo goed.', en: 'He who laughs last / laughs best. / My grandpa always laughs last: / he doesn\'t hear very well.'},
+  {id: 'm30', lvl: 3, kind: 'gedicht', title: 'De trein van acht uur', nl: 'De trein van acht uur\nvertrekt om acht uur precies.\nOp het perron\nkijkt iedereen verbaasd.', en: 'The eight o\'clock train / leaves at exactly eight. / On the platform / everyone looks amazed.'},
+  {id: 'm31', lvl: 3, kind: 'gezegde', title: 'Maart en april', nl: 'Maart roert zijn staart,\napril doet wat hij wil.\nIn Vlaanderen doet het weer\ndat het hele jaar.', en: 'March stirs its tail, / April does what it wants. / In Flanders the weather does that / all year round.'},
+  {id: 'm32', lvl: 4, kind: 'gezegde', title: 'De ezel', nl: 'Een ezel stoot zich in het gemeen\ngeen twee keer aan dezelfde steen.\nEen mens wel.\nDie maakt er een hobby van.', en: 'A donkey, as a rule, does not / stumble twice on the same stone. / A human does. / Humans make a hobby of it.'},
+  {id: 'm33', lvl: 4, kind: 'gezegde', title: 'Hoge bomen', nl: 'Hoge bomen vangen veel wind,\nzei de kleine boom tevreden.\nHij stond in hun schaduw\nen zag de zon nooit.', en: 'Tall trees catch a lot of wind, / said the little tree, pleased. / He stood in their shade / and never saw the sun.'},
+  {id: 'm34', lvl: 4, kind: 'gezegde', title: 'Een vogel in de hand', nl: 'Beter een vogel in de hand\ndan tien in de lucht,\nzei de jager.\nDe vogel was het daar niet mee eens.', en: 'Better one bird in the hand / than ten in the air, / said the hunter. / The bird did not agree.'},
+  {id: 'm35', lvl: 4, kind: 'gedicht', title: 'Tien woorden', nl: 'Elke dag leer ik tien nieuwe woorden.\nElke nacht vergeet ik er negen.\nNa een jaar\nken ik er driehonderdvijfenzestig.', en: 'Every day I learn ten new words. / Every night I forget nine. / After a year / I know three hundred and sixty-five.'},
+  {id: 'm36', lvl: 4, kind: 'gedicht', title: 'Gezond', nl: 'Ik eet gezond,\nzeg ik tegen de dokter:\nelke dag groenten.\nIk vertel niet dat het frieten zijn.', en: 'I eat healthily, / I tell the doctor: / vegetables every day. / I don\'t say that they are chips.'},
+  {id: 'm37', lvl: 5, kind: 'gedicht', title: 'De Schelde', nl: 'Al duizend jaar\nstroomt de Schelde naar zee,\nzonder haast.\nIk ren naar de tram\nen mis hem.', en: 'For a thousand years / the Scheldt has flowed to the sea, / without hurrying. / I run for the tram / and miss it.'},
+  {id: 'm38', lvl: 5, kind: 'gezegde', title: 'Wie A zegt', nl: 'Wie A zegt,\nmoet ook B zeggen.\nDaarom zei ik niets\ntoen de buurvrouw vroeg\nof ik wilde helpen met verhuizen.', en: 'Whoever says A / must also say B. / That is why I said nothing / when the neighbour asked / if I wanted to help with the move.'},
+  {id: 'm39', lvl: 5, kind: 'gezegde', title: 'Zachte heelmeesters', nl: 'Zachte heelmeesters\nmaken stinkende wonden,\nzei mijn tandarts.\nToen nam hij de boor.', en: 'Gentle healers / make stinking wounds, / said my dentist. / Then he picked up the drill.'},
+  {id: 'm40', lvl: 5, kind: 'gedicht', title: 'Twee talen', nl: 'Twee talen spreken\nis twee keer zo moeilijk,\nzei de man\ndie in één taal\nniets te zeggen had.', en: 'Speaking two languages / is twice as hard, / said the man / who, in one language, / had nothing to say.'},
 ];
-const MEMO_KIND = {rijm: 'Rijmpje', gedicht: 'Gedichtje', gezegde: 'Gezegde', liedje: 'Liedje', tekst: 'Tekstje'};
+const MEMO_KIND = {rijm: 'Rijmpje', gedicht: 'Gedichtje', gezegde: 'Spreekwoord', liedje: 'Liedje'};
 const MEMO_LVL = ['', 'Makkelijk', 'Iets moeilijker', 'Gemiddeld', 'Moeilijk', 'Uitdaging'];
 
 /* ===== UTIL ===== */
@@ -5655,7 +5658,7 @@ document.addEventListener('click', e => { const el = e.target.closest('[data-act
    Score per text (memoScore): rounds 1–4 give up to 15% each, round 5 up to 40%, each times its best accuracy, at most
    99%. 100% (in gold) only when all five rounds are done and round 5 had no mistakes.
    Progress: S.memo[id] = {r: [best accuracy of round 1..5, null while not done], at}. */
-GAMES[1] = {id: 'onthoud', name: 'Onthoud', en: 'Learn by heart', sub: 'Een rijmpje of gezegde in vijf rondes uit het hoofd leren',
+GAMES[1] = {id: 'onthoud', name: 'Onthoud', en: 'Learn by heart', sub: 'Een rijmpje, spreekwoord of gedichtje in vijf rondes uit het hoofd leren',
   open: () => { closeSheet(); TAB = 'pad'; PAD.lvl = 'onthoud'; render(); $('#main').scrollTop = 0; },
   stat: () => { const n = MEMO.filter(t => memoScore(t.id) > 0).length, g = MEMO.filter(t => memoScore(t.id) === 100).length; return n ? `${n} van ${MEMO.length} teksten${g ? ` · ${g} in goud` : ''}` : ''; }};
 
@@ -5679,9 +5682,13 @@ const memoOpen = (id, k) => k === 0 || (S.memo && S.memo[id] && S.memo[id].r[k -
 // a word is compared without case, accents, apostrophes or hyphens
 const memoKey = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/['’‘\-]/g, '');
 // the text as tokens: what goes before the word (a quote), the word itself, and what follows (punctuation)
+// 2.20: a poem keeps its lines: br marks the last word of a line
 function memoToks(t) {
-  return t.nl.split(/\s+/).map(w => { const m = w.match(/^([“"(]*)(.+?)([.,!?:;”")]*)$/); return {pre: m[1], w: m[2], post: m[3]}; });
+  return t.nl.split('\n').flatMap(line => { const ws = line.trim().split(/\s+/);
+    return ws.map((w, i) => { const m = w.match(/^([“"(]*)(.+?)([.,!?:;”")]*)$/); return {pre: m[1], w: m[2], post: m[3], br: i === ws.length - 1}; }); });
 }
+const memoJoin = (toks, f) => toks.map((x, i) => f(x, i) + (x.br ? '<br>' : ' ')).join('');
+const memoLines = t => esc(t.nl).replace(/\n/g, '<br>');
 // which words go, round by round: key words first (no small words, longer first), the same order every time
 function memoRank(t) {
   const toks = memoToks(t); let h = 0; for (const c of t.id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
@@ -5705,7 +5712,7 @@ function viewOnthoud() {
   return `<div class="stack">
     <button class="back" data-act="fort">‹ ${esc(FORT.name)}</button>
     <div><div class="eyebrow">${esc(FORT.name)} · Spel 2</div><h1 data-en="Learn by heart">Onthoud</h1>
-    <div class="small" style="margin-top:2px">Leer een kort tekstje uit het hoofd in vijf rondes. Eerst vul je een paar woorden in, dan steeds meer, tot je de hele tekst zelf typt. Alle vijf rondes gedaan en ronde 5 zonder fout: <b>100%</b> in goud.</div>
+    <div class="small" style="margin-top:2px">Leer een kort gedichtje of spreekwoord uit het hoofd in vijf rondes, met een kwinkslag op het einde. Eerst vul je een paar woorden in, dan steeds meer, tot je de hele tekst zelf typt. Alle vijf rondes gedaan en ronde 5 zonder fout: <b>100%</b> in goud.</div>
     ${g ? `<div class="small" style="margin-top:4px"><span class="mg-score gold">★ ${g}</span> van ${MEMO.length} teksten in goud</div>` : ''}</div>
     ${lv.map(n => `<div><div class="eyebrow">Niveau ${n} · ${esc(MEMO_LVL[n])}</div><div class="list">${MEMO.filter(t => t.lvl === n).sort((a, b) => memoToks(a).length - memoToks(b).length).map(t =>
       `<button class="tapline" data-act="mg-text" data-id="${t.id}"><div class="t"><div style="font-weight:600">${esc(t.title)}</div><div class="small">${esc(MEMO_KIND[t.kind])} · ${memoToks(t).length} woorden ${memoDots(t.id)}</div></div>${memoBadge(t.id)}<span class="chev">›</span></button>`).join('')}</div></div>`).join('')}
@@ -5724,7 +5731,7 @@ function memoIntro() {
   $('#mg-prog').style.width = (20 * m.r.filter(x => x != null).length) + '%'; $('#mg-count').textContent = m.r.filter(x => x != null).length + ' / 5';
   $('#mg-body').innerHTML = `<div class="eyebrow">${esc(MEMO_KIND[t.kind])} · Niveau ${t.lvl}</div>
     <div class="row" style="justify-content:space-between;align-items:flex-start"><h2>${esc(t.title)}</h2>${memoBadge(t.id)}</div>
-    <div class="card"><div class="row" style="align-items:flex-start">${speakBtn(t.nl)}<div class="nl mg-text">${esc(t.nl)}</div></div><div class="small" style="margin-top:6px">${esc(t.en)}</div></div>
+    <div class="card"><div class="row" style="align-items:flex-start">${speakBtn(t.nl)}<div class="nl mg-text">${memoLines(t)}</div></div><div class="small" style="margin-top:6px">${esc(t.en)}</div></div>
     ${s === 100 ? '<div class="card mg-goldcard">★ Helemaal uit het hoofd, zonder fout. Deze tekst is van jou.</div>' : ''}
     <div class="list">${MEMO_ROUNDS.map((R, k) => { const open = memoOpen(t.id, k), b = m.r[k];
       return `<button class="tapline" data-act="mg-round" data-k="${k}"${open ? '' : ' disabled aria-disabled="true"'}><div class="t"><div style="font-weight:600${open ? '' : ';color:var(--faint)'}" data-en="Round ${k + 1}: ${esc(R.en)}">Ronde ${k + 1} · ${esc(R.n)}</div><div class="small">${open ? esc(R.sub) : 'Eerst ronde ' + k}</div></div>${b != null ? `<span class="mg-score${k === 4 && b === 1 ? ' gold' : ''}">${Math.round(b * 100)}%</span>` : ''}${open ? '<span class="chev">›</span>' : ''}</button>`; }).join('')}</div>
@@ -5743,9 +5750,9 @@ function memoStart(k) {
 function memoRender() {
   const t = MX(MG.id), R = MEMO_ROUNDS[MG.k], gapSet = new Set(MG.gaps), cur = MG.gaps[MG.at];
   $('#mg-prog').style.width = Math.round(100 * MG.at / MG.gaps.length) + '%'; $('#mg-count').textContent = MG.at + ' / ' + MG.gaps.length;
-  const words = MG.toks.map((x, i) => { const filled = gapSet.has(i) && MG.gaps.indexOf(i) < MG.at;
+  const words = memoJoin(MG.toks, (x, i) => { const filled = gapSet.has(i) && MG.gaps.indexOf(i) < MG.at;
     const w = !gapSet.has(i) ? esc(x.w) : filled ? `<span class="mg-fill">${esc(x.w)}</span>` : `<span class="mg-gap${i === cur ? ' cur' : ''}" style="min-width:${Math.max(2, x.w.length * .55)}em" aria-label="${i === cur ? 'hier' : 'leeg'}"></span>`;
-    return esc(x.pre) + w + esc(x.post); }).join(' ');
+    return esc(x.pre) + w + esc(x.post); });
   const hint = MG.here >= 2 ? memoKey(MG.toks[cur].w) : null; let lit = false;
   $('#mg-body').innerHTML = `${kindLabel('mg', 'ex-label')}
     <div class="row" style="justify-content:space-between"><div class="eyebrow">Ronde ${MG.k + 1} van 5 · ${esc(R.n)}</div>${speakBtn(t.nl)}</div>
@@ -5801,9 +5808,9 @@ function memoDone(acc, miss) {
   const a = S.activity[dateKey()] = S.activity[dateKey()] || {n: 0, m: 0}; a.n = (a.n || 0) + 1;
   $('#mg-prog').style.width = '100%';
   const ck = k === 4 && MG.check;
-  const shown = ck ? `<div class="card"><div class="nl mg-text">${toks.map((x, i) => esc(x.pre) + (ck.badT.has(i) ? `<span class="mg-miss">${esc(x.w)}</span>` : esc(x.w)) + esc(x.post)).join(' ')}</div>
+  const shown = ck ? `<div class="card"><div class="nl mg-text">${memoJoin(toks, (x, i) => esc(x.pre) + (ck.badT.has(i) ? `<span class="mg-miss">${esc(x.w)}</span>` : esc(x.w)) + esc(x.post))}</div>
       ${ck.errors ? `<div class="small yours" style="margin-top:6px">Jij: <span class="nl">${ck.typed.map((w, i) => ck.badY.has(i) ? `<s class="d">${esc(w)}</s>` : esc(w)).join(' ')}</span></div>` : ''}</div>`
-    : `<div class="card"><div class="nl mg-text">${esc(t.nl)}</div></div>`;
+    : `<div class="card"><div class="nl mg-text">${memoLines(t)}</div></div>`;
   const head = k === 4 ? (miss ? `${miss} ${miss === 1 ? 'fout' : 'fouten'}` : 'Zonder fout!') : miss ? `${Math.round(acc * 100)}% in één keer juist` : 'Alles in één keer juist!';
   $('#mg-body').innerHTML = `<div class="eyebrow">Ronde ${k + 1} klaar</div>
     <div class="fb ${miss ? 'no' : 'ok'}" role="status"><h3>${head}</h3><div class="small">${k === 4 ? `${toks.length - (ck ? ck.badT.size : 0)} van ${toks.length} woorden juist.` : `${MG.gaps.length} woorden ingevuld${miss ? `, ${miss} keer mis getikt` : ''}.`} Je beste score voor deze ronde: ${Math.round(m.r[k] * 100)}%.</div></div>
