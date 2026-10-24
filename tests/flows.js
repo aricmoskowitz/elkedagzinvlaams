@@ -62,7 +62,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
     const h = viewSquare('u1q2'); const tmp = document.createElement('div'); tmp.innerHTML = h;
     const line = st => (tmp.querySelector(`.tapline[data-step=${st}]`) || {}).textContent || ''; const r = {oefen: line('oefen'), gebruik: line('gebruik'), luister: line('luister')};
     S.sq.u1q2 = JSON.parse(keep); return r; });
-  ok(bt.oefen.includes('Beste poging: 60% · 80% nodig') && bt.gebruik.includes('Beste poging: 44% · 80% nodig') && !bt.luister.includes('Beste poging'), 'a guild house below 80% shows its best attempt (Oefen, Gebruik)');
+  ok(bt.oefen.includes('Oefen · beste poging 60% · 80% nodig') && bt.gebruik.includes('Gebruik · beste poging 44% · 80% nodig') && !bt.luister.includes('beste poging'), 'a guild house below 80% shows its best attempt (Oefen, Gebruik)');
   await p.evaluate(() => closeSession());
   ok(await p.evaluate(() => nextStep('u1q1') === 'lees'), 'after Oefen the next guild house (and the cyclist) is Lees, not Luister');
 
