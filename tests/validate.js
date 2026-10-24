@@ -21,6 +21,13 @@ const {openApp} = require('./page');
         if (ex.options && ex.options.length < 3) bad.push(k + ' fewer than 3 options ' + ex.options);
       }
     }));
+    // 2.17 Luister en zet in volgorde: every word of the sentence is in the bank plus three that don't belong;
+    // tapping the sentence's own words in order is right, with an extra word it is wrong
+    SENT.forEach(s => { n++; const ex = lisOrdEx('s:' + s.id + ':lis'); const own = ex.tokens.filter(t => t.i < ex.tokens.length - LIS_EXTRA).sort((a, b) => a.i - b.i);
+      const extra = ex.tokens.filter(t => t.i >= ex.tokens.length - LIS_EXTRA), val = cap1(own.map(t => t.t).join(' ')) + ex.punct;
+      if (extra.length !== LIS_EXTRA || extra.some(t => norm(s.nl).split(' ').includes(norm(t.t)))) bad.push(s.id + ' lisOrd extras ' + extra.map(t => t.t));
+      if (!check(ex, val).ok) bad.push(s.id + ' lisOrd own words "' + val + '"');
+      if (check(ex, cap1(own.map(t => t.t).concat(extra[0].t).join(' ')) + ex.punct).ok) bad.push(s.id + ' lisOrd accepts an extra word'); });
     SENT.forEach(s => { const v = orderVariants(s).map(norm); if (!v.includes(norm(s.nl))) bad.push(s.id + ' variant0 ' + v[0]); });
     // 2.8: every other accepted order can be shown as the learner's own sentence, with the verb still in slot 2
     SENT.forEach(s => orderVariants(s).slice(1).forEach(v => { const o = ownOrder(s, v); if (!o || norm(o.nl) !== norm(v) || frameCols(o)[2].join(' ') !== s.ch.find(x => x.sl === '2').t) bad.push(s.id + ' own order ' + v); }));
