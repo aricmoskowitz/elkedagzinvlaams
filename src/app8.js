@@ -491,15 +491,16 @@ function viewSquare(q) {
   </div>`;
 }
 
-// 2.18: a guild house that is not gehaald yet shows your best attempt (Oefen: the session score, Gebruik: the best report
-// score in either kanaal); the house itself stays grey until 80%
+// 2.18: a guild house that is not gehaald yet shows your best attempt (Oefen and, since 2.22, Luister: the session score,
+// Lees: the text score, Gebruik: the best report score in either kanaal); the house itself stays grey until 80%
 function bestTry(q, st) {
   const ss = S.sq[q] || {};
-  if (st === 'oefen') return (ss.tried || {}).oefen || 0;
+  if (st === 'oefen' || st === 'luister') return (ss.tried || {})[st] || 0; // 2.22: Luister and Lees too
+  if (st === 'lees') return (ss.best || {}).lees || 0;
   if (st === 'gebruik') { const b = ss.best || {}; return Math.max(+b.spreken || 0, +b.schrijven || 0); }
   return 0;
 }
-const bestTryHTML = (q, st) => { const t = bestTry(q, st); return t ? ` <span class="small" style="color:var(--warn)" data-en="Best attempt · 80% needed">· beste poging ${t}% · 80% nodig</span>` : ''; }; // next to the name, like a score
+const bestTryHTML = (q, st) => { const t = bestTry(q, st); return houseTried(q, st) ? ` <span class="small" style="color:var(--warn)" data-en="Best attempt · 80% needed">· beste poging ${t}% · 80% nodig</span>` : ''; }; // next to the name, like a score
 
 /* ---------- navigation with movement ---------- */
 function afterRenderMaps() {

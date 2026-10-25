@@ -73,9 +73,9 @@ const GOLD = '#E0A82E';
 function miniFlag(x, y, top) {
   return `<g transform="translate(${x},${y})" shape-rendering="crispEdges"><rect width="1.4" height="11" fill="#2A2620"/><rect x="1.4" width="8" height="5" fill="${top ? GOLD : '#F2D35B'}" stroke="#2A2620" stroke-width=".8"/>${top ? '<path d="M5.4,0.7 L6.1,2 L7.5,2.1 L6.4,3 L6.8,4.3 L5.4,3.6 L4,4.3 L4.4,3 L3.3,2.1 L4.7,2 Z" fill="#fff"/>' : ''}</g>`;
 }
-// 2.22: tried, not gehaald yet: a white flag with a dotted edge
+// 2.22: tried, not gehaald yet: a white flag with a dotted dark orange edge
 function triedFlag(x, y) {
-  return `<g class="tried" transform="translate(${x},${y})"><rect width="1.4" height="11" fill="#2A2620" shape-rendering="crispEdges"/><rect x="1.9" y=".4" width="7.1" height="4.2" fill="#fff" stroke="#2A2620" stroke-width=".8" stroke-dasharray="1.2 .9"/></g>`;
+  return `<g class="tried" transform="translate(${x},${y})"><rect width="1.4" height="11" fill="#2A2620" shape-rendering="crispEdges"/><rect x="1.9" y=".4" width="7.1" height="4.2" fill="#fff" stroke="#B4500F" stroke-width=".9" stroke-dasharray="1.2 .9"/></g>`;
 }
 // feestvlaggetjes: a sagging string of small triangles between two points
 function bunting(x1, y1, x2, y2, gold, z = 1) {

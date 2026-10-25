@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "e34e1ae914";</script>
+<script>const APP_VERSION = "0d0ef2112f";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -3091,15 +3091,16 @@ function viewSquare(q) {
   </div>`;
 }
 
-// 2.18: a guild house that is not gehaald yet shows your best attempt (Oefen: the session score, Gebruik: the best report
-// score in either kanaal); the house itself stays grey until 80%
+// 2.18: a guild house that is not gehaald yet shows your best attempt (Oefen and, since 2.22, Luister: the session score,
+// Lees: the text score, Gebruik: the best report score in either kanaal); the house itself stays grey until 80%
 function bestTry(q, st) {
   const ss = S.sq[q] || {};
-  if (st === 'oefen') return (ss.tried || {}).oefen || 0;
+  if (st === 'oefen' || st === 'luister') return (ss.tried || {})[st] || 0; // 2.22: Luister and Lees too
+  if (st === 'lees') return (ss.best || {}).lees || 0;
   if (st === 'gebruik') { const b = ss.best || {}; return Math.max(+b.spreken || 0, +b.schrijven || 0); }
   return 0;
 }
-const bestTryHTML = (q, st) => { const t = bestTry(q, st); return t ? ` <span class="small" style="color:var(--warn)" data-en="Best attempt · 80% needed">· beste poging ${t}% · 80% nodig</span>` : ''; }; // next to the name, like a score
+const bestTryHTML = (q, st) => { const t = bestTry(q, st); return houseTried(q, st) ? ` <span class="small" style="color:var(--warn)" data-en="Best attempt · 80% needed">· beste poging ${t}% · 80% nodig</span>` : ''; }; // next to the name, like a score
 
 /* ---------- navigation with movement ---------- */
 function afterRenderMaps() {
@@ -5052,9 +5053,9 @@ const GOLD = '#E0A82E';
 function miniFlag(x, y, top) {
   return `<g transform="translate(${x},${y})" shape-rendering="crispEdges"><rect width="1.4" height="11" fill="#2A2620"/><rect x="1.4" width="8" height="5" fill="${top ? GOLD : '#F2D35B'}" stroke="#2A2620" stroke-width=".8"/>${top ? '<path d="M5.4,0.7 L6.1,2 L7.5,2.1 L6.4,3 L6.8,4.3 L5.4,3.6 L4,4.3 L4.4,3 L3.3,2.1 L4.7,2 Z" fill="#fff"/>' : ''}</g>`;
 }
-// 2.22: tried, not gehaald yet: a white flag with a dotted edge
+// 2.22: tried, not gehaald yet: a white flag with a dotted dark orange edge
 function triedFlag(x, y) {
-  return `<g class="tried" transform="translate(${x},${y})"><rect width="1.4" height="11" fill="#2A2620" shape-rendering="crispEdges"/><rect x="1.9" y=".4" width="7.1" height="4.2" fill="#fff" stroke="#2A2620" stroke-width=".8" stroke-dasharray="1.2 .9"/></g>`;
+  return `<g class="tried" transform="translate(${x},${y})"><rect width="1.4" height="11" fill="#2A2620" shape-rendering="crispEdges"/><rect x="1.9" y=".4" width="7.1" height="4.2" fill="#fff" stroke="#B4500F" stroke-width=".9" stroke-dasharray="1.2 .9"/></g>`;
 }
 // feestvlaggetjes: a sagging string of small triangles between two points
 function bunting(x1, y1, x2, y2, gold, z = 1) {

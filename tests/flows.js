@@ -58,11 +58,11 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(await answerAll(), 'Oefen session runs to the end'); await shot('05_session_end');
   ok(await p.evaluate(() => (S.sq.u1q1.steps.oefen || 0) >= 80), 'Oefen checkpoint stored');
   // 2.18: below 80% the guild house stays grey and the plein shows the best attempt for Oefen and Gebruik
-  const bt = await p.evaluate(() => { const ss = sqstate('u1q2'); const keep = JSON.stringify(ss); ss.tried = {oefen: 60}; ss.best = {spreken: 44, schrijven: 30};
+  const bt = await p.evaluate(() => { const ss = sqstate('u1q2'); const keep = JSON.stringify(ss); ss.tried = {oefen: 60, luister: 55}; ss.best = {spreken: 44, schrijven: 30, lees: 0};
     const h = viewSquare('u1q2'); const tmp = document.createElement('div'); tmp.innerHTML = h;
-    const line = st => (tmp.querySelector(`.tapline[data-step=${st}]`) || {}).textContent || ''; const r = {oefen: line('oefen'), gebruik: line('gebruik'), luister: line('luister')};
+    const line = st => (tmp.querySelector(`.tapline[data-step=${st}]`) || {}).textContent || ''; const r = {oefen: line('oefen'), gebruik: line('gebruik'), luister: line('luister'), lees: line('lees'), ontdek: line('ontdek')};
     S.sq.u1q2 = JSON.parse(keep); return r; });
-  ok(bt.oefen.includes('Oefen · beste poging 60% · 80% nodig') && bt.gebruik.includes('Gebruik · beste poging 44% · 80% nodig') && !bt.luister.includes('beste poging'), 'a guild house below 80% shows its best attempt (Oefen, Gebruik)');
+  ok(bt.oefen.includes('Oefen · beste poging 60% · 80% nodig') && bt.gebruik.includes('Gebruik · beste poging 44% · 80% nodig') && bt.luister.includes('Luister · beste poging 55% · 80% nodig') && bt.lees.includes('Lees · beste poging 0% · 80% nodig') && !bt.ontdek.includes('beste poging'), 'a guild house below 80% shows its best attempt (Oefen, Luister, Lees, Gebruik; also 0%)');
   // 2.22: a tried guild house below 80% gets the white dotted flag, on the plein and on the stad map; none on untried or gehaald ones
   const tf = await p.evaluate(() => { const ss = sqstate('u1q2'); const keep = JSON.stringify(ss); ss.tried = {oefen: 60}; ss.best = {schrijven: 44, lees: 0};
     const box = h => { const d = document.createElement('div'); d.innerHTML = `<svg>${h}</svg>`; return d; };
