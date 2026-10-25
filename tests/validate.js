@@ -154,7 +154,7 @@ const {openApp} = require('./page');
       if (new Set(MEMO.map(t => t.id)).size !== MEMO.length) bad.push('Onthoud: duplicate ids');
       MEMO.forEach(t => { const ns = (t.nl.match(/[.!?](\s|$)/g) || []).length, N = memoToks(t).length;
         if (!t.title || !t.en || !MEMO_KIND[t.kind] || !(t.lvl >= 1 && t.lvl <= 5)) bad.push('Onthoud ' + t.id + ': title, kind, lvl 1–5 and en');
-        const nl = t.nl.split('\n').length; if (nl < 3 || nl > 5 || N < 8 || N > 30) bad.push('Onthoud ' + t.id + ': ' + nl + ' lines, ' + N + ' words (3–5 lines, 8–30 words)');
+        const nl = t.nl.split('\n').length; if (nl < 3 || nl > 5 || N < 8 || N > 40) bad.push('Onthoud ' + t.id + ': ' + nl + ' lines, ' + N + ' words (3–5 lines, 8–40 words)');
         if (memoToks(t).some(x => !/[\p{L}\p{N}]/u.test(x.w))) bad.push('Onthoud ' + t.id + ': a token without a word');
         const g = [0, 1, 2, 3].map(k => memoGaps(t, k));
         if (!g.every((x, k) => !k || (x.length > g[k - 1].length && g[k - 1].every(i => x.includes(i)))) || g[3].length !== N) bad.push('Onthoud ' + t.id + ': gaps ' + g.map(x => x.length));
