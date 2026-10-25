@@ -2,6 +2,7 @@
    One visual language on every level:
    - a building is a piece of work: grey until it is done, in its colour once done
    - a yellow flag on it = gehaald (80% or more); a flag with a white star = 100%
+   - 2.22: a white flag with a dotted edge = tried, but not gehaald yet (a score below 80%)
    - Ronde 2: colourful flags go up across the plein (on the stad map and over its guild houses);
      Ronde 3: the same flags turn gold, with sparkles
    - bunting over a Grote Markt (and around a town on the Pad) = the Grote Markt is done
@@ -17,6 +18,17 @@ function houseLevel(q, st) {
   if (v === 'test') return 1; if (st === 'ontdek' || (st === 'gebruik' && v === 1)) return 2;
   return v >= 100 ? 2 : 1;
 }
+// 2.22: tried but not gehaald: a session, text or report scored below 80% (Oefen and Luister keep the best session in
+// tried, Lees and Gebruik their best score in best). Ontdek has no score: it is done or not.
+function houseTried(q, st) {
+  if (houseLevel(q, st)) return false; const ss = S.sq[q] || {}; const has = (o, k) => !!o && o[k] !== undefined;
+  if (st === 'oefen' || st === 'luister') return has(ss.tried, st);
+  if (st === 'lees') return has(ss.best, 'lees');
+  if (st === 'gebruik') return has(ss.best, 'spreken') || has(ss.best, 'schrijven');
+  return false;
+}
+// the flag on a guild house at 0,0: yellow, with a star, dotted (tried) or none
+const houseFlag = (q, st) => { const lv = houseLevel(q, st); return lv ? miniFlag(0, 0, lv === 2) : houseTried(q, st) ? triedFlag(0, 0) : ''; };
 function pleinProgress(q) {
   const levels = STEPS.map(st => houseLevel(q, st));
   const complete = sqComplete(q); const r = (S.sq[q] && S.sq[q].rounds && S.sq[q].rounds.oefen) || 1;
@@ -61,6 +73,10 @@ const GOLD = '#E0A82E';
 function miniFlag(x, y, top) {
   return `<g transform="translate(${x},${y})" shape-rendering="crispEdges"><rect width="1.4" height="11" fill="#2A2620"/><rect x="1.4" width="8" height="5" fill="${top ? GOLD : '#F2D35B'}" stroke="#2A2620" stroke-width=".8"/>${top ? '<path d="M5.4,0.7 L6.1,2 L7.5,2.1 L6.4,3 L6.8,4.3 L5.4,3.6 L4,4.3 L4.4,3 L3.3,2.1 L4.7,2 Z" fill="#fff"/>' : ''}</g>`;
 }
+// 2.22: tried, not gehaald yet: a white flag with a dotted edge
+function triedFlag(x, y) {
+  return `<g class="tried" transform="translate(${x},${y})"><rect width="1.4" height="11" fill="#2A2620" shape-rendering="crispEdges"/><rect x="1.9" y=".4" width="7.1" height="4.2" fill="#fff" stroke="#2A2620" stroke-width=".8" stroke-dasharray="1.2 .9"/></g>`;
+}
 // feestvlaggetjes: a sagging string of small triangles between two points
 function bunting(x1, y1, x2, y2, gold, z = 1) {
   const sag = 7 * z, n = Math.max(3, Math.round(Math.hypot(x2 - x1, y2 - y1) / (7 * z))); const cols = gold ? [GOLD, '#F2D35B'] : FACADE;
@@ -94,6 +110,7 @@ function progressLegend() {
   const spark = '<path transform="translate(17,5)" d="M0,-4.5 L1.1,-1.1 L4.5,0 L1.1,1.1 L0,4.5 L-1.1,1.1 L-4.5,0 L-1.1,-1.1 Z" fill="#fff" stroke="#E0A82E" stroke-width=".9"/>';
   return `<div class="legend"><div class="lgs">
     ${row(house('#C8553D', false), 'Grijs gildehuis: nog niet gedaan')}
+    ${row(house('#C8553D', false) + triedFlag(13, 0), 'Grijs met een witte stippelvlag: geprobeerd, maar nog niet gehaald (minder dan 80%)')}
     ${row(house('#C8553D', true) + miniFlag(13, 0, false), 'In kleur met een gele vlag: gehaald (80% of meer)')}
     ${row(house('#C8553D', true) + miniFlag(13, 0, true), 'Vlag met een ster: 100%')}
     ${row(bunting(1, 6, 21, 6, false), 'Vlaggetjes over een plein: Ronde 2 gehaald')}

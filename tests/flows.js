@@ -63,6 +63,15 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
     const line = st => (tmp.querySelector(`.tapline[data-step=${st}]`) || {}).textContent || ''; const r = {oefen: line('oefen'), gebruik: line('gebruik'), luister: line('luister')};
     S.sq.u1q2 = JSON.parse(keep); return r; });
   ok(bt.oefen.includes('Oefen · beste poging 60% · 80% nodig') && bt.gebruik.includes('Gebruik · beste poging 44% · 80% nodig') && !bt.luister.includes('beste poging'), 'a guild house below 80% shows its best attempt (Oefen, Gebruik)');
+  // 2.22: a tried guild house below 80% gets the white dotted flag, on the plein and on the stad map; none on untried or gehaald ones
+  const tf = await p.evaluate(() => { const ss = sqstate('u1q2'); const keep = JSON.stringify(ss); ss.tried = {oefen: 60}; ss.best = {schrijven: 44, lees: 0};
+    const box = h => { const d = document.createElement('div'); d.innerHTML = `<svg>${h}</svg>`; return d; };
+    const pl = box(squareOverlay('u1q2')), town = box(townOverlay('u1'));
+    const r = {plein: pl.querySelectorAll('.tried').length, stad: town.querySelectorAll(`[data-q=u1q2] .tried`).length, other: town.querySelectorAll(`[data-q=u1q1] .tried`).length,
+      label: pl.querySelector('[data-step=gebruik]').getAttribute('aria-label'), legend: progressLegend().includes('stippelvlag')};
+    ss.steps.oefen = 85; r.passed = box(squareOverlay('u1q2')).querySelectorAll('.tried').length;
+    S.sq.u1q2 = JSON.parse(keep); return r; });
+  ok(tf.plein === 3 && tf.stad === 3 && tf.other === 0 && tf.passed === 2 && tf.label === 'Gebruik, geprobeerd' && tf.legend, 'a tried guild house below 80% shows the dotted flag on the plein and the stad map, also at 0% (' + JSON.stringify(tf) + ')');
   await p.evaluate(() => closeSession());
   ok(await p.evaluate(() => nextStep('u1q1') === 'lees'), 'after Oefen the next guild house (and the cyclist) is Lees, not Luister');
 
@@ -256,7 +265,7 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   if (SHOTS) await g.screenshot({path: path.join(SHOTS, '20_pad_progress.png')});
   // what the flags mean: in Ik → Hoe werkt Elke Dag Zin?
   await g.evaluate(() => { TAB = 'ik'; render(); openHelp(); }); await g.waitForTimeout(100);
-  ok(await g.evaluate(() => $$('#help .legend .lg').length === 8 && /thema/.test($('#help .legend').textContent) && /Ronde 2/.test($('#help .legend').textContent) && /Ronde 3/.test($('#help .legend').textContent)), 'Ik → Hoe werkt Elke Dag Zin? explains the flags and the theme landmark');
+  ok(await g.evaluate(() => $$('#help .legend .lg').length === 9 && /stippelvlag/.test($('#help .legend').textContent) && /thema/.test($('#help .legend').textContent) && /Ronde 2/.test($('#help .legend').textContent) && /Ronde 3/.test($('#help .legend').textContent)), 'Ik → Hoe werkt Elke Dag Zin? explains the flags and the theme landmark');
   errs.push(...G.errs); await G.close();
 
   // ---- Home Screen app: manifest, icons, service worker, offline, update toast ----
