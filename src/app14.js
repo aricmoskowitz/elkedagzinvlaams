@@ -47,7 +47,7 @@ function weakGroups() {
 }
 function sceneFor(u) { return SCENARIOS.find(s => s.u === u && !s.q) || SCENARIOS.find(s => s.id === 'sc-free'); }
 // 2.12: every plein and every Grote Markt has its own scene (content10.js); the town scene is the fallback
-const VINKJE = 'vinkje per gehaald doel (laatste regel, bv. ✓ 1 · 3)';
+const VINKJE = 'vinkje per gehaald doel (laatste regel, bv. ✓ 1 · 3) · eerst vragen bij klaar als niet alle doelen gehaald zijn'; // 2.22: Claude checks before ending an unfinished opdracht
 function sceneOf(q) { return SCENARIOS.find(s => s.q === q) || sceneFor(PSQ[q] && PSQ[q].u); }
 // o: {mode, q (a square) or u (a town: its Grote Markt)}
 function startBlock(o) {

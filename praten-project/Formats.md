@@ -26,7 +26,7 @@ doel: 1) Zeg 2 keer waarom met omdat of want · 2) Zeg 1 zin met ik denk dat of 
 kanaal: spreken
 recent: vinden, weten, denken, hopen, buurt, zeker, mening, druk, regenen, paraplu
 zwak: u1q2 werkwoord op plaats 2 (4×) · u7q2 dat-zin (2×) · Algemeen: in het Nederlands (1×)
-instellingen: verbeteren op het einde · vinkje per gehaald doel (laatste regel, bv. ✓ 1 · 3) · beurten 8–10
+instellingen: verbeteren op het einde · vinkje per gehaald doel (laatste regel, bv. ✓ 1 · 3) · eerst vragen bij klaar als niet alle doelen gehaald zijn · beurten 8–10
 EDZ-EINDE
 ```
 
@@ -40,9 +40,11 @@ EDZ-EINDE
 | `kanaal` | opdracht | `spreken` (the learner talks in voice mode) or `schrijven` (the learner types) |
 | `recent` | all | up to 30 words learned in the last 14 days (not new in the report) |
 | `zwak` | all | up to 5 open corrections, grouped by square, with counts |
-| `instellingen` | all | `verbeteren op het einde` (always: corrections only at the end; an older block may say `per beurt`, treat it the same) · in an opdracht `vinkje per gehaald doel` (see below) · target turns |
+| `instellingen` | all | `verbeteren op het einde` (always: corrections only at the end; an older block may say `per beurt`, treat it the same) · in an opdracht `vinkje per gehaald doel` and `eerst vragen bij klaar` (see below) · target turns |
 
 **Vinkje per gehaald doel (opdracht).** The moment a numbered part of `doel` is reached, Claude ends that reply with one extra line that lists every part reached so far: `✓ 1` → later `✓ 1 · 3`. A counted part that is only partly done shows its count: `✓ 1 · 2 (1/2)`. Nothing else on that line, no words, no comment on it, and no line when nothing new was reached. In voice mode the line is written, never spoken. It is only a progress mark: the report's `doelen` still decides the score.
+
+**Eerst vragen bij klaar (opdracht).** When the user says *klaar*, *stop* or *einde* before every numbered part of `doel` is reached, Claude doesn't end yet: it asks once, in one short Dutch sentence, whether they really want to stop and names the open part ("Je hebt doel 2 nog niet gehaald. Wil je echt stoppen?"). A yes ends the session with the report as usual; a no goes back into the scene.
 
 **No translations.** Conversation practice stays in Dutch: Claude never puts an English translation under its replies. A `vertaling` value in `instellingen` (from an older app version) is ignored, so the block stays v1.
 
