@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "236e5fed8c";</script>
+<script>const APP_VERSION = "0d0ef2112f";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -3001,7 +3001,7 @@ function townOverlay(u) {
   const pl = qs.map((q, j) => {
     const [x, y] = sqCenter(TSQ[j]); const st = sqState(q.id); const dim = st === 'locked'; const pp = tp.pleinen[j];
     // flags on its guild houses; Ronde 2/3 flags across the square; sparkles when everything is perfect
-    const flags = (T.guild[j] || []).map((h, k) => { const lv = houseLevel(q.id, STEPS[k]); return lv ? miniFlag(h.x * TS + 10, h.y * TS - 9, lv === 2) : ''; }).join('');
+    const flags = (T.guild[j] || []).map((h, k) => { const f = houseFlag(q.id, STEPS[k]); return f ? `<g transform="translate(${h.x * TS + 10},${h.y * TS - 9})">${f}</g>` : ''; }).join(''); // 2.22: also the dotted flag
     const label = `Plein ${q.n}: ${esc(q.name)} · ${pp.done} van 5 gildehuizen${pp.top ? `, ${pp.top} op 100%` : ''}${pp.ronde > 1 ? `, Ronde ${pp.ronde}` : ''}${pp.perfect ? ', perfect' : dim ? ', nog dicht' : ''}`;
     return `<g data-act="square" data-q="${q.id}" role="button" tabindex="0" style="cursor:pointer" aria-label="${label}">
       <rect x="${x - 36}" y="${y - 30}" width="72" height="60" fill="${dim ? 'rgba(255,255,255,.55)' : 'transparent'}"/>
@@ -3065,10 +3065,10 @@ function squareOverlay(q) {
     const built = ACTIVE_STEPS.includes(st); const done = stepDone(q, st);
     const state = !built ? 'later' : !open ? 'locked' : (st === nx && !sqComplete(q)) ? 'next' : 'open';
     const x = 8 + i * 65;
-    return `<g data-act="step" data-q="${q}" data-step="${st}" role="button" tabindex="0" style="cursor:pointer" aria-label="${STEP_NAME[st]}${done ? ', klaar' : ''}${built ? '' : ', later'}">
+    return `<g data-act="step" data-q="${q}" data-step="${st}" role="button" tabindex="0" style="cursor:pointer" aria-label="${STEP_NAME[st]}${done ? ', klaar' : houseTried(q, st) ? ', geprobeerd' : ''}${built ? '' : ', later'}">
       <rect x="${x - 4}" y="0" width="64" height="150" fill="transparent"/>
       ${guildHouse(x, state, i)}
-      ${pp.levels[i] ? /* the pole stands on the gable's second step */ `<g transform="translate(${x + 40},10.5) scale(1.5)">${miniFlag(0, 0, pp.levels[i] === 2)}</g>` : ''}
+      ${built && houseFlag(q, st) ? /* the pole stands on the gable's second step; 2.22: also the dotted flag */ `<g transform="translate(${x + 40},10.5) scale(1.5)">${houseFlag(q, st)}</g>` : ''}
       ${state === 'next' ? arrow(x + 28, 9, true) : ''}
       ${sign(x + 28, 118, STEP_NAME[st], state === 'later' || state === 'locked')}
     </g>`;
@@ -3091,15 +3091,16 @@ function viewSquare(q) {
   </div>`;
 }
 
-// 2.18: a guild house that is not gehaald yet shows your best attempt (Oefen: the session score, Gebruik: the best report
-// score in either kanaal); the house itself stays grey until 80%
+// 2.18: a guild house that is not gehaald yet shows your best attempt (Oefen and, since 2.22, Luister: the session score,
+// Lees: the text score, Gebruik: the best report score in either kanaal); the house itself stays grey until 80%
 function bestTry(q, st) {
   const ss = S.sq[q] || {};
-  if (st === 'oefen') return (ss.tried || {}).oefen || 0;
+  if (st === 'oefen' || st === 'luister') return (ss.tried || {})[st] || 0; // 2.22: Luister and Lees too
+  if (st === 'lees') return (ss.best || {}).lees || 0;
   if (st === 'gebruik') { const b = ss.best || {}; return Math.max(+b.spreken || 0, +b.schrijven || 0); }
   return 0;
 }
-const bestTryHTML = (q, st) => { const t = bestTry(q, st); return t ? ` <span class="small" style="color:var(--warn)" data-en="Best attempt · 80% needed">· beste poging ${t}% · 80% nodig</span>` : ''; }; // next to the name, like a score
+const bestTryHTML = (q, st) => { const t = bestTry(q, st); return houseTried(q, st) ? ` <span class="small" style="color:var(--warn)" data-en="Best attempt · 80% needed">· beste poging ${t}% · 80% nodig</span>` : ''; }; // next to the name, like a score
 
 /* ---------- navigation with movement ---------- */
 function afterRenderMaps() {
@@ -4981,6 +4982,7 @@ function fixEx(key, f) {
    One visual language on every level:
    - a building is a piece of work: grey until it is done, in its colour once done
    - a yellow flag on it = gehaald (80% or more); a flag with a white star = 100%
+   - 2.22: a white flag with a dotted edge = tried, but not gehaald yet (a score below 80%)
    - Ronde 2: colourful flags go up across the plein (on the stad map and over its guild houses);
      Ronde 3: the same flags turn gold, with sparkles
    - bunting over a Grote Markt (and around a town on the Pad) = the Grote Markt is done
@@ -4996,6 +4998,17 @@ function houseLevel(q, st) {
   if (v === 'test') return 1; if (st === 'ontdek' || (st === 'gebruik' && v === 1)) return 2;
   return v >= 100 ? 2 : 1;
 }
+// 2.22: tried but not gehaald: a session, text or report scored below 80% (Oefen and Luister keep the best session in
+// tried, Lees and Gebruik their best score in best). Ontdek has no score: it is done or not.
+function houseTried(q, st) {
+  if (houseLevel(q, st)) return false; const ss = S.sq[q] || {}; const has = (o, k) => !!o && o[k] !== undefined;
+  if (st === 'oefen' || st === 'luister') return has(ss.tried, st);
+  if (st === 'lees') return has(ss.best, 'lees');
+  if (st === 'gebruik') return has(ss.best, 'spreken') || has(ss.best, 'schrijven');
+  return false;
+}
+// the flag on a guild house at 0,0: yellow, with a star, dotted (tried) or none
+const houseFlag = (q, st) => { const lv = houseLevel(q, st); return lv ? miniFlag(0, 0, lv === 2) : houseTried(q, st) ? triedFlag(0, 0) : ''; };
 function pleinProgress(q) {
   const levels = STEPS.map(st => houseLevel(q, st));
   const complete = sqComplete(q); const r = (S.sq[q] && S.sq[q].rounds && S.sq[q].rounds.oefen) || 1;
@@ -5040,6 +5053,10 @@ const GOLD = '#E0A82E';
 function miniFlag(x, y, top) {
   return `<g transform="translate(${x},${y})" shape-rendering="crispEdges"><rect width="1.4" height="11" fill="#2A2620"/><rect x="1.4" width="8" height="5" fill="${top ? GOLD : '#F2D35B'}" stroke="#2A2620" stroke-width=".8"/>${top ? '<path d="M5.4,0.7 L6.1,2 L7.5,2.1 L6.4,3 L6.8,4.3 L5.4,3.6 L4,4.3 L4.4,3 L3.3,2.1 L4.7,2 Z" fill="#fff"/>' : ''}</g>`;
 }
+// 2.22: tried, not gehaald yet: a white flag with a dotted dark orange edge
+function triedFlag(x, y) {
+  return `<g class="tried" transform="translate(${x},${y})"><rect width="1.4" height="11" fill="#2A2620" shape-rendering="crispEdges"/><rect x="1.9" y=".4" width="7.1" height="4.2" fill="#fff" stroke="#B4500F" stroke-width=".9" stroke-dasharray="1.2 .9"/></g>`;
+}
 // feestvlaggetjes: a sagging string of small triangles between two points
 function bunting(x1, y1, x2, y2, gold, z = 1) {
   const sag = 7 * z, n = Math.max(3, Math.round(Math.hypot(x2 - x1, y2 - y1) / (7 * z))); const cols = gold ? [GOLD, '#F2D35B'] : FACADE;
@@ -5073,6 +5090,7 @@ function progressLegend() {
   const spark = '<path transform="translate(17,5)" d="M0,-4.5 L1.1,-1.1 L4.5,0 L1.1,1.1 L0,4.5 L-1.1,1.1 L-4.5,0 L-1.1,-1.1 Z" fill="#fff" stroke="#E0A82E" stroke-width=".9"/>';
   return `<div class="legend"><div class="lgs">
     ${row(house('#C8553D', false), 'Grijs gildehuis: nog niet gedaan')}
+    ${row(house('#C8553D', false) + triedFlag(13, 0), 'Grijs met een witte stippelvlag: geprobeerd, maar nog niet gehaald (minder dan 80%)')}
     ${row(house('#C8553D', true) + miniFlag(13, 0, false), 'In kleur met een gele vlag: gehaald (80% of meer)')}
     ${row(house('#C8553D', true) + miniFlag(13, 0, true), 'Vlag met een ster: 100%')}
     ${row(bunting(1, 6, 21, 6, false), 'Vlaggetjes over een plein: Ronde 2 gehaald')}

@@ -401,7 +401,7 @@ function townOverlay(u) {
   const pl = qs.map((q, j) => {
     const [x, y] = sqCenter(TSQ[j]); const st = sqState(q.id); const dim = st === 'locked'; const pp = tp.pleinen[j];
     // flags on its guild houses; Ronde 2/3 flags across the square; sparkles when everything is perfect
-    const flags = (T.guild[j] || []).map((h, k) => { const lv = houseLevel(q.id, STEPS[k]); return lv ? miniFlag(h.x * TS + 10, h.y * TS - 9, lv === 2) : ''; }).join('');
+    const flags = (T.guild[j] || []).map((h, k) => { const f = houseFlag(q.id, STEPS[k]); return f ? `<g transform="translate(${h.x * TS + 10},${h.y * TS - 9})">${f}</g>` : ''; }).join(''); // 2.22: also the dotted flag
     const label = `Plein ${q.n}: ${esc(q.name)} · ${pp.done} van 5 gildehuizen${pp.top ? `, ${pp.top} op 100%` : ''}${pp.ronde > 1 ? `, Ronde ${pp.ronde}` : ''}${pp.perfect ? ', perfect' : dim ? ', nog dicht' : ''}`;
     return `<g data-act="square" data-q="${q.id}" role="button" tabindex="0" style="cursor:pointer" aria-label="${label}">
       <rect x="${x - 36}" y="${y - 30}" width="72" height="60" fill="${dim ? 'rgba(255,255,255,.55)' : 'transparent'}"/>
@@ -465,10 +465,10 @@ function squareOverlay(q) {
     const built = ACTIVE_STEPS.includes(st); const done = stepDone(q, st);
     const state = !built ? 'later' : !open ? 'locked' : (st === nx && !sqComplete(q)) ? 'next' : 'open';
     const x = 8 + i * 65;
-    return `<g data-act="step" data-q="${q}" data-step="${st}" role="button" tabindex="0" style="cursor:pointer" aria-label="${STEP_NAME[st]}${done ? ', klaar' : ''}${built ? '' : ', later'}">
+    return `<g data-act="step" data-q="${q}" data-step="${st}" role="button" tabindex="0" style="cursor:pointer" aria-label="${STEP_NAME[st]}${done ? ', klaar' : houseTried(q, st) ? ', geprobeerd' : ''}${built ? '' : ', later'}">
       <rect x="${x - 4}" y="0" width="64" height="150" fill="transparent"/>
       ${guildHouse(x, state, i)}
-      ${pp.levels[i] ? /* the pole stands on the gable's second step */ `<g transform="translate(${x + 40},10.5) scale(1.5)">${miniFlag(0, 0, pp.levels[i] === 2)}</g>` : ''}
+      ${built && houseFlag(q, st) ? /* the pole stands on the gable's second step; 2.22: also the dotted flag */ `<g transform="translate(${x + 40},10.5) scale(1.5)">${houseFlag(q, st)}</g>` : ''}
       ${state === 'next' ? arrow(x + 28, 9, true) : ''}
       ${sign(x + 28, 118, STEP_NAME[st], state === 'later' || state === 'locked')}
     </g>`;
@@ -491,15 +491,16 @@ function viewSquare(q) {
   </div>`;
 }
 
-// 2.18: a guild house that is not gehaald yet shows your best attempt (Oefen: the session score, Gebruik: the best report
-// score in either kanaal); the house itself stays grey until 80%
+// 2.18: a guild house that is not gehaald yet shows your best attempt (Oefen and, since 2.22, Luister: the session score,
+// Lees: the text score, Gebruik: the best report score in either kanaal); the house itself stays grey until 80%
 function bestTry(q, st) {
   const ss = S.sq[q] || {};
-  if (st === 'oefen') return (ss.tried || {}).oefen || 0;
+  if (st === 'oefen' || st === 'luister') return (ss.tried || {})[st] || 0; // 2.22: Luister and Lees too
+  if (st === 'lees') return (ss.best || {}).lees || 0;
   if (st === 'gebruik') { const b = ss.best || {}; return Math.max(+b.spreken || 0, +b.schrijven || 0); }
   return 0;
 }
-const bestTryHTML = (q, st) => { const t = bestTry(q, st); return t ? ` <span class="small" style="color:var(--warn)" data-en="Best attempt · 80% needed">· beste poging ${t}% · 80% nodig</span>` : ''; }; // next to the name, like a score
+const bestTryHTML = (q, st) => { const t = bestTry(q, st); return houseTried(q, st) ? ` <span class="small" style="color:var(--warn)" data-en="Best attempt · 80% needed">· beste poging ${t}% · 80% nodig</span>` : ''; }; // next to the name, like a score
 
 /* ---------- navigation with movement ---------- */
 function afterRenderMaps() {
