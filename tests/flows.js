@@ -73,6 +73,27 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
     S.sq.u1q2 = JSON.parse(keep); return r; });
   ok(tf.plein === 3 && tf.stad === 3 && tf.other === 0 && tf.passed === 2 && tf.label === 'Gebruik, geprobeerd' && tf.legend, 'a tried guild house below 80% shows the dotted flag on the plein and the stad map, also at 0% (' + JSON.stringify(tf) + ')');
   await p.evaluate(() => closeSession());
+  // 2.23: a wrong question comes back at most twice more, a session grows by at most 10; the counter counts them all and
+  // never runs past its total; the end shows every wrong question with its correction
+  const rq = await p.evaluate(() => { const keys = SQ.u1q1.sents.concat(SQ.u1q2.sents).slice(0, 8).map(id => 's:' + id + ':tr'); const snap = JSON.stringify(S.items);
+    const run = (ks, rightOnRetry) => { startSession({keys: ks, intros: false}); const counts = [];
+      for (let i = 0; i < 60 && !SES.finished; i++) { const st = SES.steps[SES.i]; if (!st) { sesRender(); break; } counts.push($('#ses-count').textContent);
+        submitAnswer(st.retry && rightOnRetry ? SES.ex.answer : 'xxx qqq'); sesNext(); }
+      const nums = counts.map(c => c.split(' / ').map(Number)); const rv = Array.from(document.querySelectorAll('#ses-body .sesrev .rv'));
+      const r = {steps: SES.steps.length, over: nums.some(([n, t]) => n > t), maxTotal: Math.max(...nums.map(x => x[1])), last: counts[counts.length - 1], rev: rv.length,
+        later: rv.filter(x => /later juist/.test(x.textContent)).length, juist: rv.every(x => /Juist:/.test(x.textContent))}; closeSession(); return r; };
+    const three = run(keys.slice(0, 3), false), eight = run(keys, false), fixed = run(keys.slice(0, 2), true);
+    S.items = JSON.parse(snap); return {three, eight, fixed}; });
+  ok(rq.three.steps === 9 && rq.three.last === '9 / 9' && !rq.three.over && rq.eight.steps === 18 && rq.eight.maxTotal === 18 && !rq.eight.over && rq.fixed.steps === 4 && rq.fixed.last === '4 / 4',
+    'Herhalen counter: a wrong question repeats at most twice more, at most 10 extra per session, the counter never passes its total (' + JSON.stringify(rq) + ')');
+  ok(rq.three.rev === 3 && rq.three.juist && rq.eight.rev === 8 && rq.fixed.rev === 2 && rq.fixed.later === 2, 'the end of a session lists every wrong question once with its correction (and "later juist" when a repeat was right)');
+  // an older mistake without context takes the situation from the opdracht it came from
+  const oc = await p.evaluate(() => { const keepT = S.talks.slice(); S.talks.unshift({id: 't-x', src: 'claude', date: '2026-10-10', modus: 'opdracht', title: 'De weg vragen', q: 'u1q2', msgs: []});
+    S.fix.fold = {wrong: 'Wet jij welke tram mag ik nemen?', right: 'Weet u welke tram ik moet nemen?', why: 'x', type: 'word order', src: 'opdracht', date: '2026-10-10', plan: 'u7q2'};
+    S.fix.fnone = {wrong: 'Ik heb gaan.', right: 'Ik ben gegaan.', why: 'x', type: 'verb form', src: 'dagboek', date: '2025-01-01', plan: null};
+    const a = makeEx('c:fold:fix').prompt, b = makeEx('c:fnone:fix').prompt; delete S.fix.fold; delete S.fix.fnone; S.talks = keepT;
+    return {a: /fixctx/.test(a) && a.includes(esc(sceneOf('u1q2').role)), b: !/fixctx/.test(b)}; });
+  ok(oc.a && oc.b, 'an older mistake without context gets the scene of its opdracht (role and goal); none when nothing is known');
   ok(await p.evaluate(() => nextStep('u1q1') === 'lees'), 'after Oefen the next guild house (and the cyclist) is Lees, not Luister');
 
   // Lees: five questions, 4 of 5 is gehaald, the speaker can stop the reading

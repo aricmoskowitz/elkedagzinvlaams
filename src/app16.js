@@ -93,6 +93,18 @@ function fixDiff(wrong, right) {
 }
 const SRC_NAME = {log: 'je logboek', talk: 'je gesprek', write: 'je schrijfopdracht', onderwerp: 'je gesprek met Claude', opdracht: 'je opdracht met Claude', dagboek: 'je dagboek', foto: 'een foto van je les'};
 const shortDate = d => { const [y, m, dd] = String(d || '').split('-').map(Number); return y && m ? `${dd} ${MONTHS[m - 1].slice(0, 3)}` : ''; };
+// 2.23: a stored mistake needs its situation to be a fair question: who you were talking to (u or je), what happened,
+// and what you meant. New reports carry it (context, meant); for an older one the conversation it came from gives what it can.
+function fixContext(f) {
+  if (f.ctx || f.meant) return {ctx: f.ctx || '', meant: f.meant || ''};
+  const day = d => Date.parse(d || '') || 0;
+  const t = (S.talks || []).filter(t => t.src === 'claude' && t.modus === f.src && day(t.date) <= day(f.date) && day(f.date) - day(t.date) <= 3 * 864e5).sort((a, b) => day(b.date) - day(a.date))[0];
+  if (!t) return null;
+  const sc = t.modus === 'opdracht' && t.q && PSQ[t.q] ? sceneOf(t.q) : null;
+  if (sc && sc.role) return {ctx: `Je praat met ${sc.role}. Jouw opdracht: ${sc.goal}`, meant: ''};
+  return t.title ? {ctx: `Uit je gesprek: ${t.title}`, meant: ''} : null;
+}
+const fixCtxHTML = c => c ? `<div class="fixctx">${c.ctx ? `<div><span class="small" data-en="Situation">Situatie:</span> <span class="nl">${esc(c.ctx)}</span></div>` : ''}${c.meant ? `<div><span class="small" data-en="What you meant">Je bedoelde:</span> <i>${esc(c.meant)}</i></div>` : ''}</div>` : '';
 function fixEx(key, f) {
   const t = fixType(f); const [lab, labEn] = FIX_LABEL[t];
   const words = String(f.wrong).trim().split(/\s+/); const diff = fixDiff(f.wrong, f.right);
@@ -100,7 +112,7 @@ function fixEx(key, f) {
   const place = PSQ[f.plan] ? `${PSQ[f.plan].name} · ${PSQ[f.plan].title.toLowerCase()}` : x ? x.title : '';
   const from = [SRC_NAME[f.src] ? 'uit ' + SRC_NAME[f.src] : '', shortDate(f.date)].filter(Boolean).join(', ');
   return {type: 'type', key, label: 'fix', fixType: t,
-    prompt: `<span class="nl fixw" style="font-size:20px">${words.map((w, i) => `<span class="fx${diff.has(i) ? ' d' : ''}">${esc(w)}</span>`).join(' ')}</span>`,
+    qtext: f.wrong, prompt: fixCtxHTML(fixContext(f)) + `<span class="nl fixw" style="font-size:20px">${words.map((w, i) => `<span class="fx${diff.has(i) ? ' d' : ''}">${esc(w)}</span>`).join(' ')}</span>`,
     sub: `<span class="fixlab" data-en="${labEn}">${lab}</span>${place ? ` · <span class="small">${esc(place)}</span>` : ''}<br><span class="small">Verbeter de zin${from ? ' · ' + esc(from) : ''}.</span>${diff.size ? ` <button class="link sm" type="button" data-act="fix-hint" style="padding-left:0">Hint: wat is er mis? ›</button>` : ''} <button class="link sm" type="button" data-act="fix-del" data-id="${esc(key.split(':')[1])}" style="padding-left:0;color:var(--warn)" data-en="Not a real mistake? Delete it">Geen echte fout? Verwijder ›</button>`,
     answer: f.right, accept: [norm(f.right)], whole: true, why: esc(f.why || ''), say: f.right};
 }

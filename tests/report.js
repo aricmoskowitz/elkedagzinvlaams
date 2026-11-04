@@ -64,6 +64,8 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
   ok(await p.evaluate(() => S.log[0].mode === 'foto' && S.log[0].bron && S.log[1].mode === 'dagboek' && S.log[1].text.startsWith('Vandaag')), 'tekst of dagboek and foto reports goes to the history');
   // the review card for the fixes
   ok(await p.evaluate(() => { const id = Object.keys(S.fix).find(k => S.fix[k].src === 'opdracht'); const ex = makeEx('c:' + id + ':fix'); return check(ex, ex.answer).ok && /opdracht met Claude/.test(ex.sub); }), 'imported corrections become review cards');
+  // 2.23: every correction keeps its situation and what was meant, and the card shows them above the sentence
+  ok(await p.evaluate(() => { const fx = Object.entries(S.fix).filter(([, f]) => f.src === 'opdracht'); return fx.length >= 3 && fx.every(([, f]) => f.ctx && f.meant) && fx.every(([k, f]) => { const ex = makeEx('c:' + k + ':fix'); return ex.prompt.includes('fixctx') && ex.prompt.includes(esc(f.ctx)) && ex.prompt.includes(esc(f.meant)) && ex.qtext === f.wrong; }); }), 'imported corrections keep context and meant; the Verbeter je zin card shows them');
 
   // ---- EDZ-START v1 for all four modes (acceptance 4) ----
   await p.evaluate(() => { S.seen.omdat = 1; S.seenAt.omdat = today(); S.seen.tram = 1; S.seenAt.tram = today() - 30; });

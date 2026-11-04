@@ -377,3 +377,9 @@ ul.doel.got li::before{content:attr(data-mark);border:none;top:0;width:auto;heig
 .kmini i.y{background:var(--go)} .kmini i.n{background:var(--warn)}
 .kleg{display:flex;align-items:flex-start;gap:10px;line-height:1.4;padding:4px 0 6px}
 .kleg .kmini{margin-top:3px}
+/* 2.23: the review list at the end of a session, and the situation of a stored mistake */
+.sesrev .rv{display:flex;flex-direction:column;gap:3px;padding-top:10px;border-top:1px solid var(--line)}
+.sesrev .eyebrow+.rv{border-top:0;padding-top:0}
+.sesrev s.d{color:var(--warn);text-decoration-thickness:1.5px}
+.fixctx{background:var(--soft);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;font-family:var(--ui);font-size:15px;line-height:1.4;margin-bottom:10px}
+.fixctx .nl{font-family:var(--display);font-size:17px}
