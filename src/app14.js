@@ -173,7 +173,7 @@ function cleanReport(d) {
   const topic = t => t && typeof t === 'object' && str(t.title) ? {title: str(t.title, 80), town: PT[t.town] ? t.town : null, rule: str(t.rule), examples: arr(t.examples).filter(x => x && str(x.nl) && str(x.en)).map(x => ({nl: str(x.nl, 200), en: str(x.en, 200)}))} : null;
   r.corrections = arr(d.corrections).filter(c => c && str(c.wrong) && str(c.right)).slice(0, 12).map(c => {
     const nt = topic(c.newTopic); const plan = planId(c.plan);
-    return {wrong: str(c.wrong, 240), right: str(c.right, 240), why: str(c.why, 300), type: str(c.type, 30), plan, newTopic: plan ? null : nt};
+    return {wrong: str(c.wrong, 240), right: str(c.right, 240), why: str(c.why, 300), type: str(c.type, 30), context: str(c.context, 300), meant: str(c.meant, 240), plan, newTopic: plan ? null : nt};
   });
   const have = new Set(Object.values(S.custom || {}).map(l => norm(l.w)));
   // "de kraam" → kraam (de): the lemma without its article

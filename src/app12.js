@@ -40,7 +40,10 @@ function readAnswer(i, j) {
     const n = Object.values(READING.ans).filter(Boolean).length; const pass = n >= Math.ceil(R.qs.length * .8); // 4 of 5, the same 80% as everywhere
     { const ss = sqstate(READING.q); ss.best = ss.best || {}; ss.best.lees = Math.max(ss.best.lees || 0, Math.round(n / R.qs.length * 100)); Store.mark('state'); } // 2.9: the Lezen meter counts every attempt
     if (pass) { sqstate(READING.q).steps.lees = Math.max(sqstate(READING.q).steps.lees || 0, Math.round(n / R.qs.length * 100)); Store.mark('state'); }
-    $('#read-end').innerHTML = `<div class="card soft stack" style="gap:8px"><div class="big-num">${n} / ${R.qs.length}</div><div>${pass ? (n === R.qs.length ? 'Alles juist: dit gildehuis krijgt een ster.' : 'Goed gelezen: dit gildehuis is gehaald.') : 'Lees de tekst nog eens en probeer opnieuw.'}</div><button class="btn block" data-act="${pass ? 'read-close' : 'read-again'}" data-q="${READING.q}">${pass ? 'Terug naar het plein' : 'Opnieuw'}</button></div>`;
+    // 2.23: the questions you got wrong, with the right answer, like the review list at the end of a session
+    const wrong = R.qs.map((x, k) => ({x, k})).filter(({k}) => !READING.ans[k]);
+    const rev = wrong.length ? `<div class="card stack sesrev" style="gap:10px"><div class="eyebrow" data-en="Review: what you got wrong">Nakijken · ${wrong.length} ${wrong.length === 1 ? 'fout' : 'fouten'}</div>${wrong.map(({x, k}) => `<div class="rv"><div>${k + 1}. ${esc(x.q)}</div><div><span class="small" data-en="Correct">Juist:</span> <b class="nl">${esc(x.o[x.a])}</b></div></div>`).join('')}</div>` : '';
+    $('#read-end').innerHTML = rev + `<div class="card soft stack" style="gap:8px"><div class="big-num">${n} / ${R.qs.length}</div><div>${pass ? (n === R.qs.length ? 'Alles juist: dit gildehuis krijgt een ster.' : 'Goed gelezen: dit gildehuis is gehaald.') : 'Lees de tekst nog eens en probeer opnieuw.'}</div><button class="btn block" data-act="${pass ? 'read-close' : 'read-again'}" data-q="${READING.q}">${pass ? 'Terug naar het plein' : 'Opnieuw'}</button></div>`;
     $('#read-end').scrollIntoView({block: 'center', behavior: 'smooth'});
   }
 }

@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "0d0ef2112f";</script>
+<script>const APP_VERSION = "a84e466d55";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -397,6 +397,12 @@ ul.doel.got li::before{content:attr(data-mark);border:none;top:0;width:auto;heig
 .kmini i.y{background:var(--go)} .kmini i.n{background:var(--warn)}
 .kleg{display:flex;align-items:flex-start;gap:10px;line-height:1.4;padding:4px 0 6px}
 .kleg .kmini{margin-top:3px}
+/* 2.23: the review list at the end of a session, and the situation of a stored mistake */
+.sesrev .rv{display:flex;flex-direction:column;gap:3px;padding-top:10px;border-top:1px solid var(--line)}
+.sesrev .eyebrow+.rv{border-top:0;padding-top:0}
+.sesrev s.d{color:var(--warn);text-decoration-thickness:1.5px}
+.fixctx{background:var(--soft);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;font-family:var(--ui);font-size:15px;line-height:1.4;margin-bottom:10px}
+.fixctx .nl{font-family:var(--display);font-size:17px}
 
 </style>
 </head>
@@ -2174,6 +2180,7 @@ function showWord(id) { const l = LX(id); if (l) openSheet(wordCardHTML(l)); }
 
 /* ===== SESSION ===== */
 let SES = null;
+const SES_RETRY = 2, SES_EXTRA = 10;
 function startSession(opts) {
   const steps = [];
   const introOK = opts.intros !== false;
@@ -2183,16 +2190,17 @@ function startSession(opts) {
     steps.push({key: k});
   });
   if (!steps.length) { toast('Niets te oefenen op dit moment'); return; }
-  SES = {...opts, steps, i: 0, first: {}, correct: 0, total: opts.keys.length, retried: {}, t0: Date.now()};
+  SES = {...opts, steps, i: 0, first: {}, correct: 0, total: opts.keys.length, retried: {}, extra: 0, wrong: [], t0: Date.now()};
   const o = openOverlay('session', `<button class="iconbtn" data-act="ses-close" aria-label="Sluiten" data-en="Close">✕</button><div class="progress"><div id="ses-prog" style="width:0%"></div></div><span class="small" id="ses-count" style="min-width:48px;text-align:right"></span>`, `<div id="ses-body" class="stack"></div>`);
   Store.mark('state');
   sesRender();
 }
 function sesRender() {
   const st = SES.steps[SES.i]; const body = $('#ses-body');
-  const doneKeys = SES.steps.slice(0, SES.i).filter(x => x.key && !x.retry).length;
-  $('#ses-prog').style.width = Math.round(100 * doneKeys / SES.total) + '%';
-  $('#ses-count').textContent = Math.min(doneKeys + 1, SES.total) + ' / ' + SES.total;
+  // 2.23: the counter counts every question, the repeats of wrong ones too (at most 2 per question, 10 per session)
+  const all = SES.steps.filter(x => x.key).length, done = SES.steps.slice(0, SES.i).filter(x => x.key).length;
+  $('#ses-prog').style.width = Math.round(100 * done / Math.max(1, all)) + '%';
+  $('#ses-count').textContent = Math.min(done + 1, all) + ' / ' + all;
   if (!st) return sesEnd();
   if (st.intro) {
     const l = LX(st.intro);
@@ -2227,7 +2235,8 @@ function submitAnswer(val) {
   const res = check(ex, val);
   const st = SES.steps[SES.i];
   if (!st.retry) { grade(ex.key, res.ok); if (res.ok) SES.correct++; }
-  if (!res.ok && !SES.retried[ex.key]) { SES.retried[ex.key] = 1; SES.steps.push({key: ex.key, retry: true}); }
+  // 2.23: a wrong question comes back at most twice more, and a session grows by at most 10 questions
+  if (!res.ok && (SES.retried[ex.key] || 0) < SES_RETRY && SES.extra < SES_EXTRA) { SES.retried[ex.key] = (SES.retried[ex.key] || 0) + 1; SES.extra++; SES.steps.push({key: ex.key, retry: true}); }
   showFeedback(ex, res, val);
 }
 function showFeedback(ex, res, val) {
@@ -2260,6 +2269,7 @@ function showFeedback(ex, res, val) {
     ${ex.frame && (res.kind === 'order' || ex.label === 'ord' || ex.label === 'tr') ? frameHTML(ex.frame) : ''}
     <div class="why">${whyFor(ex, res)}</div>
   </div><button class="btn block" data-act="ses-next" id="ses-next" style="margin-top:12px">Verder</button>`;
+  sesNote(ex, res, val);
   if (!ex.listen && res.ok && ex.say && ex.type !== 'gen') setTimeout(() => Audio.say(ex.say), 150);
   setTimeout(() => { const n = $('#ses-next'); if (n) { n.focus({preventScroll: true}); n.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest'}); } }, 50);
 }
@@ -2299,8 +2309,27 @@ function sesEnd() {
     <div class="big-num">${SES.correct} / ${SES.total}</div>
     <div class="muted">in één keer juist · ${Math.max(1, Math.round(mins))} min</div>
     ${msg ? `<div class="card soft">${msg}</div>` : ''}
+    ${sesReviewHTML()}
     <button class="btn block" data-act="ses-close">Terug</button></div>`;
   SES.finished = true;
+}
+// 2.23: every question you got wrong, with its correction, for the review list at the end (once per question;
+// a repeat you got right later is marked as such)
+function sesNote(ex, res, val) {
+  if (!SES || !SES.wrong) return; const st = SES.steps[SES.i] || {}; const had = SES.wrong.find(w => w.key === ex.key);
+  if (res.ok) { if (had && st.retry) had.later = true; return; }
+  if (had) { had.later = false; return; }
+  const a = $('#fb .answer'), w = $('#fb .why');
+  SES.wrong.push({key: ex.key, label: ex.label, q: ex.qtext || mdText(ex.prompt) || (ex.listen && ex.say ? '♪ ' + ex.say : ''), yours: String(val || '').trim(), answer: a ? a.textContent.replace(/\s+/g, ' ').trim() : String(ex.answer || ''), why: w ? w.textContent.replace(/\s+/g, ' ').trim() : '', later: false});
+}
+function sesReviewHTML() {
+  const W = (SES && SES.wrong) || []; if (!W.length) return '';
+  return `<div class="card stack sesrev" style="gap:10px"><div class="eyebrow" data-en="Review: what you got wrong">Nakijken · ${W.length} ${W.length === 1 ? 'fout' : 'fouten'}</div>
+    ${W.map(w => `<div class="rv"><div class="small">${esc(DAYWORD[w.label] || '')}${w.later ? ' · <span style="color:var(--go)" data-en="Right on a later try">later juist ✓</span>' : ''}</div>
+      ${w.q ? `<div class="nl">${esc(w.q)}</div>` : ''}
+      ${w.yours ? `<div class="small"><span data-en="Your answer">Jij:</span> <s class="d nl">${esc(w.yours)}</s></div>` : ''}
+      <div><span class="small" data-en="Correct">Juist:</span> <b class="nl">${esc(w.answer)}</b></div>
+      ${w.why ? `<div class="small muted">${esc(w.why)}</div>` : ''}</div>`).join('')}</div>`;
 }
 function closeSession() { closeOverlay('session'); SES = null; render(); }
 
@@ -3551,6 +3580,7 @@ function addFix(c, src, plan) {
   if (!c || !c.wrong || !c.right || norm(c.wrong) === norm(c.right)) return;
   if (nameSlip(c.wrong, c.right)) return; // 2.7: a misheard name (op de meer → op de Meir) is no Dutch mistake
   const id = uid('f'); S.fix[id] = {wrong: String(c.wrong).slice(0, 240), right: String(c.right).slice(0, 240), why: String(c.why || '').slice(0, 300), type: c.type || '', src, date: dateKey(), plan: plan || null};
+  if (c.context) S.fix[id].ctx = String(c.context).slice(0, 300); if (c.meant) S.fix[id].meant = String(c.meant).slice(0, 240); // 2.23: enough to answer it later
   introduce('c:' + id + ':fix');
 }
 /* ---------- the processing card, grouped by place in the plan ---------- */
@@ -3765,7 +3795,10 @@ function readAnswer(i, j) {
     const n = Object.values(READING.ans).filter(Boolean).length; const pass = n >= Math.ceil(R.qs.length * .8); // 4 of 5, the same 80% as everywhere
     { const ss = sqstate(READING.q); ss.best = ss.best || {}; ss.best.lees = Math.max(ss.best.lees || 0, Math.round(n / R.qs.length * 100)); Store.mark('state'); } // 2.9: the Lezen meter counts every attempt
     if (pass) { sqstate(READING.q).steps.lees = Math.max(sqstate(READING.q).steps.lees || 0, Math.round(n / R.qs.length * 100)); Store.mark('state'); }
-    $('#read-end').innerHTML = `<div class="card soft stack" style="gap:8px"><div class="big-num">${n} / ${R.qs.length}</div><div>${pass ? (n === R.qs.length ? 'Alles juist: dit gildehuis krijgt een ster.' : 'Goed gelezen: dit gildehuis is gehaald.') : 'Lees de tekst nog eens en probeer opnieuw.'}</div><button class="btn block" data-act="${pass ? 'read-close' : 'read-again'}" data-q="${READING.q}">${pass ? 'Terug naar het plein' : 'Opnieuw'}</button></div>`;
+    // 2.23: the questions you got wrong, with the right answer, like the review list at the end of a session
+    const wrong = R.qs.map((x, k) => ({x, k})).filter(({k}) => !READING.ans[k]);
+    const rev = wrong.length ? `<div class="card stack sesrev" style="gap:10px"><div class="eyebrow" data-en="Review: what you got wrong">Nakijken · ${wrong.length} ${wrong.length === 1 ? 'fout' : 'fouten'}</div>${wrong.map(({x, k}) => `<div class="rv"><div>${k + 1}. ${esc(x.q)}</div><div><span class="small" data-en="Correct">Juist:</span> <b class="nl">${esc(x.o[x.a])}</b></div></div>`).join('')}</div>` : '';
+    $('#read-end').innerHTML = rev + `<div class="card soft stack" style="gap:8px"><div class="big-num">${n} / ${R.qs.length}</div><div>${pass ? (n === R.qs.length ? 'Alles juist: dit gildehuis krijgt een ster.' : 'Goed gelezen: dit gildehuis is gehaald.') : 'Lees de tekst nog eens en probeer opnieuw.'}</div><button class="btn block" data-act="${pass ? 'read-close' : 'read-again'}" data-q="${READING.q}">${pass ? 'Terug naar het plein' : 'Opnieuw'}</button></div>`;
     $('#read-end').scrollIntoView({block: 'center', behavior: 'smooth'});
   }
 }
@@ -4350,7 +4383,7 @@ function cleanReport(d) {
   const topic = t => t && typeof t === 'object' && str(t.title) ? {title: str(t.title, 80), town: PT[t.town] ? t.town : null, rule: str(t.rule), examples: arr(t.examples).filter(x => x && str(x.nl) && str(x.en)).map(x => ({nl: str(x.nl, 200), en: str(x.en, 200)}))} : null;
   r.corrections = arr(d.corrections).filter(c => c && str(c.wrong) && str(c.right)).slice(0, 12).map(c => {
     const nt = topic(c.newTopic); const plan = planId(c.plan);
-    return {wrong: str(c.wrong, 240), right: str(c.right, 240), why: str(c.why, 300), type: str(c.type, 30), plan, newTopic: plan ? null : nt};
+    return {wrong: str(c.wrong, 240), right: str(c.right, 240), why: str(c.why, 300), type: str(c.type, 30), context: str(c.context, 300), meant: str(c.meant, 240), plan, newTopic: plan ? null : nt};
   });
   const have = new Set(Object.values(S.custom || {}).map(l => norm(l.w)));
   // "de kraam" → kraam (de): the lemma without its article
@@ -4966,6 +4999,18 @@ function fixDiff(wrong, right) {
 }
 const SRC_NAME = {log: 'je logboek', talk: 'je gesprek', write: 'je schrijfopdracht', onderwerp: 'je gesprek met Claude', opdracht: 'je opdracht met Claude', dagboek: 'je dagboek', foto: 'een foto van je les'};
 const shortDate = d => { const [y, m, dd] = String(d || '').split('-').map(Number); return y && m ? `${dd} ${MONTHS[m - 1].slice(0, 3)}` : ''; };
+// 2.23: a stored mistake needs its situation to be a fair question: who you were talking to (u or je), what happened,
+// and what you meant. New reports carry it (context, meant); for an older one the conversation it came from gives what it can.
+function fixContext(f) {
+  if (f.ctx || f.meant) return {ctx: f.ctx || '', meant: f.meant || ''};
+  const day = d => Date.parse(d || '') || 0;
+  const t = (S.talks || []).filter(t => t.src === 'claude' && t.modus === f.src && day(t.date) <= day(f.date) && day(f.date) - day(t.date) <= 3 * 864e5).sort((a, b) => day(b.date) - day(a.date))[0];
+  if (!t) return null;
+  const sc = t.modus === 'opdracht' && t.q && PSQ[t.q] ? sceneOf(t.q) : null;
+  if (sc && sc.role) return {ctx: `Je praat met ${sc.role}. Jouw opdracht: ${sc.goal}`, meant: ''};
+  return t.title ? {ctx: `Uit je gesprek: ${t.title}`, meant: ''} : null;
+}
+const fixCtxHTML = c => c ? `<div class="fixctx">${c.ctx ? `<div><span class="small" data-en="Situation">Situatie:</span> <span class="nl">${esc(c.ctx)}</span></div>` : ''}${c.meant ? `<div><span class="small" data-en="What you meant">Je bedoelde:</span> <i>${esc(c.meant)}</i></div>` : ''}</div>` : '';
 function fixEx(key, f) {
   const t = fixType(f); const [lab, labEn] = FIX_LABEL[t];
   const words = String(f.wrong).trim().split(/\s+/); const diff = fixDiff(f.wrong, f.right);
@@ -4973,7 +5018,7 @@ function fixEx(key, f) {
   const place = PSQ[f.plan] ? `${PSQ[f.plan].name} · ${PSQ[f.plan].title.toLowerCase()}` : x ? x.title : '';
   const from = [SRC_NAME[f.src] ? 'uit ' + SRC_NAME[f.src] : '', shortDate(f.date)].filter(Boolean).join(', ');
   return {type: 'type', key, label: 'fix', fixType: t,
-    prompt: `<span class="nl fixw" style="font-size:20px">${words.map((w, i) => `<span class="fx${diff.has(i) ? ' d' : ''}">${esc(w)}</span>`).join(' ')}</span>`,
+    qtext: f.wrong, prompt: fixCtxHTML(fixContext(f)) + `<span class="nl fixw" style="font-size:20px">${words.map((w, i) => `<span class="fx${diff.has(i) ? ' d' : ''}">${esc(w)}</span>`).join(' ')}</span>`,
     sub: `<span class="fixlab" data-en="${labEn}">${lab}</span>${place ? ` · <span class="small">${esc(place)}</span>` : ''}<br><span class="small">Verbeter de zin${from ? ' · ' + esc(from) : ''}.</span>${diff.size ? ` <button class="link sm" type="button" data-act="fix-hint" style="padding-left:0">Hint: wat is er mis? ›</button>` : ''} <button class="link sm" type="button" data-act="fix-del" data-id="${esc(key.split(':')[1])}" style="padding-left:0;color:var(--warn)" data-en="Not a real mistake? Delete it">Geen echte fout? Verwijder ›</button>`,
     answer: f.right, accept: [norm(f.right)], whole: true, why: esc(f.why || ''), say: f.right};
 }

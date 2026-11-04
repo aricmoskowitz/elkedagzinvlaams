@@ -64,6 +64,7 @@ function showWord(id) { const l = LX(id); if (l) openSheet(wordCardHTML(l)); }
 
 /* ===== SESSION ===== */
 let SES = null;
+const SES_RETRY = 2, SES_EXTRA = 10;
 function startSession(opts) {
   const steps = [];
   const introOK = opts.intros !== false;
@@ -73,16 +74,17 @@ function startSession(opts) {
     steps.push({key: k});
   });
   if (!steps.length) { toast('Niets te oefenen op dit moment'); return; }
-  SES = {...opts, steps, i: 0, first: {}, correct: 0, total: opts.keys.length, retried: {}, t0: Date.now()};
+  SES = {...opts, steps, i: 0, first: {}, correct: 0, total: opts.keys.length, retried: {}, extra: 0, wrong: [], t0: Date.now()};
   const o = openOverlay('session', `<button class="iconbtn" data-act="ses-close" aria-label="Sluiten" data-en="Close">✕</button><div class="progress"><div id="ses-prog" style="width:0%"></div></div><span class="small" id="ses-count" style="min-width:48px;text-align:right"></span>`, `<div id="ses-body" class="stack"></div>`);
   Store.mark('state');
   sesRender();
 }
 function sesRender() {
   const st = SES.steps[SES.i]; const body = $('#ses-body');
-  const doneKeys = SES.steps.slice(0, SES.i).filter(x => x.key && !x.retry).length;
-  $('#ses-prog').style.width = Math.round(100 * doneKeys / SES.total) + '%';
-  $('#ses-count').textContent = Math.min(doneKeys + 1, SES.total) + ' / ' + SES.total;
+  // 2.23: the counter counts every question, the repeats of wrong ones too (at most 2 per question, 10 per session)
+  const all = SES.steps.filter(x => x.key).length, done = SES.steps.slice(0, SES.i).filter(x => x.key).length;
+  $('#ses-prog').style.width = Math.round(100 * done / Math.max(1, all)) + '%';
+  $('#ses-count').textContent = Math.min(done + 1, all) + ' / ' + all;
   if (!st) return sesEnd();
   if (st.intro) {
     const l = LX(st.intro);
@@ -117,7 +119,8 @@ function submitAnswer(val) {
   const res = check(ex, val);
   const st = SES.steps[SES.i];
   if (!st.retry) { grade(ex.key, res.ok); if (res.ok) SES.correct++; }
-  if (!res.ok && !SES.retried[ex.key]) { SES.retried[ex.key] = 1; SES.steps.push({key: ex.key, retry: true}); }
+  // 2.23: a wrong question comes back at most twice more, and a session grows by at most 10 questions
+  if (!res.ok && (SES.retried[ex.key] || 0) < SES_RETRY && SES.extra < SES_EXTRA) { SES.retried[ex.key] = (SES.retried[ex.key] || 0) + 1; SES.extra++; SES.steps.push({key: ex.key, retry: true}); }
   showFeedback(ex, res, val);
 }
 function showFeedback(ex, res, val) {
@@ -150,6 +153,7 @@ function showFeedback(ex, res, val) {
     ${ex.frame && (res.kind === 'order' || ex.label === 'ord' || ex.label === 'tr') ? frameHTML(ex.frame) : ''}
     <div class="why">${whyFor(ex, res)}</div>
   </div><button class="btn block" data-act="ses-next" id="ses-next" style="margin-top:12px">Verder</button>`;
+  sesNote(ex, res, val);
   if (!ex.listen && res.ok && ex.say && ex.type !== 'gen') setTimeout(() => Audio.say(ex.say), 150);
   setTimeout(() => { const n = $('#ses-next'); if (n) { n.focus({preventScroll: true}); n.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest'}); } }, 50);
 }
@@ -189,8 +193,27 @@ function sesEnd() {
     <div class="big-num">${SES.correct} / ${SES.total}</div>
     <div class="muted">in één keer juist · ${Math.max(1, Math.round(mins))} min</div>
     ${msg ? `<div class="card soft">${msg}</div>` : ''}
+    ${sesReviewHTML()}
     <button class="btn block" data-act="ses-close">Terug</button></div>`;
   SES.finished = true;
+}
+// 2.23: every question you got wrong, with its correction, for the review list at the end (once per question;
+// a repeat you got right later is marked as such)
+function sesNote(ex, res, val) {
+  if (!SES || !SES.wrong) return; const st = SES.steps[SES.i] || {}; const had = SES.wrong.find(w => w.key === ex.key);
+  if (res.ok) { if (had && st.retry) had.later = true; return; }
+  if (had) { had.later = false; return; }
+  const a = $('#fb .answer'), w = $('#fb .why');
+  SES.wrong.push({key: ex.key, label: ex.label, q: ex.qtext || mdText(ex.prompt) || (ex.listen && ex.say ? '♪ ' + ex.say : ''), yours: String(val || '').trim(), answer: a ? a.textContent.replace(/\s+/g, ' ').trim() : String(ex.answer || ''), why: w ? w.textContent.replace(/\s+/g, ' ').trim() : '', later: false});
+}
+function sesReviewHTML() {
+  const W = (SES && SES.wrong) || []; if (!W.length) return '';
+  return `<div class="card stack sesrev" style="gap:10px"><div class="eyebrow" data-en="Review: what you got wrong">Nakijken · ${W.length} ${W.length === 1 ? 'fout' : 'fouten'}</div>
+    ${W.map(w => `<div class="rv"><div class="small">${esc(DAYWORD[w.label] || '')}${w.later ? ' · <span style="color:var(--go)" data-en="Right on a later try">later juist ✓</span>' : ''}</div>
+      ${w.q ? `<div class="nl">${esc(w.q)}</div>` : ''}
+      ${w.yours ? `<div class="small"><span data-en="Your answer">Jij:</span> <s class="d nl">${esc(w.yours)}</s></div>` : ''}
+      <div><span class="small" data-en="Correct">Juist:</span> <b class="nl">${esc(w.answer)}</b></div>
+      ${w.why ? `<div class="small muted">${esc(w.why)}</div>` : ''}</div>`).join('')}</div>`;
 }
 function closeSession() { closeOverlay('session'); SES = null; render(); }
 

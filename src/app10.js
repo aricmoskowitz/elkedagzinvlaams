@@ -52,6 +52,7 @@ function addFix(c, src, plan) {
   if (!c || !c.wrong || !c.right || norm(c.wrong) === norm(c.right)) return;
   if (nameSlip(c.wrong, c.right)) return; // 2.7: a misheard name (op de meer → op de Meir) is no Dutch mistake
   const id = uid('f'); S.fix[id] = {wrong: String(c.wrong).slice(0, 240), right: String(c.right).slice(0, 240), why: String(c.why || '').slice(0, 300), type: c.type || '', src, date: dateKey(), plan: plan || null};
+  if (c.context) S.fix[id].ctx = String(c.context).slice(0, 300); if (c.meant) S.fix[id].meant = String(c.meant).slice(0, 240); // 2.23: enough to answer it later
   introduce('c:' + id + ':fix');
 }
 /* ---------- the processing card, grouped by place in the plan ---------- */

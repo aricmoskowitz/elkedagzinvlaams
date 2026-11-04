@@ -61,9 +61,9 @@ EDZ-VERSLAG v1
 "tip":"After omdat, wait with the verb until the end of the clause.",
 "goed":[{"topic":"Omdat + werkwoord achteraan (because + verb last)","plan":"u7q1","mastered":false}],
 "corrections":[
- {"wrong":"Ik vind Antwerpen mooi omdat het is oud.","right":"Ik vind Antwerpen mooi omdat het oud is.","why":"After omdat the conjugated verb goes to the end.","type":"word order","plan":"u7q1"},
- {"wrong":"Ik heb gaan naar de markt.","right":"Ik ben naar de markt gegaan.","why":"Gaan (movement to a place) takes zijn; the participle is gegaan.","type":"verb form","plan":"u5q3"},
- {"wrong":"Ik zou graag hebben een koffie.","right":"Ik had graag een koffie.","why":"Flemish polite ordering uses 'ik had graag'.","type":"word choice","plan":null,
+ {"wrong":"Ik vind Antwerpen mooi omdat het is oud.","right":"Ik vind Antwerpen mooi omdat het oud is.","why":"After omdat the conjugated verb goes to the end.","type":"word order","plan":"u7q1","context":"Een collega vraagt waarom je graag in Antwerpen woont.","meant":"I like Antwerp because it is old."},
+ {"wrong":"Ik heb gaan naar de markt.","right":"Ik ben naar de markt gegaan.","why":"Gaan (movement to a place) takes zijn; the participle is gegaan.","type":"verb form","plan":"u5q3","context":"Je vertelt een vriendin wat je zaterdag gedaan hebt.","meant":"I went to the market."},
+ {"wrong":"Ik zou graag hebben een koffie.","right":"Ik had graag een koffie.","why":"Flemish polite ordering uses 'ik had graag'.","type":"word choice","plan":null,"context":"Je bestelt aan de toog van een café; de ober spreekt je aan met u.","meant":"I'd like a coffee, please.",
   "newTopic":{"title":"Beleefd bestellen: ik had graag (polite ordering)","town":"u4","rule":"Flemish uses the past 'ik had graag' to order politely.","examples":[{"nl":"Ik had graag een koffie.","en":"I'd like a coffee."},{"nl":"We hadden graag de rekening.","en":"We'd like the bill."}]}}],
 "words":[{"w":"trappenhal","p":"n","g":"de","pl":"trappenhallen","dim":"","d":"de ruimte met de trap in een gebouw","s":"Ik zie de buurvrouw in de trappenhal.","en":"stairwell","plan":"u6q3","thema":"wonen"}]}
 EDZ-EINDE
@@ -85,9 +85,11 @@ EDZ-EINDE
 | `tekst` | dagboek, foto | dagboek: the user's text, corrected. foto: the transcription of the photo |
 | `bron` | foto | what the photo was ("les 12 oktober, whiteboard") |
 | `goed[]` | no | up to 3 constructions used correctly: `topic`, `plan`, `mastered` |
-| `corrections[]` | no | up to 8: `wrong` (the user's exact words), `right`, `why` (short English), `type` (`word order`, `article`, `verb form`, `adjective`, `spelling`, `word choice`, `other`), `plan` (square id or null), optional `newTopic` |
+| `corrections[]` | no | up to 8: `wrong` (the user's exact words), `right`, `why` (short English), `type` (`word order`, `article`, `verb form`, `adjective`, `spelling`, `word choice`, `other`), `plan` (square id or null), `context`, `meant`, optional `newTopic` |
 | `words[]` | no | up to 10 new words: `w` lemma, `p` (`n`/`v`/`adj`/`adv`), `g` (`de`/`het`, nouns), `pl`, `dim`, `d` (simple Dutch definition), `s` (example), `en`, `plan`, `thema` (always, see §4), and `syn`/`ant` only where a good one exists |
 | `newTopic` | no | `title`, `town` (town id like `u4`), `rule`, `examples[]` (`nl`, `en`) |
+
+**Context for every correction.** The app turns each correction into a *Verbeter je zin* card that comes back weeks later, without the conversation. So each one carries what a stranger needs to answer it: `context` is one or two short Dutch sentences with who the learner was talking to (so it is clear whether `u` or `je` fits), the situation, and what the other person had just said when that matters (*"Een voorbijganger op de Meir vraagt: 'Kan ik u helpen?' Jij zoekt de weg."*); `meant` is what the learner wanted to say, in English (*"Yes, you can help me. Where is the Meir?"*). Never give away the correction in `context`. A correction that can't be made fair this way (the learner only answered a misunderstood question) is left out.
 
 **The Gebruik score (opdracht).** The app scores Gebruik like Oefen: **70%** for the goals (the average of `doelen`) and **30%** for accuracy (1 − corrections ÷ `beurten`, never below 0). **80%** or more is gehaald and puts a flag on the square's Gebruik house; 100% gives the star. So count `beurten` honestly (the learner's turns) and list every real correction; leave out speech-recognition slips.
 
