@@ -91,6 +91,7 @@ Status: towns marked **(gebouwd)** exist in the app with words, sentences and ex
 - **u10q2** Plein 2 · Topplein: De grootste (Superlatives). Add -st: de grootste, het mooiste, het duurst.
 - **u10q3** Plein 3 · Zo-als-plein: Zo … als, even … als (As … as). zo groot als, even duur als, niet zo warm als gisteren.
 - **u10q4** Plein 4 · Liefstplein: Liever, beter, meer (Irregular forms). graag → liever → het liefst; goed → beter → best; veel → meer → meest.
+- **u10q5** Plein 5 · Rekenplein: Rekenen en vergelijken (Math homework). optellen, aftrekken, vermenigvuldigen, delen; plus, min, maal, gedeeld door, is gelijk aan; het haakje, de macht (tot de tweede macht), de exponent, de vierkantswortel, de breuk, de teller, de noemer, de uitkomst. Drie maal vier is twaalf. Twaalf is groter dan tien. Eerst reken je uit wat tussen de haakjes staat.
 
 #### Stad 4 · Spiegelmeer (u11)
 - Grammatica: Wederkerende werkwoorden — Reflexive verbs
@@ -204,6 +205,7 @@ Status: towns marked **(gebouwd)** exist in the app with words, sentences and ex
 - **u23q1** Plein 1 · Daaromplein: Daarom, dus (Therefore, so). Daarom neem ik de tram: after these words the verb stays in slot 2.
 - **u23q2** Plein 2 · Tochplein: Toch, anders (Still, otherwise). Het regent, toch ga ik fietsen. Haast je, anders mis je de bus.
 - **u23q3** Plein 3 · Bovendienplein: Bovendien, eerst, daarna (Moreover, first, then). Eerst zoek ik een huis, daarna verhuis ik. Bovendien is het goedkoper.
+- **u23q4** Plein 4 · Immoplein: Een huis kopen (Buying a house). de makelaar, het immokantoor, de bezichtiging, de vraagprijs, een bod doen, het tegenbod, de compromis, het voorschot, de notaris, de akte, de woonlening (hypothecaire lening), de registratierechten, het EPC, de stabiliteitsingenieur. We doen een lager bod, want het dak moet vernieuwd worden. Bovendien laten we eerst een stabiliteitsingenieur komen.
 
 #### Stad 3 · Zeggenstad (u24)
 - Grammatica: Indirecte rede — Reported speech

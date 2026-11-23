@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
-<script>const APP_VERSION = "a84e466d55";</script>
+<script>const APP_VERSION = "88ba956420";</script>
 <style>
 /* Colour has three jobs only:
    green  = you can tap this (filled = the one thing to do next)
@@ -1076,7 +1076,9 @@ const PLAN_ROWS = [
     ['Dan-plein', 'Groter dan', 'Comparatives', 'Add -er and use dan: groter dan, mooier dan; after r add -der: duurder.'],
     ['Topplein', 'De grootste', 'Superlatives', 'Add -st: de grootste, het mooiste, het duurst.'],
     ['Zo-als-plein', 'Zo … als, even … als', 'As … as', 'zo groot als, even duur als, niet zo warm als gisteren.'],
-    ['Liefstplein', 'Liever, beter, meer', 'Irregular forms', 'graag → liever → het liefst; goed → beter → best; veel → meer → meest.']]],
+    ['Liefstplein', 'Liever, beter, meer', 'Irregular forms', 'graag → liever → het liefst; goed → beter → best; veel → meer → meest.'],
+    // 2.24 (the user's request): math homework, comparing with numbers
+    ['Rekenplein', 'Rekenen en vergelijken', 'Math homework', 'optellen, aftrekken, vermenigvuldigen, delen; plus, min, maal, gedeeld door, is gelijk aan; het haakje, de macht (tot de tweede macht), de exponent, de vierkantswortel, de breuk, de teller, de noemer, de uitkomst. Drie maal vier is twaalf. Twaalf is groter dan tien. Eerst reken je uit wat tussen de haakjes staat.']]],
   ['u11', 'a2', 'Spiegelmeer', 'Wederkerende werkwoorden', 'Reflexive verbs', 'Dagelijkse routine en de huisarts', 'Daily routine and the GP', 'Ik kan mijn dag en hoe ik me voel beschrijven.', 'I can describe my day and how I feel.', [
     ['Wasplein', 'Zich wassen', 'Reflexive pronouns', 'ik was me, jij wast je, hij wast zich, wij wassen ons, zij wassen zich.'],
     ['Voelplein', 'Zich voelen, zich haasten', 'Fixed reflexives', 'zich voelen, zich haasten, zich vergissen, zich herinneren.'],
@@ -1133,7 +1135,9 @@ const PLAN_ROWS = [
   ['u23', 'a4', 'Daaromdorp', 'Verbindingswoorden', 'Connectors with inversion', 'Verhuizen en keuzes', 'Moving house and choices', 'Ik kan redenen en gevolgen aan elkaar koppelen.', 'I can link reasons and results.', [
     ['Daaromplein', 'Daarom, dus', 'Therefore, so', 'Daarom neem ik de tram: after these words the verb stays in slot 2.'],
     ['Tochplein', 'Toch, anders', 'Still, otherwise', 'Het regent, toch ga ik fietsen. Haast je, anders mis je de bus.'],
-    ['Bovendienplein', 'Bovendien, eerst, daarna', 'Moreover, first, then', 'Eerst zoek ik een huis, daarna verhuis ik. Bovendien is het goedkoper.']]],
+    ['Bovendienplein', 'Bovendien, eerst, daarna', 'Moreover, first, then', 'Eerst zoek ik een huis, daarna verhuis ik. Bovendien is het goedkoper.'],
+    // 2.24 (the user's request): buying a house in Flanders
+    ['Immoplein', 'Een huis kopen', 'Buying a house', 'de makelaar, het immokantoor, de bezichtiging, de vraagprijs, een bod doen, het tegenbod, de compromis, het voorschot, de notaris, de akte, de woonlening (hypothecaire lening), de registratierechten, het EPC, de stabiliteitsingenieur. We doen een lager bod, want het dak moet vernieuwd worden. Bovendien laten we eerst een stabiliteitsingenieur komen.']]],
   ['u24', 'a4', 'Zeggenstad', 'Indirecte rede', 'Reported speech', 'Berichten en de telefoon', 'Messages and the phone', 'Ik kan doorgeven wat iemand zei of vroeg.', 'I can pass on what someone said or asked.', [
     ['Zegtdatplein', 'Hij zegt dat …', 'Reported statements', 'Ze zegt dat ze later komt: dat + verb at the end, pronouns change.'],
     ['Vroegofplein', 'Ze vroeg of …', 'Reported questions', 'Hij vraagt of je tijd hebt. Ze vroeg waar het station is.'],
@@ -3580,6 +3584,7 @@ function addFix(c, src, plan) {
   if (!c || !c.wrong || !c.right || norm(c.wrong) === norm(c.right)) return;
   if (nameSlip(c.wrong, c.right)) return; // 2.7: a misheard name (op de meer → op de Meir) is no Dutch mistake
   const id = uid('f'); S.fix[id] = {wrong: String(c.wrong).slice(0, 240), right: String(c.right).slice(0, 240), why: String(c.why || '').slice(0, 300), type: c.type || '', src, date: dateKey(), plan: plan || null};
+  if (c.ernst === 'klein') S.fix[id].ernst = 'klein'; // 2.25: still practised, it only weighs less in the Gebruik score
   if (c.context) S.fix[id].ctx = String(c.context).slice(0, 300); if (c.meant) S.fix[id].meant = String(c.meant).slice(0, 240); // 2.23: enough to answer it later
   introduce('c:' + id + ':fix');
 }
@@ -3615,7 +3620,7 @@ function openProc(o) {
     else if (key.startsWith('new:')) { const t = newTopics.find(x => x.key === key); const tw = PT[t.town]; head = `<div class="loc">${tw ? `Boog ${arcOf(t.town).n} · Stad ${townIndexInArc(t.town)} · ${esc(tw.name)}` : 'Nog niet geplaatst'} <span class="pill new">nieuw in je plan</span></div><div class="nl" style="font-size:17px">${esc(t.title)}</div><div class="small">${esc(t.rule || '')}</div>`; }
     else { const L = planLoc(key); head = `<div class="loc">${locLine(L)} <span class="pill ${['klaar', 'bezig', 'open'].includes(locStatus(L)) ? 'go' : ''}">${locStatus(L)}</span></div><div class="nl" style="font-size:17px">${esc(L.townName)} · ${esc(L.sqName)}</div><div class="small">${esc(L.title)}${L.en && L.en !== L.title ? ' · ' + esc(L.en) : ''}</div>`; }
     return `<div class="card stack placecard" style="gap:8px">${head}
-      ${g.corrections.map(c => `<label class="corr"><input type="checkbox" name="pc" value="${c.i}" checked><span><span class="wrong">${esc(c.wrong)}</span><br><span class="right nl">${esc(c.right)}</span><br><span class="small">${esc(c.why || '')}</span></span></label>`).join('')}
+      ${g.corrections.map(c => `<label class="corr"><input type="checkbox" name="pc" value="${c.i}" checked><span><span class="wrong">${esc(c.wrong)}</span><br><span class="right nl">${esc(c.right)}</span><br><span class="small">${c.ernst === 'klein' ? '<b data-en="Small mistake">klein foutje</b> · ' : ''}${esc(c.why || '')}</span></span></label>`).join('')}
       ${g.words.map(w => `<label class="corr"><input type="checkbox" name="pw" value="${w.i}" checked><span><span class="pill new">nieuw woord</span> <b class="nl" style="font-size:17px">${w.g && w.p === 'n' ? `<span class="${w.g}">${w.g}</span> ` : ''}${esc(w.w)}</b><br><span class="small">${esc(w.d || '')}</span></span></label>`).join('')}
       ${g.good.map(x => `<div class="small">✓ Goed gebruikt: ${esc(x.topic)}${x.mastered && PSQ[x.plan] && PSQ[x.plan].built && !sqOpen(x.plan) ? ` · <button class="link" data-act="testout" data-qs="${x.plan}" style="min-height:0;padding:0">test je in ›</button>` : ''}</div>`).join('')}
       ${g.used.length ? `<div class="small">Ook gebruikt uit dit plein: ${g.used.map(id => `<b class="nl">${esc(LX(id).w)}</b>`).join(', ')}</div>` : ''}
@@ -4313,7 +4318,7 @@ function opdrachtCard(R) {
       <div class="small">${kanaalOf() === 'schrijven' ? 'Typ je antwoorden in Claude. Telt voor <b>Schrijven</b> bij Ik.' : 'Zet in Claude de stem aan en praat. Telt voor <b>Spreken</b> bij Ik.'}</div>
       <div class="eyebrow" data-en="To pass">Om te slagen</div>
       <ul class="doel">${doelParts(sc.doel || sc.goal).map(x => `<li class="nl">${esc(x)}</li>`).join('')}</ul>
-      <div class="small">Je score: <b>70%</b> voor de doelen en <b>30%</b> voor juistheid (hoe minder fouten per beurt, hoe meer). Vanaf <b>80%</b> is Gebruik gehaald en krijgt het huis zijn vlag als je het verslag plakt en bewaart.</div>
+      <div class="small">Je score: <b>70%</b> voor de doelen en <b>30%</b> voor juistheid (hoe minder fouten per beurt, hoe meer; een klein foutje, zoals <i>jij</i> in plaats van <i>u</i> of een vergeten <i>-e</i>, telt voor een kwart). Vanaf <b>80%</b> is Gebruik gehaald en krijgt het huis zijn vlag als je het verslag plakt en bewaart.</div>
       ${done ? `<div class="small">✓ Al gehaald${typeof done === 'number' && done > 1 ? ': ' + done + '%' : ''}. Je mag de opdracht altijd opnieuw doen.</div>` : ''}
     </div>`;
 }
@@ -4373,6 +4378,10 @@ function parseReport(text) {
   return {data: cleanReport(d), hash: hashText(JSON.stringify(d))};
 }
 const str = (x, n = 400) => typeof x === 'string' ? x.trim().slice(0, n) : typeof x === 'number' ? String(x) : '';
+// 2.25: how bad a correction is: klein (u/je, an adjective ending, spelling: it doesn't get in the way of the conversation)
+// or fout (it does). An older report has no ernst: spelling counts as klein, the rest as fout.
+const ernstOf = c => c.ernst === 'klein' || c.ernst === 'fout' ? c.ernst : /^spelling$/i.test(String(c.type || '').trim()) ? 'klein' : 'fout';
+const KLEIN_W = .25; // a small mistake costs a quarter of a real one
 const planId = id => (typeof id === 'string' && PSQ[id] && !PSQ[id].review) ? id : null;
 function cleanReport(d) {
   const r = {v: d.v, modus: MODES.some(m => m[0] === d.modus) ? d.modus : 'onderwerp', datum: /^\d{4}-\d\d-\d\d$/.test(d.datum) ? d.datum : dateKey(), onderwerp: str(d.onderwerp, 120) || 'Gesprek met Claude',
@@ -4383,7 +4392,7 @@ function cleanReport(d) {
   const topic = t => t && typeof t === 'object' && str(t.title) ? {title: str(t.title, 80), town: PT[t.town] ? t.town : null, rule: str(t.rule), examples: arr(t.examples).filter(x => x && str(x.nl) && str(x.en)).map(x => ({nl: str(x.nl, 200), en: str(x.en, 200)}))} : null;
   r.corrections = arr(d.corrections).filter(c => c && str(c.wrong) && str(c.right)).slice(0, 12).map(c => {
     const nt = topic(c.newTopic); const plan = planId(c.plan);
-    return {wrong: str(c.wrong, 240), right: str(c.right, 240), why: str(c.why, 300), type: str(c.type, 30), context: str(c.context, 300), meant: str(c.meant, 240), plan, newTopic: plan ? null : nt};
+    return {wrong: str(c.wrong, 240), right: str(c.right, 240), why: str(c.why, 300), type: str(c.type, 30), ernst: ernstOf(c), context: str(c.context, 300), meant: str(c.meant, 240), plan, newTopic: plan ? null : nt};
   });
   const have = new Set(Object.values(S.custom || {}).map(l => norm(l.w)));
   // "de kraam" → kraam (de): the lemma without its article
@@ -4438,10 +4447,11 @@ function gebruikScore(r) {
   // older reports have only doelBereikt: all parts or none
   const got = parts.map((_, i) => r.doelen && r.doelen.length ? (r.doelen[i] || 0) : (r.doelBereikt ? 1 : 0));
   const goal = parts.length ? got.reduce((a, b) => a + b, 0) / parts.length : (r.doelBereikt ? 1 : 0);
-  const fouten = (r.corrections || []).filter(c => !nameSlip(c.wrong, c.right)).length; const beurten = Math.max(1, r.beurten || 0);
-  const acc = Math.max(0, 1 - fouten / beurten);
+  const cs = (r.corrections || []).filter(c => !nameSlip(c.wrong, c.right)); const beurten = Math.max(1, r.beurten || 0);
+  const klein = cs.filter(c => ernstOf(c) === 'klein').length, fouten = cs.length - klein; // 2.25: a small mistake counts for a quarter
+  const acc = Math.max(0, 1 - (fouten + KLEIN_W * klein) / beurten);
   const score = Math.round(70 * goal + 30 * acc);
-  return {score, pass: score >= 80, parts, got, goalPts: Math.round(70 * goal), accPts: Math.round(30 * acc), fouten, beurten: r.beurten || 0};
+  return {score, pass: score >= 80, parts, got, goalPts: Math.round(70 * goal), accPts: Math.round(30 * acc), fouten, klein, beurten: r.beurten || 0};
 }
 // an opdracht report says what happens to the Gebruik house, with the score and how it was made
 function reportStatus(r) {
@@ -4455,7 +4465,7 @@ function reportStatus(r) {
     <div class="small">${esc(where)} · ${r.kanaal === 'schrijven' ? 'Schrijven' : 'Spreken'}</div>
     <div class="small">Doelen: <b>${g.goalPts}</b> van 70</div>
     <ul class="doel got">${g.parts.map((x, i) => `<li class="nl" data-mark="${mark(g.got[i])}">${esc(x)}${g.got[i] > 0 && g.got[i] < 1 ? ` <span class="small">(${Math.round(g.got[i] * 100)}%)</span>` : ''}</li>`).join('')}</ul>
-    <div class="small">Juistheid: <b>${g.accPts}</b> van 30 · ${g.fouten} ${g.fouten === 1 ? 'fout' : 'fouten'} in ${g.beurten} ${g.beurten === 1 ? 'beurt' : 'beurten'}</div>
+    <div class="small">Juistheid: <b>${g.accPts}</b> van 30 · ${g.fouten} ${g.fouten === 1 ? 'fout' : 'fouten'}${g.klein ? ` en ${g.klein} ${g.klein === 1 ? 'klein foutje' : 'kleine foutjes'} (telt voor een kwart)` : ''} in ${g.beurten} ${g.beurten === 1 ? 'beurt' : 'beurten'}</div>
     <div class="small">${g.pass ? 'Bewaar, en het Gebruik-huis krijgt zijn vlag' + (g.score >= 100 ? ' met een ster.' : '.') : 'Doe de opdracht opnieuw via het Gebruik-huis van dat plein.'}</div></div>`;
 }
 function saveReport(r, hash) {

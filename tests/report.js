@@ -331,6 +331,17 @@ const fails = []; const ok = (cond, msg) => { if (!cond) fails.push(msg); consol
     saveReport({...base, datum: '2026-10-14', onderwerp: 'x', doelen: [1, 1], corrections: C(4), words: [], fill: []}, 'h3'); const afterLower = S.sq.u2q2.steps.gebruik;
     const lv = houseLevel('u2q2', 'gebruik'); S.sq.u2q3 = {steps: {gebruik: 1}}; const legacy = houseLevel('u2q3', 'gebruik');
     return {txt, items: c ? c.querySelectorAll('ul.doel li').length : 0, doelLine: blk.split('\n').find(l => l.startsWith('doel:')), full: full.score, part: part.score, old: old.score, many: many.score, html, afterFail, afterPass, afterLower, lv, legacy}; });
+  // 2.25: a small mistake (ernst klein: u/je, an adjective -e, spelling) counts for a quarter of a real one; an old report's spelling counts as klein
+  const er = await t.evaluate(() => { const base = {modus: 'opdracht', plein: 'u2q2', beurten: 8, doelen: [1, 1]};
+    const K = n => Array.from({length: n}, () => ({wrong: 'Kan jij me helpen?', right: 'Kan u me helpen?', why: 'u for a stranger', ernst: 'klein'}));
+    const F = n => Array.from({length: n}, () => ({wrong: 'ik zoekt', right: 'ik zoek', why: 'x', ernst: 'fout'}));
+    const small = gebruikScore({...base, corrections: K(4)}), real = gebruikScore({...base, corrections: F(4)}), mix = gebruikScore({...base, corrections: K(4).concat(F(1))}),
+      oldSp = gebruikScore({...base, corrections: [{wrong: 'I ga', right: 'Ik ga', why: 'x', type: 'spelling'}]}), oldWo = gebruikScore({...base, corrections: [{wrong: 'ik zoekt', right: 'ik zoek', why: 'x', type: 'verb form'}]});
+    const r = parseReport('EDZ-VERSLAG v1\n{"v":1,"modus":"opdracht","plein":"u2q2","beurten":8,"doelen":[1,1],"corrections":[{"wrong":"Wil jij","right":"Wilt u","why":"u","ernst":"klein"},{"wrong":"Ik heb gaan","right":"Ik ben gegaan","why":"zijn","ernst":"onzin"},{"wrong":"I ga","right":"Ik ga","why":"x","type":"spelling"}]}\nEDZ-EINDE').data;
+    const html = reportStatus({...base, corrections: K(4).concat(F(1))});
+    return {small: small.score, real: real.score, mix: mix.score, oldSp: oldSp.score, oldWo: oldWo.score, ernst: r.corrections.map(c => c.ernst).join(','), line: /1 fout en 4 kleine foutjes/.test(html)}; });
+  ok(er.small === 96 && er.real === 85 && er.mix === 93 && er.oldSp === 99 && er.oldWo === 96 && er.ernst === 'klein,fout,klein' && er.line,
+    'Gebruik: 4 small mistakes in 8 beurten cost a quarter of 4 real ones; the report keeps ernst (unknown = fout, old spelling = klein); the review says "1 fout en 4 kleine foutjes" (' + JSON.stringify(er) + ')');
   ok(/Plein 2 Theaterplein/.test(op.txt) && /Om te slagen/.test(op.txt) && /vriendin/.test(op.txt) && /80%/.test(op.txt) && op.items === 2 && op.doelLine === 'doel: 1) Begin 2 zinnen met een tijd plus een scheidbaar werkwoord (Om zeven uur haal ik je op, Daarna komen we aan) · 2) Stel 1 vraag met een scheidbaar werkwoord (Bel je me nog op?)',
     'opdracht: the Praten sheet shows the plein, the role, the pass conditions and the 80% rule; the start block numbers the goals (' + op.doelLine + ')');
   ok(op.full === 93 && op.part === 12 && op.old === 100 && op.many === 78 && /Gebruik: 12%/.test(op.html) && /nog niet gehaald/.test(op.html) && /6 fouten in 4 beurten/.test(op.html),

@@ -44,7 +44,9 @@ const PLAN_ROWS = [
     ['Dan-plein', 'Groter dan', 'Comparatives', 'Add -er and use dan: groter dan, mooier dan; after r add -der: duurder.'],
     ['Topplein', 'De grootste', 'Superlatives', 'Add -st: de grootste, het mooiste, het duurst.'],
     ['Zo-als-plein', 'Zo … als, even … als', 'As … as', 'zo groot als, even duur als, niet zo warm als gisteren.'],
-    ['Liefstplein', 'Liever, beter, meer', 'Irregular forms', 'graag → liever → het liefst; goed → beter → best; veel → meer → meest.']]],
+    ['Liefstplein', 'Liever, beter, meer', 'Irregular forms', 'graag → liever → het liefst; goed → beter → best; veel → meer → meest.'],
+    // 2.24 (the user's request): math homework, comparing with numbers
+    ['Rekenplein', 'Rekenen en vergelijken', 'Math homework', 'optellen, aftrekken, vermenigvuldigen, delen; plus, min, maal, gedeeld door, is gelijk aan; het haakje, de macht (tot de tweede macht), de exponent, de vierkantswortel, de breuk, de teller, de noemer, de uitkomst. Drie maal vier is twaalf. Twaalf is groter dan tien. Eerst reken je uit wat tussen de haakjes staat.']]],
   ['u11', 'a2', 'Spiegelmeer', 'Wederkerende werkwoorden', 'Reflexive verbs', 'Dagelijkse routine en de huisarts', 'Daily routine and the GP', 'Ik kan mijn dag en hoe ik me voel beschrijven.', 'I can describe my day and how I feel.', [
     ['Wasplein', 'Zich wassen', 'Reflexive pronouns', 'ik was me, jij wast je, hij wast zich, wij wassen ons, zij wassen zich.'],
     ['Voelplein', 'Zich voelen, zich haasten', 'Fixed reflexives', 'zich voelen, zich haasten, zich vergissen, zich herinneren.'],
@@ -101,7 +103,9 @@ const PLAN_ROWS = [
   ['u23', 'a4', 'Daaromdorp', 'Verbindingswoorden', 'Connectors with inversion', 'Verhuizen en keuzes', 'Moving house and choices', 'Ik kan redenen en gevolgen aan elkaar koppelen.', 'I can link reasons and results.', [
     ['Daaromplein', 'Daarom, dus', 'Therefore, so', 'Daarom neem ik de tram: after these words the verb stays in slot 2.'],
     ['Tochplein', 'Toch, anders', 'Still, otherwise', 'Het regent, toch ga ik fietsen. Haast je, anders mis je de bus.'],
-    ['Bovendienplein', 'Bovendien, eerst, daarna', 'Moreover, first, then', 'Eerst zoek ik een huis, daarna verhuis ik. Bovendien is het goedkoper.']]],
+    ['Bovendienplein', 'Bovendien, eerst, daarna', 'Moreover, first, then', 'Eerst zoek ik een huis, daarna verhuis ik. Bovendien is het goedkoper.'],
+    // 2.24 (the user's request): buying a house in Flanders
+    ['Immoplein', 'Een huis kopen', 'Buying a house', 'de makelaar, het immokantoor, de bezichtiging, de vraagprijs, een bod doen, het tegenbod, de compromis, het voorschot, de notaris, de akte, de woonlening (hypothecaire lening), de registratierechten, het EPC, de stabiliteitsingenieur. We doen een lager bod, want het dak moet vernieuwd worden. Bovendien laten we eerst een stabiliteitsingenieur komen.']]],
   ['u24', 'a4', 'Zeggenstad', 'Indirecte rede', 'Reported speech', 'Berichten en de telefoon', 'Messages and the phone', 'Ik kan doorgeven wat iemand zei of vroeg.', 'I can pass on what someone said or asked.', [
     ['Zegtdatplein', 'Hij zegt dat …', 'Reported statements', 'Ze zegt dat ze later komt: dat + verb at the end, pronouns change.'],
     ['Vroegofplein', 'Ze vroeg of …', 'Reported questions', 'Hij vraagt of je tijd hebt. Ze vroeg waar het station is.'],
