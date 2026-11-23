@@ -52,6 +52,7 @@ function addFix(c, src, plan) {
   if (!c || !c.wrong || !c.right || norm(c.wrong) === norm(c.right)) return;
   if (nameSlip(c.wrong, c.right)) return; // 2.7: a misheard name (op de meer → op de Meir) is no Dutch mistake
   const id = uid('f'); S.fix[id] = {wrong: String(c.wrong).slice(0, 240), right: String(c.right).slice(0, 240), why: String(c.why || '').slice(0, 300), type: c.type || '', src, date: dateKey(), plan: plan || null};
+  if (c.ernst === 'klein') S.fix[id].ernst = 'klein'; // 2.25: still practised, it only weighs less in the Gebruik score
   if (c.context) S.fix[id].ctx = String(c.context).slice(0, 300); if (c.meant) S.fix[id].meant = String(c.meant).slice(0, 240); // 2.23: enough to answer it later
   introduce('c:' + id + ':fix');
 }
@@ -87,7 +88,7 @@ function openProc(o) {
     else if (key.startsWith('new:')) { const t = newTopics.find(x => x.key === key); const tw = PT[t.town]; head = `<div class="loc">${tw ? `Boog ${arcOf(t.town).n} · Stad ${townIndexInArc(t.town)} · ${esc(tw.name)}` : 'Nog niet geplaatst'} <span class="pill new">nieuw in je plan</span></div><div class="nl" style="font-size:17px">${esc(t.title)}</div><div class="small">${esc(t.rule || '')}</div>`; }
     else { const L = planLoc(key); head = `<div class="loc">${locLine(L)} <span class="pill ${['klaar', 'bezig', 'open'].includes(locStatus(L)) ? 'go' : ''}">${locStatus(L)}</span></div><div class="nl" style="font-size:17px">${esc(L.townName)} · ${esc(L.sqName)}</div><div class="small">${esc(L.title)}${L.en && L.en !== L.title ? ' · ' + esc(L.en) : ''}</div>`; }
     return `<div class="card stack placecard" style="gap:8px">${head}
-      ${g.corrections.map(c => `<label class="corr"><input type="checkbox" name="pc" value="${c.i}" checked><span><span class="wrong">${esc(c.wrong)}</span><br><span class="right nl">${esc(c.right)}</span><br><span class="small">${esc(c.why || '')}</span></span></label>`).join('')}
+      ${g.corrections.map(c => `<label class="corr"><input type="checkbox" name="pc" value="${c.i}" checked><span><span class="wrong">${esc(c.wrong)}</span><br><span class="right nl">${esc(c.right)}</span><br><span class="small">${c.ernst === 'klein' ? '<b data-en="Small mistake">klein foutje</b> · ' : ''}${esc(c.why || '')}</span></span></label>`).join('')}
       ${g.words.map(w => `<label class="corr"><input type="checkbox" name="pw" value="${w.i}" checked><span><span class="pill new">nieuw woord</span> <b class="nl" style="font-size:17px">${w.g && w.p === 'n' ? `<span class="${w.g}">${w.g}</span> ` : ''}${esc(w.w)}</b><br><span class="small">${esc(w.d || '')}</span></span></label>`).join('')}
       ${g.good.map(x => `<div class="small">✓ Goed gebruikt: ${esc(x.topic)}${x.mastered && PSQ[x.plan] && PSQ[x.plan].built && !sqOpen(x.plan) ? ` · <button class="link" data-act="testout" data-qs="${x.plan}" style="min-height:0;padding:0">test je in ›</button>` : ''}</div>`).join('')}
       ${g.used.length ? `<div class="small">Ook gebruikt uit dit plein: ${g.used.map(id => `<b class="nl">${esc(LX(id).w)}</b>`).join(', ')}</div>` : ''}

@@ -103,7 +103,7 @@ function opdrachtCard(R) {
       <div class="small">${kanaalOf() === 'schrijven' ? 'Typ je antwoorden in Claude. Telt voor <b>Schrijven</b> bij Ik.' : 'Zet in Claude de stem aan en praat. Telt voor <b>Spreken</b> bij Ik.'}</div>
       <div class="eyebrow" data-en="To pass">Om te slagen</div>
       <ul class="doel">${doelParts(sc.doel || sc.goal).map(x => `<li class="nl">${esc(x)}</li>`).join('')}</ul>
-      <div class="small">Je score: <b>70%</b> voor de doelen en <b>30%</b> voor juistheid (hoe minder fouten per beurt, hoe meer). Vanaf <b>80%</b> is Gebruik gehaald en krijgt het huis zijn vlag als je het verslag plakt en bewaart.</div>
+      <div class="small">Je score: <b>70%</b> voor de doelen en <b>30%</b> voor juistheid (hoe minder fouten per beurt, hoe meer; een klein foutje, zoals <i>jij</i> in plaats van <i>u</i> of een vergeten <i>-e</i>, telt voor een kwart). Vanaf <b>80%</b> is Gebruik gehaald en krijgt het huis zijn vlag als je het verslag plakt en bewaart.</div>
       ${done ? `<div class="small">✓ Al gehaald${typeof done === 'number' && done > 1 ? ': ' + done + '%' : ''}. Je mag de opdracht altijd opnieuw doen.</div>` : ''}
     </div>`;
 }
@@ -163,6 +163,10 @@ function parseReport(text) {
   return {data: cleanReport(d), hash: hashText(JSON.stringify(d))};
 }
 const str = (x, n = 400) => typeof x === 'string' ? x.trim().slice(0, n) : typeof x === 'number' ? String(x) : '';
+// 2.25: how bad a correction is: klein (u/je, an adjective ending, spelling: it doesn't get in the way of the conversation)
+// or fout (it does). An older report has no ernst: spelling counts as klein, the rest as fout.
+const ernstOf = c => c.ernst === 'klein' || c.ernst === 'fout' ? c.ernst : /^spelling$/i.test(String(c.type || '').trim()) ? 'klein' : 'fout';
+const KLEIN_W = .25; // a small mistake costs a quarter of a real one
 const planId = id => (typeof id === 'string' && PSQ[id] && !PSQ[id].review) ? id : null;
 function cleanReport(d) {
   const r = {v: d.v, modus: MODES.some(m => m[0] === d.modus) ? d.modus : 'onderwerp', datum: /^\d{4}-\d\d-\d\d$/.test(d.datum) ? d.datum : dateKey(), onderwerp: str(d.onderwerp, 120) || 'Gesprek met Claude',
@@ -173,7 +177,7 @@ function cleanReport(d) {
   const topic = t => t && typeof t === 'object' && str(t.title) ? {title: str(t.title, 80), town: PT[t.town] ? t.town : null, rule: str(t.rule), examples: arr(t.examples).filter(x => x && str(x.nl) && str(x.en)).map(x => ({nl: str(x.nl, 200), en: str(x.en, 200)}))} : null;
   r.corrections = arr(d.corrections).filter(c => c && str(c.wrong) && str(c.right)).slice(0, 12).map(c => {
     const nt = topic(c.newTopic); const plan = planId(c.plan);
-    return {wrong: str(c.wrong, 240), right: str(c.right, 240), why: str(c.why, 300), type: str(c.type, 30), context: str(c.context, 300), meant: str(c.meant, 240), plan, newTopic: plan ? null : nt};
+    return {wrong: str(c.wrong, 240), right: str(c.right, 240), why: str(c.why, 300), type: str(c.type, 30), ernst: ernstOf(c), context: str(c.context, 300), meant: str(c.meant, 240), plan, newTopic: plan ? null : nt};
   });
   const have = new Set(Object.values(S.custom || {}).map(l => norm(l.w)));
   // "de kraam" → kraam (de): the lemma without its article
@@ -228,10 +232,11 @@ function gebruikScore(r) {
   // older reports have only doelBereikt: all parts or none
   const got = parts.map((_, i) => r.doelen && r.doelen.length ? (r.doelen[i] || 0) : (r.doelBereikt ? 1 : 0));
   const goal = parts.length ? got.reduce((a, b) => a + b, 0) / parts.length : (r.doelBereikt ? 1 : 0);
-  const fouten = (r.corrections || []).filter(c => !nameSlip(c.wrong, c.right)).length; const beurten = Math.max(1, r.beurten || 0);
-  const acc = Math.max(0, 1 - fouten / beurten);
+  const cs = (r.corrections || []).filter(c => !nameSlip(c.wrong, c.right)); const beurten = Math.max(1, r.beurten || 0);
+  const klein = cs.filter(c => ernstOf(c) === 'klein').length, fouten = cs.length - klein; // 2.25: a small mistake counts for a quarter
+  const acc = Math.max(0, 1 - (fouten + KLEIN_W * klein) / beurten);
   const score = Math.round(70 * goal + 30 * acc);
-  return {score, pass: score >= 80, parts, got, goalPts: Math.round(70 * goal), accPts: Math.round(30 * acc), fouten, beurten: r.beurten || 0};
+  return {score, pass: score >= 80, parts, got, goalPts: Math.round(70 * goal), accPts: Math.round(30 * acc), fouten, klein, beurten: r.beurten || 0};
 }
 // an opdracht report says what happens to the Gebruik house, with the score and how it was made
 function reportStatus(r) {
@@ -245,7 +250,7 @@ function reportStatus(r) {
     <div class="small">${esc(where)} · ${r.kanaal === 'schrijven' ? 'Schrijven' : 'Spreken'}</div>
     <div class="small">Doelen: <b>${g.goalPts}</b> van 70</div>
     <ul class="doel got">${g.parts.map((x, i) => `<li class="nl" data-mark="${mark(g.got[i])}">${esc(x)}${g.got[i] > 0 && g.got[i] < 1 ? ` <span class="small">(${Math.round(g.got[i] * 100)}%)</span>` : ''}</li>`).join('')}</ul>
-    <div class="small">Juistheid: <b>${g.accPts}</b> van 30 · ${g.fouten} ${g.fouten === 1 ? 'fout' : 'fouten'} in ${g.beurten} ${g.beurten === 1 ? 'beurt' : 'beurten'}</div>
+    <div class="small">Juistheid: <b>${g.accPts}</b> van 30 · ${g.fouten} ${g.fouten === 1 ? 'fout' : 'fouten'}${g.klein ? ` en ${g.klein} ${g.klein === 1 ? 'klein foutje' : 'kleine foutjes'} (telt voor een kwart)` : ''} in ${g.beurten} ${g.beurten === 1 ? 'beurt' : 'beurten'}</div>
     <div class="small">${g.pass ? 'Bewaar, en het Gebruik-huis krijgt zijn vlag' + (g.score >= 100 ? ' met een ster.' : '.') : 'Doe de opdracht opnieuw via het Gebruik-huis van dat plein.'}</div></div>`;
 }
 function saveReport(r, hash) {
